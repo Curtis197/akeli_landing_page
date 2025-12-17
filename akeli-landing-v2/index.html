@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Akeli - La première application de nutrition conçue pour la cuisine africaine. Suivez vos objectifs fitness sans renoncer à vos plats préférés.">
+    <meta name="keywords" content="nutrition africaine, fitness, recettes africaines, suivi calories, coaching IA">
+    <title>Akeli - Vos objectifs fitness. Votre cuisine africaine.</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+<nav class="navbar">
+    <div class="container">
+        <div class="nav-content">
+            <!-- Logo -->
+            <div class="logo">
+                <img src="https://jfbfymiyqlyciapfloug.supabase.co/storage/v1/object/public/website/20250905_1032_Feuille%20et%20Fond%20Vert_remix_01k4cfzf80es2vmmcjs01fdyvt.png" alt="Akeli Logo" class="logo-img">
+                <span class="logo-text">Akeli</span>
+            </div>
+
+            <!-- Desktop Navigation Links -->
+            <div class="nav-links desktop-only">
+                <a href="#how-it-works" class="nav-link">Comment ça marche</a>
+                <a href="#features" class="nav-link">Fonctionnalités</a>
+                <a href="#pricing" class="nav-link">Tarifs</a>
+                <a href="#faq" class="nav-link">FAQ</a>
+            </div>
+
+            <!-- Desktop CTA Button -->
+            <button class="cta-button primary desktop-only" onclick="scrollToSignup()">
+                Rejoindre la liste
+            </button>
+
+            <!-- Mobile Hamburger Menu -->
+            <button class="hamburger mobile-only" id="hamburger" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar -->
+    <div class="mobile-sidebar" id="mobileSidebar">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <div class="sidebar-content">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <img src="https://jfbfymiyqlyciapfloug.supabase.co/storage/v1/object/public/website/20250905_1032_Feuille%20et%20Fond%20Vert_remix_01k4cfzf80es2vmmcjs01fdyvt.png" alt="Akeli Logo" class="logo-img">
+                    <span class="logo-text">Akeli</span>
+                </div>
+                <button class="close-sidebar" id="closeSidebar" aria-label="Fermer">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#how-it-works" class="sidebar-link">Comment ça marche</a>
+                <a href="#features" class="sidebar-link">Fonctionnalités</a>
+                <a href="#pricing" class="sidebar-link">Tarifs</a>
+                <a href="#faq" class="sidebar-link">FAQ</a>
+                <button class="cta-button primary full-width" onclick="scrollToSignup()">
+                    Rejoindre la liste
+                </button>
+            </nav>
+        </div>
+    </div>
+</nav>
+    <!-- Hero Section - Enhanced with Lifestyle -->
+    <section class="hero-v2">
+        <div class="container">
+            <div class="hero-content-v2">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        Vos objectifs fitness.<br>
+                        Votre cuisine africaine.<br>
+                        <span class="highlight">Enfin compatibles.</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Akeli est la première application de nutrition conçue pour votre alimentation. 
+                        Suivez vos macros, découvrez des recettes saines, atteignez vos objectifs sans 
+                        renoncer à vos plats préférés.
+                    </p>
+                    <div class="hero-cta">
+                        <button class="cta-button primary large" onclick="scrollToSignup()">
+                            Rejoindre la liste d'attente
+                        </button>
+                        <button class="cta-button secondary large" onclick="scrollToHow()">
+                            Comment ça marche ?
+                        </button>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="hero-image-stack">
+                        <img src="pexels-askar-abayev-6193635_-_Copie.jpg" alt="Couple utilisant Akeli" class="lifestyle-img">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof Bar -->
+    <section class="social-proof-bar">
+        <div class="container">
+            <div class="proof-items">
+                <div class="proof-item">
+                    <span class="proof-number">50+</span>
+                    <span class="proof-label">Recettes africaines</span>
+                </div>
+                <div class="proof-item">
+                    <span class="proof-number">24/7</span>
+                    <span class="proof-label">Coach IA disponible</span>
+                </div>
+                <div class="proof-item">
+                    <span class="proof-number">100%</span>
+                    <span class="proof-label">Adapté à votre cuisine</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works - With Lifestyle Photos -->
+    <section class="how-it-works-v2" id="how-it-works">
+        <div class="container">
+            <h2 class="section-title">Comment ça marche ?</h2>
+            <p class="section-subtitle">Trois étapes simples pour transformer votre alimentation</p>
+            
+            <div class="steps-grid-v2">
+                <!-- Step 1 -->
+                <div class="step-card-v2">
+                    <div class="step-image">
+                        <img src="pexels-keira-burton-6147178_-_Copie.jpg" alt="Couple découvrant l'app">
+                        <div class="step-number-badge">1</div>
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title">Définissez vos objectifs</h3>
+                        <p class="step-description">
+                            Perte de poids, prise de muscle, ou équilibre nutritionnel. 
+                            Notre IA s'adapte à vos besoins spécifiques et votre culture culinaire.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="step-card-v2">
+                    <div class="step-image">
+                        <img src="pexels-greta-hoffman-9705844_-_Copie.jpg" alt="Préparation de repas africains">
+                        <div class="step-number-badge">2</div>
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title">Suivez vos repas africains</h3>
+                        <p class="step-description">
+                            Base de données complète de plats traditionnels avec leurs valeurs 
+                            nutritionnelles précises. Thiéboudienne, mafé, garba, attiéké...
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="step-card-v2">
+                    <div class="step-image">
+                        <img src="pexels-askar-abayev-6193564.jpg" alt="Couple partageant un repas">
+                        <div class="step-number-badge">3</div>
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title">Atteignez vos résultats</h3>
+                        <p class="step-description">
+                            Coaching IA personnalisé qui s'adapte à vos habitudes et votre 
+                            culture culinaire. Résultats garantis, plaisir préservé.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features - Mixed Mockups and Lifestyle -->
+    <section class="features-v2" id="features">
+        <div class="container">
+            <h2 class="section-title">Tout ce dont vous avez besoin pour réussir</h2>
+            
+            <!-- Feature 1 - Nutrition Tracking (Mockup) -->
+            <div class="feature-row-v2">
+                <div class="feature-content">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Suivi nutritionnel intelligent</h3>
+                    <p class="feature-description">
+                        Tracez vos calories, protéines, glucides et lipides avec une précision inégalée. 
+                        Notre IA comprend parfaitement vos plats africains et calcule automatiquement 
+                        les macros de vos recettes préférées.
+                    </p>
+                    <ul class="feature-list">
+                        <li>✓ Calcul automatique des macronutriments</li>
+                        <li>✓ Suivi quotidien et hebdomadaire</li>
+                        <li>✓ Objectifs personnalisés</li>
+                        <li>✓ Graphiques de progression détaillés</li>
+                    </ul>
+                </div>
+                <div class="feature-image">
+                    <img src="https://jfbfymiyqlyciapfloug.supabase.co/storage/v1/object/public/website/Dashboard.png" alt="Dashboard de suivi" class="mockup-img">
+                </div>
+            </div>
+
+            <!-- Feature 2 - African Recipes (Lifestyle) -->
+            <div class="feature-row-v2 reverse">
+                <div class="feature-content">
+                    <div class="feature-icon">🍲</div>
+                    <h3 class="feature-title">Recettes africaines authentiques</h3>
+                    <p class="feature-description">
+                        Des centaines de recettes traditionnelles et modernes de tout le continent. 
+                        Chaque plat est documenté avec ses valeurs nutritionnelles, ses ingrédients 
+                        et ses instructions détaillées.
+                    </p>
+                    <ul class="feature-list">
+                        <li>✓ Base de données complète par pays</li>
+                        <li>✓ Instructions pas à pas illustrées</li>
+                        <li>✓ Adaptations santé disponibles</li>
+                        <li>✓ Partagez vos propres créations</li>
+                    </ul>
+                </div>
+                <div class="feature-image">
+                    <div class="lifestyle-feature-img">
+                        <img src="pexels-picha-6210449__1_.jpg" alt="Cuisine africaine authentique">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 3 - Meal Planning (Mockup) -->
+            <div class="feature-row-v2">
+                <div class="feature-content">
+                    <div class="feature-icon">🗓️</div>
+                    <h3 class="feature-title">Plans de repas personnalisés</h3>
+                    <p class="feature-description">
+                        Planifiez vos repas de la semaine en quelques clics. Notre algorithme 
+                        crée des menus équilibrés adaptés à vos goûts, votre budget et vos 
+                        objectifs nutritionnels.
+                    </p>
+                    <ul class="feature-list">
+                        <li>✓ Menus hebdomadaires automatiques</li>
+                        <li>✓ Liste de courses générée</li>
+                        <li>✓ Variété et équilibre garantis</li>
+                        <li>✓ Adaptable à toute la famille</li>
+                    </ul>
+                </div>
+                <div class="feature-image">
+                    <img src="https://jfbfymiyqlyciapfloug.supabase.co/storage/v1/object/public/website/Meal%20Planner.png" alt="Planificateur de repas" class="mockup-img">
+                </div>
+            </div>
+
+            <!-- Feature 4 - Community (Lifestyle) -->
+            <div class="feature-row-v2 reverse">
+                <div class="feature-content">
+                    <div class="feature-icon">👥</div>
+                    <h3 class="feature-title">Une communauté qui vous ressemble</h3>
+                    <p class="feature-description">
+                        Connectez-vous avec d'autres personnes qui partagent les mêmes objectifs. 
+                        Partagez vos réussites, vos recettes, et soutenez-vous mutuellement dans 
+                        votre parcours santé.
+                    </p>
+                    <ul class="feature-list">
+                        <li>✓ Échangez avec la diaspora africaine</li>
+                        <li>✓ Partagez vos recettes et astuces</li>
+                        <li>✓ Groupes par objectifs et régions</li>
+                        <li>✓ Événements et défis communautaires</li>
+                    </ul>
+                </div>
+                <div class="feature-image">
+                    <div class="lifestyle-feature-img">
+                        <img src="pexels-august-de-richelieu-4262012.jpg" alt="Communauté partageant un repas">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 5 - AI Coach (Mockup) -->
+            <div class="feature-row-v2">
+                <div class="feature-content">
+                    <div class="feature-icon">🤖</div>
+                    <h3 class="feature-title">Coach IA personnalisé</h3>
+                    <p class="feature-description">
+                        Posez toutes vos questions à votre coach virtuel disponible 24/7. 
+                        Conseils nutritionnels, suggestions de recettes, ajustements de plan... 
+                        Une intelligence artificielle qui comprend vraiment votre cuisine.
+                    </p>
+                    <ul class="feature-list">
+                        <li>✓ Réponses instantanées en français</li>
+                        <li>✓ Recommandations culturellement adaptées</li>
+                        <li>✓ Suggestions basées sur vos préférences</li>
+                        <li>✓ Motivation et encouragements quotidiens</li>
+                    </ul>
+                </div>
+                <div class="feature-image">
+                    <img src="https://jfbfymiyqlyciapfloug.supabase.co/storage/v1/object/public/website/Home%20Page%20+%20AI%20Bot.png" alt="Assistant IA" class="mockup-img">
+                </div>
+            </div>
+        </div>
+    </section>
+<!-- Section Partage -->
+<section class="partage-section" id="partage">
+    <div class="container">
+        <div class="partage-content">
+            <!-- Colonne Gauche - Contenu -->
+            <div class="partage-text">
+                <h2 class="section-title">Partagez Votre Passion Culinaire</h2>
+                <p class="section-subtitle">
+                    Rejoignez une communauté qui célèbre la richesse de la cuisine africaine. 
+                    Partagez vos recettes, découvrez celles des autres, et cuisinez ensemble.
+                </p>
+                
+                <div class="partage-features">
+                    <div class="partage-feature">
+                        <div class="feature-icon">🍳</div>
+                        <div class="feature-text">
+                            <h3>Partagez vos recettes</h3>
+                            <p>Créez et partagez vos plats traditionnels favoris avec la communauté. Inspirez d'autres personnes avec votre savoir-faire culinaire.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="partage-feature">
+                        <div class="feature-icon">👥</div>
+                        <div class="feature-text">
+                            <h3>Invitez vos proches</h3>
+                            <p>Partagez Akeli avec votre famille et vos amis. Cuisinez ensemble, échangez des recettes, et atteignez vos objectifs en groupe.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="partage-feature">
+                        <div class="feature-icon">💬</div>
+                        <div class="feature-text">
+                            <h3>Échangez et apprenez</h3>
+                            <p>Découvrez de nouvelles recettes, posez vos questions, et apprenez des techniques culinaires auprès d'autres passionnés.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="partage-cta">
+                    <button class="cta-button primary large" onclick="window.open('https://app.akeli.com', '_blank')">
+                        Accéder à l'application
+                    </button>
+                    <button class="cta-button secondary large" onclick="scrollToSignup()">
+                        Rejoindre la communauté
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Colonne Droite - Image -->
+            <div class="partage-visual">
+                <div class="partage-image-stack">
+                    <img src="pexels-august-de-richelieu-4262012.jpg" alt="Partage en famille" class="partage-img">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+    <!-- Lifestyle Gallery - New Section -->
+    <section class="lifestyle-gallery">
+        <div class="container">
+            <h2 class="section-title">Rejoignez des milliers de personnes qui transforment leur alimentation</h2>
+            <p class="section-subtitle">Sans renoncer à leur culture, sans perdre leurs racines</p>
+            
+            <div class="gallery-grid">
+                <div class="gallery-item large">
+                    <img src="pexels-askar-abayev-6193428.jpg" alt="Famille en vidéoconférence pendant le repas">
+                    <div class="gallery-overlay">
+                        <p class="gallery-text">Restez connecté avec vos proches</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="pexels-greta-hoffman-9705844_-_Copie.jpg" alt="Préparation de cuisine africaine">
+                    <div class="gallery-overlay">
+                        <p class="gallery-text">Cuisinez avec confiance</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="pexels-picha-6210449__1_.jpg" alt="Plats africains traditionnels">
+                    <div class="gallery-overlay">
+                        <p class="gallery-text">Savourez vos plats préférés</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="pexels-askar-abayev-6193564.jpg" alt="Couple partageant un repas">
+                    <div class="gallery-overlay">
+                        <p class="gallery-text">Partagez des moments précieux</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <h2 class="section-title">Offre de Lancement Akeli</h2>
+            <p class="section-subtitle">Profitez d'un tarif exceptionnel réservé aux premiers utilisateurs</p>
+            
+            <div class="pricing-card">
+                <div class="pricing-badge">🎉 Offre Limitée</div>
+                <div class="pricing-header">
+                    <h3 class="pricing-plan">Plan Early Bird</h3>
+                    <div class="pricing-amount">
+                        <span class="price-first">4,50€</span>
+                        <span class="price-period">le premier mois</span>
+                    </div>
+                    <div class="pricing-then">
+                        Puis <span class="price-regular">9€/mois</span>
+                    </div>
+                </div>
+                
+                <ul class="pricing-features">
+                    <li>✓ Accès illimité à toutes les fonctionnalités</li>
+                    <li>✓ Base de données complète de recettes africaines</li>
+                    <li>✓ Suivi nutritionnel personnalisé</li>
+                    <li>✓ Coach IA disponible 24/7</li>
+                    <li>✓ Plans de repas générés automatiquement</li>
+                    <li>✓ Mises à jour gratuites à vie</li>
+                    <li>✓ Support priorité early bird</li>
+                    <li>✓ Sans engagement - Annulez quand vous voulez</li>
+                </ul>
+                
+                <button class="cta-button primary large full-width" onclick="scrollToSignup()">
+                    Rejoindre maintenant
+                </button>
+                
+                <p class="pricing-note">
+                    🔥 Plus que <strong>1000 places</strong> disponibles à ce tarif
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <h2 class="section-title">Questions fréquentes</h2>
+            
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h3 class="faq-question">L'app est disponible sur iOS et Android ?</h3>
+                    <p class="faq-answer">
+                        Oui, Akeli sera disponible sur App Store et Google Play dès le lancement. 
+                        Inscrivez-vous à la liste d'attente pour être notifié en premier.
+                    </p>
+                </div>
+
+                <div class="faq-item">
+                    <h3 class="faq-question">Puis-je annuler à tout moment ?</h3>
+                    <p class="faq-answer">
+                        Absolument ! Akeli fonctionne sans engagement. Vous pouvez annuler votre 
+                        abonnement à tout moment depuis l'application, en un clic.
+                    </p>
+                </div>
+
+                <div class="faq-item">
+                    <h3 class="faq-question">Combien de recettes sont disponibles ?</h3>
+                    <p class="faq-answer">
+                        Notre base de données contient des centaines de recettes africaines authentiques 
+                        provenant de tout le continent. De nouvelles recettes sont ajoutées chaque semaine 
+                        par notre communauté de créateurs.
+                    </p>
+                </div>
+
+                <div class="faq-item">
+                    <h3 class="faq-question">Comment l'IA comprend ma cuisine ?</h3>
+                    <p class="faq-answer">
+                        Contrairement aux apps généralistes, Akeli a été spécifiquement entraîné sur 
+                        la cuisine africaine. Notre base de données inclut les valeurs nutritionnelles 
+                        précises des plats traditionnels et leurs ingrédients spécifiques.
+                    </p>
+                </div>
+
+                <div class="faq-item">
+                    <h3 class="faq-question">L'offre de lancement expire quand ?</h3>
+                    <p class="faq-answer">
+                        Le tarif early bird de 4,50€ le premier mois est limité aux 1000 premiers 
+                        utilisateurs. Une fois cette limite atteinte, le prix passera directement à 9€/mois 
+                        dès le premier mois. Ne manquez pas cette opportunité !
+                    </p>
+                </div>
+
+                <div class="faq-item">
+                    <h3 class="faq-question">Mes données sont-elles sécurisées ?</h3>
+                    <p class="faq-answer">
+                        Absolument. Toutes vos données sont chiffrées et stockées de manière sécurisée. 
+                        Nous ne vendons jamais vos informations personnelles et respectons strictement 
+                        le RGPD européen.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA / Signup with Background -->
+    <section class="signup-v2" id="signup">
+        <div class="signup-overlay"></div>
+        <div class="container">
+            <div class="signup-content">
+                <h2 class="signup-title">Prêt à transformer votre alimentation sans perdre vos racines ?</h2>
+                <p class="signup-subtitle">
+                    Rejoignez les milliers de personnes qui ont décidé de prendre leur santé en main 
+                    tout en préservant leur culture culinaire.
+                </p>
+                
+                <!-- EMAIL SIGNUP FORM -->
+                <form class="signup-form" id="emailForm" action="https://formspree.io/f/mldoqddq" method="POST">
+                        <input 
+                            type="email" 
+                            name="email" 
+                            class="form-input" 
+                            placeholder="Votre adresse email"
+                            required
+                        >
+                        <button type="submit" class="cta-button primary large">
+                            Rejoindre la liste d'attente
+                        </button>
+                    </div>
+                    <p class="form-note">
+                        🎁 En vous inscrivant maintenant, vous recevrez un bonus exclusif au lancement
+                    </p>
+                </form>
+
+                <div class="signup-stats">
+                    <div class="stat">
+                        <div class="stat-number">1000+</div>
+                        <div class="stat-label">Places disponibles</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Recettes africaines</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Support IA</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="https://jfbfymiyqlyciapfloug.supabase.co/storage/v1/object/public/website/20250905_1032_Feuille%20et%20Fond%20Vert_remix_01k4cfzf80es2vmmcjs01fdyvt.png" alt="Akeli Logo" class="footer-logo-img">
+                    <span class="footer-logo-text">Akeli</span>
+                </div>
+                <div class="footer-text">
+                    <p>&copy; 2025 Akeli. Tous droits réservés.</p>
+                    <p class="footer-tagline">Votre nutrition, vos racines, votre succès.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
