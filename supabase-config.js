@@ -6,10 +6,10 @@
 
 const SUPABASE_CONFIG = {
     // Votre URL Supabase (ex: https://xxxxx.supabase.co)
-    url: 'YOUR_SUPABASE_URL',
+    url: 'https://jfbfymiyqlyciapfloug.supabase.co',
 
     // Votre clé publique anon (safe pour le frontend)
-    anonKey: 'YOUR_SUPABASE_ANON_KEY'
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmYmZ5bWl5cWx5Y2lhcGZsb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1MzcwMDIsImV4cCI6MjA2MDExMzAwMn0.zm4ioJc07IAec0e5-0PsWyAXDAp1U42NA1kReoRdhbU'
 };
 
 // ========================================
