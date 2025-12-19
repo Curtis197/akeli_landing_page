@@ -2,31 +2,19 @@
    AKELI LANDING PAGE - JAVASCRIPT
    ======================================== */
 
-// Smooth scroll to sections
-function scrollToHow() {
-    document.getElementById('how-it-works').scrollIntoView({ 
-        behavior: 'smooth' 
-    });
-}
-
-function scrollToSignup() {
-    document.getElementById('signup').scrollIntoView({ 
-        behavior: 'smooth' 
-    });
-}
-
 // Initialize Supabase client
-let supabase = null;
+let supabaseClient = null;
 
 // Email form submission handling with Supabase
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Supabase client if config is available
     if (typeof SUPABASE_CONFIG !== 'undefined' &&
         SUPABASE_CONFIG.url !== 'YOUR_SUPABASE_URL' &&
-        SUPABASE_CONFIG.anonKey !== 'YOUR_SUPABASE_ANON_KEY') {
+        SUPABASE_CONFIG.anonKey !== 'YOUR_SUPABASE_ANON_KEY' &&
+        typeof window.supabase !== 'undefined') {
 
-        const { createClient } = supabase;
-        supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        const { createClient } = window.supabase;
+        supabaseClient = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         console.log('✅ Supabase client initialisé');
     } else {
         console.warn('⚠️ Configuration Supabase manquante. Veuillez mettre à jour supabase-config.js');
@@ -43,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const originalButtonText = submitButton.innerHTML;
 
             // Check if Supabase is configured
-            if (!supabase) {
+            if (!supabaseClient) {
                 console.error('❌ Supabase non configuré. Veuillez mettre à jour supabase-config.js');
                 showErrorMessage('Configuration manquante. Veuillez contacter l\'administrateur.');
                 return;
@@ -65,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             try {
                 // Insert email into Supabase waitlist table
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('waitlist')
                     .insert([
                         { email: email }
