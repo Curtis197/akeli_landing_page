@@ -15,55 +15,93 @@ function scrollToSignup() {
     });
 }
 
-// Email form submission handling
+// Initialize Supabase client
+let supabase = null;
+
+// Email form submission handling with Supabase
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Supabase client if config is available
+    if (typeof SUPABASE_CONFIG !== 'undefined' &&
+        SUPABASE_CONFIG.url !== 'YOUR_SUPABASE_URL' &&
+        SUPABASE_CONFIG.anonKey !== 'YOUR_SUPABASE_ANON_KEY') {
+
+        const { createClient } = supabase;
+        supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        console.log('✅ Supabase client initialisé');
+    } else {
+        console.warn('⚠️ Configuration Supabase manquante. Veuillez mettre à jour supabase-config.js');
+    }
+
     const emailForm = document.getElementById('emailForm');
-    
+
     if (emailForm) {
-        emailForm.addEventListener('submit', function(e) {
+        emailForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
+            // Get submit button to show loading state
+            const submitButton = emailForm.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+
+            // Check if Supabase is configured
+            if (!supabase) {
+                console.error('❌ Supabase non configuré. Veuillez mettre à jour supabase-config.js');
+                showErrorMessage('Configuration manquante. Veuillez contacter l\'administrateur.');
+                return;
+            }
+
             // Get email value
             const emailInput = emailForm.querySelector('input[name="email"]');
-            const email = emailInput.value;
-            
-            // TODO: Replace this with your actual form submission
-            // Options:
-            // 1. Formspree: action="https://formspree.io/f/YOUR_FORM_ID"
-            // 2. Mailto: action="mailto:your@email.com"
-            // 3. Custom backend endpoint
-            // 4. Supabase function
-            
-            console.log('Email submitted:', email);
-            
-            // Show success message
-            showSuccessMessage();
-            
-            // Reset form
-            emailForm.reset();
-            
-            // Example: If using Formspree, uncomment below:
-            /*
-            fetch('https://formspree.io/f/YOUR_FORM_ID', {
-                method: 'POST',
-                body: new FormData(emailForm),
-                headers: {
-                    'Accept': 'application/json'
-                }
-            }).then(response => {
-                if (response.ok) {
+            const email = emailInput.value.trim();
+
+            // Validate email
+            if (!email || !isValidEmail(email)) {
+                showErrorMessage('Veuillez entrer une adresse email valide.');
+                return;
+            }
+
+            // Show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = '⏳ Inscription en cours...';
+
+            try {
+                // Insert email into Supabase waitlist table
+                const { data, error } = await supabase
+                    .from('waitlist')
+                    .insert([
+                        { email: email }
+                    ])
+                    .select();
+
+                if (error) {
+                    // Check if email already exists
+                    if (error.code === '23505') {
+                        showErrorMessage('Cette adresse email est déjà inscrite ! 🎉');
+                    } else {
+                        console.error('Erreur Supabase:', error);
+                        showErrorMessage('Une erreur s\'est produite. Veuillez réessayer.');
+                    }
+                } else {
+                    console.log('✅ Email ajouté à la liste d\'attente:', email);
                     showSuccessMessage();
                     emailForm.reset();
-                } else {
-                    showErrorMessage();
                 }
-            }).catch(error => {
-                showErrorMessage();
-            });
-            */
+            } catch (error) {
+                console.error('Erreur lors de l\'inscription:', error);
+                showErrorMessage('Une erreur s\'est produite. Veuillez réessayer.');
+            } finally {
+                // Restore button state
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
+            }
         });
     }
 });
+
+// Email validation helper
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
 
 // Show success message
 function showSuccessMessage() {
@@ -103,9 +141,11 @@ function showSuccessMessage() {
 }
 
 // Show error message
-function showErrorMessage() {
+function showErrorMessage(customMessage = null) {
     const formGroup = document.querySelector('.form-group');
-    
+
+    const message = customMessage || '⚠ Une erreur s\'est produite. Veuillez réessayer.';
+
     // Create error message
     const errorMsg = document.createElement('div');
     errorMsg.className = 'error-message';
@@ -119,19 +159,19 @@ function showErrorMessage() {
             margin-top: 1rem;
             animation: fadeIn 0.5s ease-out;
         ">
-            ⚠ Une erreur s'est produite. Veuillez réessayer.
+            ${message}
         </p>
     `;
-    
+
     // Remove existing error message if any
     const existingMsg = document.querySelector('.error-message');
     if (existingMsg) {
         existingMsg.remove();
     }
-    
+
     // Add new error message
     formGroup.parentNode.insertBefore(errorMsg, formGroup.nextSibling);
-    
+
     // Remove message after 5 seconds
     setTimeout(() => {
         errorMsg.remove();

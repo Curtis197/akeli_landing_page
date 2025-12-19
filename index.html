@@ -507,11 +507,13 @@
                 </p>
                 
                 <!-- EMAIL SIGNUP FORM -->
-                <form class="signup-form" id="emailForm" action="https://formspree.io/f/mldoqddq" method="POST">
-                        <input 
-                            type="email" 
-                            name="email" 
-                            class="form-input" 
+                <form class="signup-form" id="emailForm">
+                    <div class="form-group">
+                        <input
+                            type="email"
+                            name="email"
+                            id="emailInput"
+                            class="form-input"
                             placeholder="Votre adresse email"
                             required
                         >
@@ -563,6 +565,13 @@
         </div>
     </footer>
 
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Supabase Configuration -->
+    <script src="supabase-config.js"></script>
+
+    <!-- Main Script -->
     <script src="script.js"></script>
 </body>
 </html>
