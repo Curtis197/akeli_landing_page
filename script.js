@@ -2,6 +2,29 @@
    AKELI LANDING PAGE - JAVASCRIPT
    ======================================== */
 
+// Smooth scroll to top (hero section)
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+// Smooth scroll to sections
+function scrollToHow() {
+    document.getElementById('how-it-works').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+function scrollToSignup() {
+    document.getElementById('signup').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
 // Initialize Supabase client
 let supabaseClient = null;
 
@@ -273,18 +296,3 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-
-// Smooth scroll to sections
-function scrollToHow() {
-    document.getElementById('how-it-works').scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-    });
-}
-
-function scrollToSignup() {
-    document.getElementById('signup').scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-    });
-}
