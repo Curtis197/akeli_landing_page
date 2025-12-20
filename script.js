@@ -18,6 +18,7 @@ function scrollToHow() {
     });
 }
 
+// Scroll to creators waitlist signup
 function scrollToSignup() {
     document.getElementById('signup').scrollIntoView({
         behavior: 'smooth',
@@ -25,24 +26,18 @@ function scrollToSignup() {
     });
 }
 
-// Scroll to signup and pre-select creator option
+// Scroll to creators waitlist and focus on email input
 function scrollToCreatorSignup() {
     document.getElementById('signup').scrollIntoView({
         behavior: 'smooth',
         block: 'start'
     });
 
-    // After scroll animation, pre-select "creator" and focus
+    // After scroll animation, focus on email input
     setTimeout(() => {
-        const userTypeSelect = document.getElementById('userTypeSelect');
-        if (userTypeSelect) {
-            userTypeSelect.value = 'creator';
-            userTypeSelect.focus();
-            // Add a subtle highlight animation
-            userTypeSelect.style.outline = '2px solid #3BB78F';
-            setTimeout(() => {
-                userTypeSelect.style.outline = '';
-            }, 2000);
+        const emailInput = document.getElementById('emailInput');
+        if (emailInput) {
+            emailInput.focus();
         }
     }, 800);
 }
@@ -82,21 +77,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Get email and user type values
+            // Get email value (form is now creator-only)
             const emailInput = emailForm.querySelector('input[name="email"]');
-            const userTypeSelect = emailForm.querySelector('select[name="user_type"]');
             const email = emailInput.value.trim();
-            const userType = userTypeSelect.value;
 
             // Validate email
             if (!email || !isValidEmail(email)) {
                 showErrorMessage('Veuillez entrer une adresse email valide.');
-                return;
-            }
-
-            // Validate user type
-            if (!userType) {
-                showErrorMessage('Veuillez sélectionner votre profil.');
                 return;
             }
 
@@ -105,13 +92,13 @@ document.addEventListener('DOMContentLoaded', function() {
             submitButton.innerHTML = '⏳ Inscription en cours...';
 
             try {
-                // Insert email and user type into Supabase waitlist table
+                // Insert email as creator into Supabase waitlist table
                 const { data, error } = await supabaseClient
                     .from('waitlist')
                     .insert([
                         {
                             email: email,
-                            user_type: userType
+                            user_type: 'creator'
                         }
                     ])
                     .select();
