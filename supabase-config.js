@@ -20,6 +20,7 @@ const SUPABASE_CONFIG = {
 // CREATE TABLE waitlist (
 //   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
 //   email text NOT NULL UNIQUE,
+//   user_type text NOT NULL CHECK (user_type IN ('user', 'creator')),
 //   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 // );
 //

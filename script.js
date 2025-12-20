@@ -25,6 +25,28 @@ function scrollToSignup() {
     });
 }
 
+// Scroll to signup and pre-select creator option
+function scrollToCreatorSignup() {
+    document.getElementById('signup').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+
+    // After scroll animation, pre-select "creator" and focus
+    setTimeout(() => {
+        const userTypeSelect = document.getElementById('userTypeSelect');
+        if (userTypeSelect) {
+            userTypeSelect.value = 'creator';
+            userTypeSelect.focus();
+            // Add a subtle highlight animation
+            userTypeSelect.style.outline = '2px solid #3BB78F';
+            setTimeout(() => {
+                userTypeSelect.style.outline = '';
+            }, 2000);
+        }
+    }, 800);
+}
+
 // Initialize Supabase client
 let supabaseClient = null;
 
@@ -60,13 +82,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Get email value
+            // Get email and user type values
             const emailInput = emailForm.querySelector('input[name="email"]');
+            const userTypeSelect = emailForm.querySelector('select[name="user_type"]');
             const email = emailInput.value.trim();
+            const userType = userTypeSelect.value;
 
             // Validate email
             if (!email || !isValidEmail(email)) {
                 showErrorMessage('Veuillez entrer une adresse email valide.');
+                return;
+            }
+
+            // Validate user type
+            if (!userType) {
+                showErrorMessage('Veuillez sélectionner votre profil.');
                 return;
             }
 
@@ -75,11 +105,14 @@ document.addEventListener('DOMContentLoaded', function() {
             submitButton.innerHTML = '⏳ Inscription en cours...';
 
             try {
-                // Insert email into Supabase waitlist table
+                // Insert email and user type into Supabase waitlist table
                 const { data, error } = await supabaseClient
                     .from('waitlist')
                     .insert([
-                        { email: email }
+                        {
+                            email: email,
+                            user_type: userType
+                        }
                     ])
                     .select();
 

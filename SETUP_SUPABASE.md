@@ -16,6 +16,7 @@ Ce guide vous explique comment configurer votre base de données Supabase pour c
 CREATE TABLE waitlist (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   email text NOT NULL UNIQUE,
+  user_type text NOT NULL CHECK (user_type IN ('user', 'creator')),
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -24,6 +25,19 @@ CREATE INDEX idx_waitlist_email ON waitlist(email);
 
 -- Créer un index sur created_at pour trier par date
 CREATE INDEX idx_waitlist_created_at ON waitlist(created_at DESC);
+
+-- Créer un index sur user_type pour filtrer par type d'utilisateur
+CREATE INDEX idx_waitlist_user_type ON waitlist(user_type);
+```
+
+**Note importante :** Si vous aviez déjà créé la table `waitlist` sans la colonne `user_type`, exécutez cette requête pour ajouter la colonne :
+
+```sql
+-- Ajouter la colonne user_type à une table existante
+ALTER TABLE waitlist ADD COLUMN user_type text NOT NULL DEFAULT 'user' CHECK (user_type IN ('user', 'creator'));
+
+-- Créer l'index sur user_type
+CREATE INDEX idx_waitlist_user_type ON waitlist(user_type);
 ```
 
 ### 2. Configurer les politiques RLS (Row Level Security)
