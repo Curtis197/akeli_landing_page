@@ -1,0 +1,149 @@
+{
+  "nav": {
+    "creators": "Creators",
+    "recipes": "Recipes",
+    "about": "About",
+    "login": "Log in",
+    "signup": "Become a creator",
+    "dashboard": "My space",
+    "myRecipes": "My recipes",
+    "profile": "My profile",
+    "chat": "Messages",
+    "settings": "Settings",
+    "logout": "Log out"
+  },
+  "landing": {
+    "hero": {
+      "title": "Eat as you are.",
+      "subtitle": "Recipes created by creators from your culture, adapted to your life today.",
+      "ctaDownload": "Download the app",
+      "ctaCreator": "Become a creator"
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "step1": {
+        "title": "Discover creators",
+        "description": "Creators from your culture share their recipes."
+      },
+      "step2": {
+        "title": "Cook with the app",
+        "description": "Access full recipes in the application."
+      },
+      "step3": {
+        "title": "Share your meals",
+        "description": "Build your cooking routine with your community."
+      }
+    },
+    "pricing": {
+      "title": "Simple pricing",
+      "price": "€3/month",
+      "description": "Access to all recipes on the platform."
+    }
+  },
+  "creators": {
+    "pageTitle": "Akeli Creators",
+    "filters": {
+      "region": "Region",
+      "specialty": "Specialty",
+      "all": "All"
+    },
+    "stats": {
+      "recipes": "recipes",
+      "consumers": "consumers"
+    },
+    "fanBadge": "Fan Mode",
+    "viewProfile": "View profile"
+  },
+  "recipe": {
+    "by": "By",
+    "time": "Time",
+    "difficulty": "Difficulty",
+    "calories": "Calories",
+    "portions": "Portions",
+    "tags": "Tags",
+    "appOnly": "This recipe is only available in the Akeli app",
+    "downloadApp": "Download the app",
+    "mainIngredients": "Main ingredients",
+    "moreIngredients": "and {{count}} more ingredients"
+  },
+  "auth": {
+    "login": {
+      "title": "Creator login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Log in",
+      "noAccount": "Not a creator yet?",
+      "signup": "Join Akeli"
+    },
+    "signup": {
+      "title": "Become an Akeli creator",
+      "name": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Create my account",
+      "hasAccount": "Already have an account?",
+      "login": "Log in"
+    }
+  },
+  "dashboard": {
+    "title": "My dashboard",
+    "revenue": "Revenue",
+    "consumers": "Consumers",
+    "recipes": "Published recipes",
+    "thisMonth": "This month",
+    "topRecipes": "Top recipes",
+    "aiInsights": "Explain my stats",
+    "fanMode": {
+      "title": "Fan Mode",
+      "fans": "Fans",
+      "revenue": "Fan Mode revenue",
+      "unlockAt": "Available from 30 published recipes",
+      "progress": "{{count}}/30 recipes"
+    }
+  },
+  "recipe_form": {
+    "new": "New recipe",
+    "edit": "Edit recipe",
+    "steps": {
+      "basic": "Basic info",
+      "ingredients": "Ingredients",
+      "steps": "Steps",
+      "nutrition": "Nutrition",
+      "images": "Images",
+      "publish": "Tags & Publish"
+    },
+    "fields": {
+      "title": "Title",
+      "description": "Description",
+      "region": "Culinary region",
+      "type": "Meal type",
+      "difficulty": "Difficulty",
+      "prepTime": "Prep time",
+      "cookTime": "Cook time",
+      "portions": "Number of portions",
+      "hours": "hours",
+      "minutes": "minutes"
+    },
+    "actions": {
+      "saveDraft": "Save draft",
+      "publish": "Publish",
+      "next": "Next",
+      "previous": "Previous"
+    },
+    "autoSave": "Auto-saving..."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "draft": "Draft",
+    "published": "Published",
+    "search": "Search..."
+  }
+}

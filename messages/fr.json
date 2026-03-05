@@ -1,0 +1,149 @@
+{
+  "nav": {
+    "creators": "Créateurs",
+    "recipes": "Recettes",
+    "about": "À propos",
+    "login": "Connexion",
+    "signup": "Devenir créateur",
+    "dashboard": "Mon espace",
+    "myRecipes": "Mes recettes",
+    "profile": "Mon profil",
+    "chat": "Messages",
+    "settings": "Paramètres",
+    "logout": "Déconnexion"
+  },
+  "landing": {
+    "hero": {
+      "title": "Mangez comme vous êtes.",
+      "subtitle": "Des recettes créées par des créateurs de votre culture, adaptées à votre vie d'aujourd'hui.",
+      "ctaDownload": "Télécharger l'app",
+      "ctaCreator": "Devenir créateur"
+    },
+    "howItWorks": {
+      "title": "Comment ça marche",
+      "step1": {
+        "title": "Découvrez des créateurs",
+        "description": "Des créateurs de votre culture partagent leurs recettes."
+      },
+      "step2": {
+        "title": "Cuisinez avec l'app",
+        "description": "Accédez aux recettes complètes dans l'application."
+      },
+      "step3": {
+        "title": "Partagez vos repas",
+        "description": "Construisez votre routine culinaire avec votre communauté."
+      }
+    },
+    "pricing": {
+      "title": "Un abonnement simple",
+      "price": "3€/mois",
+      "description": "Accès à toutes les recettes de la plateforme."
+    }
+  },
+  "creators": {
+    "pageTitle": "Créateurs Akeli",
+    "filters": {
+      "region": "Région",
+      "specialty": "Spécialité",
+      "all": "Tous"
+    },
+    "stats": {
+      "recipes": "recettes",
+      "consumers": "consommateurs"
+    },
+    "fanBadge": "Mode Fan",
+    "viewProfile": "Voir le profil"
+  },
+  "recipe": {
+    "by": "Par",
+    "time": "Temps",
+    "difficulty": "Difficulté",
+    "calories": "Calories",
+    "portions": "Portions",
+    "tags": "Tags",
+    "appOnly": "Cette recette est disponible uniquement dans l'app Akeli",
+    "downloadApp": "Télécharger l'app",
+    "mainIngredients": "Ingrédients principaux",
+    "moreIngredients": "et {{count}} autres ingrédients"
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion créateur",
+      "email": "Email",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "noAccount": "Pas encore créateur ?",
+      "signup": "Rejoindre Akeli"
+    },
+    "signup": {
+      "title": "Devenir créateur Akeli",
+      "name": "Nom complet",
+      "email": "Email",
+      "password": "Mot de passe",
+      "submit": "Créer mon compte",
+      "hasAccount": "Déjà un compte ?",
+      "login": "Se connecter"
+    }
+  },
+  "dashboard": {
+    "title": "Mon dashboard",
+    "revenue": "Revenus",
+    "consumers": "Consommateurs",
+    "recipes": "Recettes publiées",
+    "thisMonth": "Ce mois",
+    "topRecipes": "Meilleures recettes",
+    "aiInsights": "Explique-moi mes stats",
+    "fanMode": {
+      "title": "Mode Fan",
+      "fans": "Fans",
+      "revenue": "Revenus Mode Fan",
+      "unlockAt": "Disponible à partir de 30 recettes publiées",
+      "progress": "{{count}}/30 recettes"
+    }
+  },
+  "recipe_form": {
+    "new": "Nouvelle recette",
+    "edit": "Modifier la recette",
+    "steps": {
+      "basic": "Infos de base",
+      "ingredients": "Ingrédients",
+      "steps": "Étapes",
+      "nutrition": "Nutrition",
+      "images": "Images",
+      "publish": "Tags & Publication"
+    },
+    "fields": {
+      "title": "Titre",
+      "description": "Description",
+      "region": "Région culinaire",
+      "type": "Type de repas",
+      "difficulty": "Difficulté",
+      "prepTime": "Temps de préparation",
+      "cookTime": "Temps de cuisson",
+      "portions": "Nombre de portions",
+      "hours": "heures",
+      "minutes": "minutes"
+    },
+    "actions": {
+      "saveDraft": "Sauvegarder le brouillon",
+      "publish": "Publier",
+      "next": "Suivant",
+      "previous": "Précédent"
+    },
+    "autoSave": "Sauvegarde automatique..."
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "publish": "Publier",
+    "unpublish": "Dépublier",
+    "draft": "Brouillon",
+    "published": "Publié",
+    "search": "Rechercher..."
+  }
+}
