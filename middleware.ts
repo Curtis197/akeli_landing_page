@@ -1,8 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server";
-import createIntlMiddleware from "next-intl/middleware";
-import { routing } from "./lib/i18n/routing";
-
-const intlMiddleware = createIntlMiddleware(routing);
 
 const CREATOR_PATHS = ["/dashboard", "/chat", "/profile", "/fan-mode", "/settings"];
 
@@ -13,7 +9,7 @@ function hasSupabaseSession(request: NextRequest): boolean {
   );
 }
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Strip locale prefix to get the actual path
@@ -26,8 +22,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Run i18n middleware
-  return intlMiddleware(request);
+  return NextResponse.next();
 }
 
 export const config = {
