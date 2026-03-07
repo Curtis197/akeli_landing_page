@@ -196,6 +196,7 @@ export default function RecipesPage() {
 // ─── RecipeCardComponent ──────────────────────────────────────────────────────
 
 function RecipeCardComponent({ recipe }: { recipe: RecipeCard }) {
+  const tCommon = useTranslations("common");
   const totalMin = (recipe.prep_time_min ?? 0) + (recipe.cook_time_min ?? 0);
   const timeLabel =
     totalMin >= 60
