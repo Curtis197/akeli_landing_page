@@ -39,21 +39,58 @@
       "title": "Simple pricing",
       "price": "€3/month",
       "description": "Access to all recipes on the platform."
+    },
+    "faqTitle": "Frequently asked questions",
+    "footer": {
+      "about": "About",
+      "becomeCreator": "Become a creator",
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "legal": "Legal notice"
     }
   },
   "creators": {
     "pageTitle": "Akeli Creators",
+    "subtitle": "Discover culinary creators from the African diaspora.",
+    "searchPlaceholder": "Search a creator…",
+    "allRegions": "All regions",
+    "allSpecialties": "All specialties",
+    "notFound": "No creator found",
+    "notFoundCreator": "Creator not found",
+    "noRecipes": "No published recipes yet.",
+    "defaultName": "Akeli Creator",
+    "backToCatalog": "← Back to catalog",
+    "recipesBy": "Recipes by",
+    "ctaTitle": "Access full recipes in the Akeli app",
+    "ctaSubtitle": "Detailed ingredients, step-by-step instructions and more in the mobile app.",
     "filters": {
       "region": "Region",
       "specialty": "Specialty",
       "all": "All"
     },
     "stats": {
-      "recipes": "recipes",
+      "recipes": "{count, plural, one {recipe} other {recipes}}",
+      "recipesPublished": "{count, plural, one {published recipe} other {published recipes}}",
       "consumers": "consumers"
     },
     "fanBadge": "Fan Mode",
     "viewProfile": "View profile"
+  },
+  "recipes": {
+    "pageTitle": "Recipe Catalog",
+    "subtitle": "Explore recipes from creators of the African diaspora. Access full recipes in the Akeli app.",
+    "searchPlaceholder": "Search a recipe…",
+    "allRegions": "All regions",
+    "allDifficulties": "Any difficulty",
+    "notFound": "No recipe found",
+    "ctaTitle": "Access full recipes",
+    "ctaSubtitle": "Detailed ingredients and step-by-step instructions in the Akeli app — €3/month.",
+    "count": "{count, plural, one {recipe} other {recipes}}",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    }
   },
   "recipe": {
     "by": "By",
@@ -63,28 +100,87 @@
     "portions": "Portions",
     "tags": "Tags",
     "appOnly": "This recipe is only available in the Akeli app",
-    "downloadApp": "Download the app",
+    "downloadApp": "Download the Akeli app",
     "mainIngredients": "Main ingredients",
-    "moreIngredients": "and {{count}} more ingredients"
+    "moreIngredients": "and {{count}} more ingredients",
+    "notFound": "Recipe not found",
+    "backToCatalog": "← Back to catalog",
+    "porkFree": "Pork-free",
+    "nutritionTitle": "Nutritional values",
+    "proteins": "Proteins",
+    "carbs": "Carbs",
+    "fats": "Fats",
+    "appOnlyTitle": "Recipe available in the Akeli app",
+    "appOnlySubtitle": "Access full ingredients and detailed preparation steps in the mobile app — €3/month only.",
+    "platforms": "Available on iOS and Android",
+    "viewAllFrom": "See all dishes by"
   },
   "auth": {
     "login": {
       "title": "Creator login",
+      "subtitle": "Access your Akeli creator space.",
       "email": "Email",
+      "emailPlaceholder": "your@email.com",
       "password": "Password",
       "submit": "Log in",
+      "loading": "Logging in…",
+      "error": "Incorrect email or password.",
       "noAccount": "Not a creator yet?",
       "signup": "Join Akeli"
     },
     "signup": {
       "title": "Become an Akeli creator",
+      "subtitle": "Share your recipes and join the community.",
       "name": "Full name",
+      "namePlaceholder": "Your name or username",
       "email": "Email",
+      "emailPlaceholder": "your@email.com",
       "password": "Password",
+      "passwordPlaceholder": "8 characters minimum",
       "submit": "Create my account",
+      "loading": "Creating account…",
       "hasAccount": "Already have an account?",
-      "login": "Log in"
+      "login": "Log in",
+      "checkEmail": "Check your inbox",
+      "checkEmailHint": "A confirmation link was sent to {email}. Click it to activate your creator account.",
+      "backToLogin": "Back to login"
     }
+  },
+  "fanMode": {
+    "lockedTitle": "Unlock Fan Mode",
+    "lockedDescription": "Fan Mode lets you activate a monthly subscription for your most loyal fans. Generate recurring revenue by publishing at least {count} recipes.",
+    "progress": "Progress",
+    "recipesPublished": "published recipes",
+    "remaining": "{count, plural, one {recipe remaining} other {recipes remaining}} before unlock.",
+    "createRecipe": "+ Create a recipe",
+    "active": "Active ⭐",
+    "activeFans": "Active fans",
+    "revenueThisMonth": "Fan revenue this month",
+    "revenueLastMonth": "Fan revenue last month",
+    "vsPrevMonth": "vs previous month",
+    "chart": "Fan revenue — last 6 months",
+    "paymentHistory": "Payment history",
+    "noPayments": "No payments recorded yet.",
+    "period": "Period",
+    "amount": "Amount",
+    "status": "Status",
+    "payout": {
+      "paid": "Paid",
+      "pending": "Pending",
+      "failed": "Failed"
+    },
+    "benefits": {
+      "0": "Monthly subscription for your fans from €3/month",
+      "1": "Recurring and predictable revenue",
+      "2": "\"Fan Mode\" badge on your public profile",
+      "3": "Access to advanced fan statistics"
+    }
+  },
+  "chat": {
+    "title": "Messages",
+    "noConversations": "No conversations",
+    "noConversationsHint": "Your fans will be able to contact you from the mobile app.",
+    "yesterday": "Yesterday"
   },
   "dashboard": {
     "title": "My dashboard",
@@ -145,6 +241,9 @@
     "unpublish": "Unpublish",
     "draft": "Draft",
     "published": "Published",
-    "search": "Search..."
+    "search": "Search...",
+    "reset": "✕ Reset",
+    "tryOtherFilters": "Try other filters.",
+    "defaultCreator": "Akeli Creator"
   }
 }

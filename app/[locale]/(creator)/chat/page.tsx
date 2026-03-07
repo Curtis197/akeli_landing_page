@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 
@@ -19,6 +20,7 @@ interface ConversationItem {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ChatPage() {
+  const t = useTranslations("chat");
   const supabase = createClient();
   const { creator } = useAuthStore();
 
@@ -104,7 +106,7 @@ export default function ChatPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Messages</h1>
+      <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
 
       {loading ? (
         <div className="space-y-3">
@@ -128,6 +130,7 @@ export default function ChatPage() {
 // ─── ConversationRow ──────────────────────────────────────────────────────────
 
 function ConversationRow({ conv }: { conv: ConversationItem }) {
+  const formatTime = useFormatTime();
   const timeLabel = conv.lastMessageAt
     ? formatTime(conv.lastMessageAt)
     : formatTime(conv.created_at);
@@ -168,32 +171,34 @@ function ConversationRow({ conv }: { conv: ConversationItem }) {
 // ─── EmptyState ───────────────────────────────────────────────────────────────
 
 function EmptyState() {
+  const t = useTranslations("chat");
   return (
     <div className="rounded-xl border border-dashed border-border p-12 text-center space-y-3">
       <p className="text-3xl">💬</p>
-      <p className="font-semibold text-foreground">Aucune conversation</p>
-      <p className="text-sm text-muted-foreground">
-        Tes fans pourront te contacter depuis l'application mobile.
-      </p>
+      <p className="font-semibold text-foreground">{t("noConversations")}</p>
+      <p className="text-sm text-muted-foreground">{t("noConversationsHint")}</p>
     </div>
   );
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+function useFormatTime() {
+  const t = useTranslations("chat");
+  return function formatTime(dateStr: string): string {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) {
-    return date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  } else if (diffDays === 1) {
-    return "Hier";
-  } else if (diffDays < 7) {
-    return date.toLocaleDateString("fr-FR", { weekday: "short" });
-  } else {
-    return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
-  }
+    if (diffDays === 0) {
+      return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+    } else if (diffDays === 1) {
+      return t("yesterday");
+    } else if (diffDays < 7) {
+      return date.toLocaleDateString(undefined, { weekday: "short" });
+    } else {
+      return date.toLocaleDateString(undefined, { day: "2-digit", month: "2-digit" });
+    }
+  };
 }

@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
 import type { Metadata } from "next";
 import { faqData } from "@/data/faq";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
@@ -89,7 +89,7 @@ export default function LandingPage() {
       <section className="bg-secondary/40 px-4 py-20">
         <div className="max-w-2xl mx-auto space-y-8">
           <h2 className="text-2xl font-bold text-foreground text-center">
-            Questions fréquentes
+            {t("faqTitle")}
           </h2>
           <FAQAccordion items={userFAQ} expandFirst />
         </div>
@@ -101,19 +101,19 @@ export default function LandingPage() {
           <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Akeli</p>
           <nav className="flex gap-6 text-sm text-muted-foreground">
             <Link href="/about" className="hover:text-foreground transition-colors">
-              À propos
+              {t("footer.about")}
             </Link>
             <Link href="/become-creator" className="hover:text-foreground transition-colors">
-              Devenir créateur
+              {t("footer.becomeCreator")}
             </Link>
             <Link href="/legal/terms" className="hover:text-foreground transition-colors">
-              CGU
+              {t("footer.terms")}
             </Link>
             <Link href="/legal/privacy" className="hover:text-foreground transition-colors">
-              Confidentialité
+              {t("footer.privacy")}
             </Link>
             <Link href="/legal/mentions" className="hover:text-foreground transition-colors">
-              Mentions légales
+              {t("footer.legal")}
             </Link>
           </nav>
         </div>

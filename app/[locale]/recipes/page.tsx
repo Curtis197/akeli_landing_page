@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 
@@ -32,6 +33,9 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function RecipesPage() {
+  const t = useTranslations("recipes");
+  const tCommon = useTranslations("common");
+  const tLanding = useTranslations("landing");
   const supabase = createClient();
 
   const [recipes, setRecipes] = useState<RecipeCard[]>([]);
@@ -102,18 +106,15 @@ export default function RecipesPage() {
       <main className="max-w-6xl mx-auto px-4 py-10 space-y-8">
         {/* Header */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">Catalogue Recettes</h1>
-          <p className="text-muted-foreground">
-            Explorez les recettes des créateurs de la diaspora africaine.
-            Accédez aux recettes complètes dans l'app Akeli.
-          </p>
+          <h1 className="text-3xl font-bold text-foreground">{t("pageTitle")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3">
           <input
             type="text"
-            placeholder="Rechercher une recette…"
+            placeholder={t("searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-52"
@@ -123,7 +124,7 @@ export default function RecipesPage() {
             onChange={(e) => setRegionFilter(e.target.value)}
             className="px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">Toutes les régions</option>
+            <option value="">{t("allRegions")}</option>
             {allRegions.map((r) => (
               <option key={r} value={r}>{r}</option>
             ))}
@@ -133,21 +134,21 @@ export default function RecipesPage() {
             onChange={(e) => setDifficultyFilter(e.target.value)}
             className="px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">Toute difficulté</option>
-            <option value="easy">Facile</option>
-            <option value="medium">Moyen</option>
-            <option value="hard">Difficile</option>
+            <option value="">{t("allDifficulties")}</option>
+            <option value="easy">{t("difficulty.easy")}</option>
+            <option value="medium">{t("difficulty.medium")}</option>
+            <option value="hard">{t("difficulty.hard")}</option>
           </select>
           {(search || regionFilter || difficultyFilter) && (
             <button
               onClick={() => { setSearch(""); setRegionFilter(""); setDifficultyFilter(""); }}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              ✕ Réinitialiser
+              {tCommon("reset")}
             </button>
           )}
           <span className="ml-auto text-xs text-muted-foreground">
-            {displayed.length} recette{displayed.length !== 1 ? "s" : ""}
+            {t("count", { count: displayed.length })}
           </span>
         </div>
 
@@ -161,8 +162,8 @@ export default function RecipesPage() {
         ) : displayed.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border p-16 text-center space-y-3">
             <p className="text-4xl">🍽️</p>
-            <p className="font-semibold text-foreground">Aucune recette trouvée</p>
-            <p className="text-sm text-muted-foreground">Essaie d'autres filtres.</p>
+            <p className="font-semibold text-foreground">{t("notFound")}</p>
+            <p className="text-sm text-muted-foreground">{tCommon("tryOtherFilters")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -176,18 +177,14 @@ export default function RecipesPage() {
         {!loading && displayed.length > 0 && (
           <div className="rounded-2xl bg-primary/5 border border-primary/20 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-1 text-center sm:text-left">
-              <p className="font-semibold text-foreground">
-                Accède aux recettes complètes
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Ingrédients détaillés et étapes pas-à-pas dans l'app Akeli — 3€/mois.
-              </p>
+              <p className="font-semibold text-foreground">{t("ctaTitle")}</p>
+              <p className="text-sm text-muted-foreground">{t("ctaSubtitle")}</p>
             </div>
             <a
               href="#"
               className="shrink-0 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
             >
-              Télécharger l'app
+              {tLanding("hero.ctaDownload")}
             </a>
           </div>
         )}
@@ -275,7 +272,7 @@ function RecipeCardComponent({ recipe }: { recipe: RecipeCard }) {
             onClick={(e) => e.stopPropagation()}
             className="text-xs text-muted-foreground hover:text-primary transition-colors truncate"
           >
-            {recipe.creator_name ?? "Créateur Akeli"}
+            {recipe.creator_name ?? tCommon("defaultCreator")}
           </Link>
         </div>
       </div>

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 
@@ -41,6 +42,8 @@ const FAN_MODE_THRESHOLD = 30;
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CreatorProfilePage() {
+  const t = useTranslations("creators");
+  const tLanding = useTranslations("landing");
   const params = useParams();
   const creatorId = String(params.username); // username = creator ID
   const supabase = createClient();
@@ -102,9 +105,9 @@ export default function CreatorProfilePage() {
         <Navbar />
         <main className="max-w-4xl mx-auto px-4 py-20 text-center space-y-4">
           <p className="text-4xl">😕</p>
-          <h1 className="text-xl font-bold text-foreground">Créateur introuvable</h1>
+          <h1 className="text-xl font-bold text-foreground">{t("notFoundCreator")}</h1>
           <Link href="/creators" className="text-sm text-primary hover:underline">
-            ← Retour au catalogue
+            {t("backToCatalog")}
           </Link>
         </main>
       </>
@@ -143,11 +146,11 @@ export default function CreatorProfilePage() {
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl font-bold text-foreground">
-                  {creator.name ?? "Créateur Akeli"}
+                  {creator.name ?? t("defaultName")}
                 </h1>
                 {fanMode && (
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-                    ⭐ Mode Fan
+                    ⭐ {t("fanBadge")}
                   </span>
                 )}
               </div>
@@ -179,7 +182,7 @@ export default function CreatorProfilePage() {
 
             <p className="text-sm text-muted-foreground">
               <strong className="text-foreground">{creator.recipe_count}</strong>{" "}
-              recette{creator.recipe_count !== 1 ? "s" : ""} publiée{creator.recipe_count !== 1 ? "s" : ""}
+              {t("stats.recipesPublished", { count: creator.recipe_count })}
             </p>
           </div>
         </section>
@@ -187,12 +190,12 @@ export default function CreatorProfilePage() {
         {/* ── Recipes ── */}
         <section className="space-y-5">
           <h2 className="text-lg font-semibold text-foreground">
-            Recettes de {creator.name?.split(" ")[0] ?? "ce créateur"}
+            {t("recipesBy")} {creator.name?.split(" ")[0] ?? t("defaultName")}
           </h2>
 
           {recipes.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border p-12 text-center">
-              <p className="text-sm text-muted-foreground">Aucune recette publiée pour l'instant.</p>
+              <p className="text-sm text-muted-foreground">{t("noRecipes")}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -205,17 +208,13 @@ export default function CreatorProfilePage() {
 
         {/* ── App CTA ── */}
         <section className="rounded-2xl border border-border bg-card p-8 text-center space-y-4">
-          <p className="text-base font-semibold text-foreground">
-            Accède aux recettes complètes dans l'app Akeli
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Ingrédients détaillés, étapes pas-à-pas et bien plus dans l'application mobile.
-          </p>
+          <p className="text-base font-semibold text-foreground">{t("ctaTitle")}</p>
+          <p className="text-sm text-muted-foreground">{t("ctaSubtitle")}</p>
           <a
             href="#"
             className="inline-block px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
           >
-            Télécharger l'app
+            {tLanding("hero.ctaDownload")}
           </a>
         </section>
       </main>

@@ -39,21 +39,58 @@
       "title": "Un abonnement simple",
       "price": "3€/mois",
       "description": "Accès à toutes les recettes de la plateforme."
+    },
+    "faqTitle": "Questions fréquentes",
+    "footer": {
+      "about": "À propos",
+      "becomeCreator": "Devenir créateur",
+      "terms": "CGU",
+      "privacy": "Confidentialité",
+      "legal": "Mentions légales"
     }
   },
   "creators": {
     "pageTitle": "Créateurs Akeli",
+    "subtitle": "Découvrez les créateurs culinaires de la diaspora africaine.",
+    "searchPlaceholder": "Rechercher un créateur…",
+    "allRegions": "Toutes les régions",
+    "allSpecialties": "Toutes les spécialités",
+    "notFound": "Aucun créateur trouvé",
+    "notFoundCreator": "Créateur introuvable",
+    "noRecipes": "Aucune recette publiée pour l'instant.",
+    "defaultName": "Créateur Akeli",
+    "backToCatalog": "← Retour au catalogue",
+    "recipesBy": "Recettes de",
+    "ctaTitle": "Accède aux recettes complètes dans l'app Akeli",
+    "ctaSubtitle": "Ingrédients détaillés, étapes pas-à-pas et bien plus dans l'application mobile.",
     "filters": {
       "region": "Région",
       "specialty": "Spécialité",
       "all": "Tous"
     },
     "stats": {
-      "recipes": "recettes",
+      "recipes": "{count, plural, one {recette} other {recettes}}",
+      "recipesPublished": "{count, plural, one {recette publiée} other {recettes publiées}}",
       "consumers": "consommateurs"
     },
     "fanBadge": "Mode Fan",
     "viewProfile": "Voir le profil"
+  },
+  "recipes": {
+    "pageTitle": "Catalogue Recettes",
+    "subtitle": "Explorez les recettes des créateurs de la diaspora africaine. Accédez aux recettes complètes dans l'app Akeli.",
+    "searchPlaceholder": "Rechercher une recette…",
+    "allRegions": "Toutes les régions",
+    "allDifficulties": "Toute difficulté",
+    "notFound": "Aucune recette trouvée",
+    "ctaTitle": "Accède aux recettes complètes",
+    "ctaSubtitle": "Ingrédients détaillés et étapes pas-à-pas dans l'app Akeli — 3€/mois.",
+    "count": "{count, plural, one {recette} other {recettes}}",
+    "difficulty": {
+      "easy": "Facile",
+      "medium": "Moyen",
+      "hard": "Difficile"
+    }
   },
   "recipe": {
     "by": "Par",
@@ -63,28 +100,87 @@
     "portions": "Portions",
     "tags": "Tags",
     "appOnly": "Cette recette est disponible uniquement dans l'app Akeli",
-    "downloadApp": "Télécharger l'app",
+    "downloadApp": "Télécharger l'app Akeli",
     "mainIngredients": "Ingrédients principaux",
-    "moreIngredients": "et {{count}} autres ingrédients"
+    "moreIngredients": "et {{count}} autres ingrédients",
+    "notFound": "Recette introuvable",
+    "backToCatalog": "← Retour au catalogue",
+    "porkFree": "Sans porc",
+    "nutritionTitle": "Valeurs nutritionnelles",
+    "proteins": "Protéines",
+    "carbs": "Glucides",
+    "fats": "Lipides",
+    "appOnlyTitle": "Recette disponible dans l'app Akeli",
+    "appOnlySubtitle": "Accède aux ingrédients complets et aux étapes de préparation détaillées dans l'application mobile — 3€/mois seulement.",
+    "platforms": "Disponible sur iOS et Android",
+    "viewAllFrom": "Voir tous les plats de"
   },
   "auth": {
     "login": {
       "title": "Connexion créateur",
+      "subtitle": "Accède à ton espace créateur Akeli.",
       "email": "Email",
+      "emailPlaceholder": "ton@email.com",
       "password": "Mot de passe",
       "submit": "Se connecter",
+      "loading": "Connexion…",
+      "error": "Email ou mot de passe incorrect.",
       "noAccount": "Pas encore créateur ?",
       "signup": "Rejoindre Akeli"
     },
     "signup": {
       "title": "Devenir créateur Akeli",
+      "subtitle": "Partage tes recettes et rejoins la communauté.",
       "name": "Nom complet",
+      "namePlaceholder": "Ton nom ou pseudo",
       "email": "Email",
+      "emailPlaceholder": "ton@email.com",
       "password": "Mot de passe",
+      "passwordPlaceholder": "8 caractères minimum",
       "submit": "Créer mon compte",
+      "loading": "Création du compte…",
       "hasAccount": "Déjà un compte ?",
-      "login": "Se connecter"
+      "login": "Se connecter",
+      "checkEmail": "Vérifie ta boite mail",
+      "checkEmailHint": "Un lien de confirmation a été envoyé à {email}. Clique dessus pour activer ton compte créateur.",
+      "backToLogin": "Retour à la connexion"
     }
+  },
+  "fanMode": {
+    "lockedTitle": "Débloque le Mode Fan",
+    "lockedDescription": "Le Mode Fan te permet d'activer un abonnement mensuel pour tes fans les plus fidèles. Génère des revenus récurrents en publiant au moins {count} recettes.",
+    "progress": "Progression",
+    "recipesPublished": "recettes publiées",
+    "remaining": "{count, plural, one {recette restante} other {recettes restantes}} avant le déblocage.",
+    "createRecipe": "+ Créer une recette",
+    "active": "Actif ⭐",
+    "activeFans": "Fans actifs",
+    "revenueThisMonth": "Revenus fans ce mois",
+    "revenueLastMonth": "Revenus fans mois précédent",
+    "vsPrevMonth": "vs mois précédent",
+    "chart": "Revenus fans — 6 derniers mois",
+    "paymentHistory": "Historique des paiements",
+    "noPayments": "Aucun paiement enregistré pour le moment.",
+    "period": "Période",
+    "amount": "Montant",
+    "status": "Statut",
+    "payout": {
+      "paid": "Payé",
+      "pending": "En attente",
+      "failed": "Échoué"
+    },
+    "benefits": {
+      "0": "Abonnement mensuel pour tes fans à partir de 3 €/mois",
+      "1": "Revenus récurrents et prévisibles",
+      "2": "Badge « Mode Fan » sur ton profil public",
+      "3": "Accès à des statistiques fans avancées"
+    }
+  },
+  "chat": {
+    "title": "Messages",
+    "noConversations": "Aucune conversation",
+    "noConversationsHint": "Tes fans pourront te contacter depuis l'application mobile.",
+    "yesterday": "Hier"
   },
   "dashboard": {
     "title": "Mon dashboard",
@@ -145,6 +241,9 @@
     "unpublish": "Dépublier",
     "draft": "Brouillon",
     "published": "Publié",
-    "search": "Rechercher..."
+    "search": "Rechercher...",
+    "reset": "✕ Réinitialiser",
+    "tryOtherFilters": "Essaie d'autres filtres.",
+    "defaultCreator": "Créateur Akeli"
   }
 }

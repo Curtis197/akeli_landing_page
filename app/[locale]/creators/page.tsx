@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 
@@ -23,6 +24,8 @@ const FAN_MODE_THRESHOLD = 30;
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CreatorsPage() {
+  const t = useTranslations("creators");
+  const tCommon = useTranslations("common");
   const supabase = createClient();
 
   const [creators, setCreators] = useState<CreatorCard[]>([]);
@@ -77,17 +80,15 @@ export default function CreatorsPage() {
       <main className="max-w-6xl mx-auto px-4 py-10 space-y-8">
         {/* Header */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">Créateurs Akeli</h1>
-          <p className="text-muted-foreground">
-            Découvrez les créateurs culinaires de la diaspora africaine.
-          </p>
+          <h1 className="text-3xl font-bold text-foreground">{t("pageTitle")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3">
           <input
             type="text"
-            placeholder="Rechercher un créateur…"
+            placeholder={t("searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-48"
@@ -97,7 +98,7 @@ export default function CreatorsPage() {
             onChange={(e) => setRegionFilter(e.target.value)}
             className="px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">Toutes les régions</option>
+            <option value="">{t("allRegions")}</option>
             {allRegions.map((r) => (
               <option key={r} value={r}>{r}</option>
             ))}
@@ -107,7 +108,7 @@ export default function CreatorsPage() {
             onChange={(e) => setSpecialtyFilter(e.target.value)}
             className="px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">Toutes les spécialités</option>
+            <option value="">{t("allSpecialties")}</option>
             {allSpecialties.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -117,7 +118,7 @@ export default function CreatorsPage() {
               onClick={() => { setSearch(""); setRegionFilter(""); setSpecialtyFilter(""); }}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              ✕ Réinitialiser
+              {tCommon("reset")}
             </button>
           )}
         </div>
@@ -132,13 +133,20 @@ export default function CreatorsPage() {
         ) : displayed.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border p-16 text-center space-y-2">
             <p className="text-4xl">👨‍🍳</p>
-            <p className="font-semibold text-foreground">Aucun créateur trouvé</p>
-            <p className="text-sm text-muted-foreground">Essaie d'autres filtres.</p>
+            <p className="font-semibold text-foreground">{t("notFound")}</p>
+            <p className="text-sm text-muted-foreground">{tCommon("tryOtherFilters")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {displayed.map((creator) => (
-              <CreatorCard key={creator.id} creator={creator} />
+              <CreatorCard
+                key={creator.id}
+                creator={creator}
+                defaultName={t("defaultName")}
+                fanBadge={t("fanBadge")}
+                viewProfile={t("viewProfile")}
+                recipeCount={(n: number) => t("stats.recipes", { count: n })}
+              />
             ))}
           </div>
         )}
@@ -149,7 +157,19 @@ export default function CreatorsPage() {
 
 // ─── CreatorCard ──────────────────────────────────────────────────────────────
 
-function CreatorCard({ creator }: { creator: CreatorCard }) {
+function CreatorCard({
+  creator,
+  defaultName,
+  fanBadge,
+  viewProfile,
+  recipeCount,
+}: {
+  creator: CreatorCard;
+  defaultName: string;
+  fanBadge: string;
+  viewProfile: string;
+  recipeCount: (n: number) => string;
+}) {
   const initials = (creator.name ?? "?")
     .split(" ")
     .map((w) => w[0])
@@ -182,7 +202,7 @@ function CreatorCard({ creator }: { creator: CreatorCard }) {
           )}
           {creator.fan_mode && (
             <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20">
-              ⭐ Mode Fan
+              ⭐ {fanBadge}
             </span>
           )}
         </div>
@@ -190,7 +210,7 @@ function CreatorCard({ creator }: { creator: CreatorCard }) {
         {/* Name & region */}
         <div className="space-y-0.5">
           <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
-            {creator.name ?? "Créateur Akeli"}
+            {creator.name ?? defaultName}
           </p>
           {creator.heritage_region && (
             <p className="text-xs text-muted-foreground">{creator.heritage_region}</p>
@@ -207,10 +227,11 @@ function CreatorCard({ creator }: { creator: CreatorCard }) {
         {/* Stats */}
         <div className="flex items-center justify-between pt-1 border-t border-border mt-auto">
           <span className="text-xs text-muted-foreground">
-            <strong className="text-foreground">{creator.recipe_count}</strong> recette{creator.recipe_count !== 1 ? "s" : ""}
+            <strong className="text-foreground">{creator.recipe_count}</strong>{" "}
+            {recipeCount(creator.recipe_count)}
           </span>
           <span className="text-xs text-primary font-medium group-hover:underline">
-            Voir le profil →
+            {viewProfile} →
           </span>
         </div>
       </div>

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 
@@ -44,6 +45,8 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function RecipeDetailPage() {
+  const t = useTranslations("recipe");
+  const tCreators = useTranslations("creators");
   const params = useParams();
   const slug = String(params.slug);
   const supabase = createClient();
@@ -104,9 +107,9 @@ export default function RecipeDetailPage() {
         <Navbar />
         <main className="max-w-3xl mx-auto px-4 py-20 text-center space-y-4">
           <p className="text-4xl">😕</p>
-          <h1 className="text-xl font-bold text-foreground">Recette introuvable</h1>
+          <h1 className="text-xl font-bold text-foreground">{t("notFound")}</h1>
           <Link href="/recipes" className="text-sm text-primary hover:underline">
-            ← Retour au catalogue
+            {t("backToCatalog")}
           </Link>
         </main>
       </>
@@ -157,7 +160,7 @@ export default function RecipeDetailPage() {
             <h1 className="text-3xl font-bold text-foreground flex-1">{recipe.title}</h1>
             {recipe.is_pork_free && (
               <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">
-                Sans porc
+                {t("porkFree")}
               </span>
             )}
           </div>
@@ -180,7 +183,7 @@ export default function RecipeDetailPage() {
                 </div>
               )}
               <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                Par <strong>{recipe.creator.name ?? "Créateur Akeli"}</strong>
+                {t("by")} <strong>{recipe.creator.name ?? tCreators("defaultName")}</strong>
                 {recipe.creator.heritage_region && ` · ${recipe.creator.heritage_region}`}
               </span>
             </Link>
@@ -205,19 +208,19 @@ export default function RecipeDetailPage() {
         {/* Macros */}
         {hasMacros && (
           <section className="rounded-2xl border border-border bg-card p-5 space-y-4">
-            <h2 className="text-base font-semibold text-foreground">Valeurs nutritionnelles</h2>
+            <h2 className="text-base font-semibold text-foreground">{t("nutritionTitle")}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {recipe.calories != null && (
-                <MacroCard label="Calories" value={`${recipe.calories} kcal`} />
+                <MacroCard label={t("calories")} value={`${recipe.calories} kcal`} />
               )}
               {recipe.protein_g != null && (
-                <MacroCard label="Protéines" value={`${recipe.protein_g} g`} />
+                <MacroCard label={t("proteins")} value={`${recipe.protein_g} g`} />
               )}
               {recipe.carbs_g != null && (
-                <MacroCard label="Glucides" value={`${recipe.carbs_g} g`} />
+                <MacroCard label={t("carbs")} value={`${recipe.carbs_g} g`} />
               )}
               {recipe.fat_g != null && (
-                <MacroCard label="Lipides" value={`${recipe.fat_g} g`} />
+                <MacroCard label={t("fats")} value={`${recipe.fat_g} g`} />
               )}
             </div>
           </section>
@@ -241,36 +244,29 @@ export default function RecipeDetailPage() {
         <section className="rounded-2xl bg-primary/5 border border-primary/20 p-8 text-center space-y-5">
           <div className="text-4xl">📱</div>
           <div className="space-y-2">
-            <h2 className="text-lg font-bold text-foreground">
-              Recette disponible dans l'app Akeli
-            </h2>
-            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-              Accède aux ingrédients complets et aux étapes de préparation détaillées
-              dans l'application mobile — 3€/mois seulement.
-            </p>
+            <h2 className="text-lg font-bold text-foreground">{t("appOnlyTitle")}</h2>
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto">{t("appOnlySubtitle")}</p>
           </div>
           <a
             href="#"
             className="inline-block px-8 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
           >
-            Télécharger l'app Akeli
+            {t("downloadApp")}
           </a>
-          <p className="text-xs text-muted-foreground">
-            Disponible sur iOS et Android
-          </p>
+          <p className="text-xs text-muted-foreground">{t("platforms")}</p>
         </section>
 
         {/* Back */}
         <div className="flex items-center gap-4 text-sm">
           <Link href="/recipes" className="text-muted-foreground hover:text-foreground transition-colors">
-            ← Retour au catalogue
+            {t("backToCatalog")}
           </Link>
           {recipe.creator && (
             <Link
               href={`/creator/${recipe.creator_id}`}
               className="text-primary hover:underline"
             >
-              Voir tous les plats de {recipe.creator.name?.split(" ")[0] ?? "ce créateur"} →
+              {t("viewAllFrom")} {recipe.creator.name?.split(" ")[0] ?? tCreators("defaultName")} →
             </Link>
           )}
         </div>
