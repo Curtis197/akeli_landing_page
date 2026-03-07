@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
-  const supabase = createClient();
   const { setUser } = useAuthStore();
 
   useEffect(() => {
+    const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
@@ -19,7 +19,9 @@ export default function AuthCallbackPage() {
         router.replace("/auth/login");
       }
     });
-  }, [router, setUser, supabase.auth]);
+  // Run once on mount — router and setUser are stable references
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-background">

@@ -10,7 +10,8 @@
     "profile": "My profile",
     "chat": "Messages",
     "settings": "Settings",
-    "logout": "Log out"
+    "logout": "Log out",
+    "fanMode": "Fan Mode"
   },
   "landing": {
     "hero": {

@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/lib/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 
 export default function Navbar() {
+  const t = useTranslations("nav");
   const pathname = usePathname();
   const supabase = createClient();
   const { user, creator, reset } = useAuthStore();
@@ -20,9 +21,9 @@ export default function Navbar() {
   }
 
   const navLinks = [
-    { href: "/creators", label: "Créateurs" },
-    { href: "/recipes", label: "Recettes" },
-    { href: "/about", label: "À propos" },
+    { href: "/creators", label: t("creators") },
+    { href: "/recipes", label: t("recipes") },
+    { href: "/about", label: t("about") },
   ];
 
   return (
@@ -64,13 +65,13 @@ export default function Navbar() {
                 href="/dashboard"
                 className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
               >
-                Mon espace
+                {t("dashboard")}
               </Link>
               <button
                 onClick={handleLogout}
                 className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
               >
-                Déconnexion
+                {t("logout")}
               </button>
             </>
           ) : (
@@ -79,13 +80,13 @@ export default function Navbar() {
                 href="/auth/login"
                 className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
               >
-                Connexion
+                {t("login")}
               </Link>
               <Link
                 href="/auth/signup"
                 className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
               >
-                Devenir créateur
+                {t("signup")}
               </Link>
             </>
           )}
@@ -130,13 +131,13 @@ export default function Navbar() {
                   onClick={() => setMenuOpen(false)}
                   className="block px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                 >
-                  Mon espace
+                  {t("dashboard")}
                 </Link>
                 <button
                   onClick={() => { handleLogout(); setMenuOpen(false); }}
                   className="block w-full text-left px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                 >
-                  Déconnexion
+                  {t("logout")}
                 </button>
               </>
             ) : (
@@ -146,14 +147,14 @@ export default function Navbar() {
                   onClick={() => setMenuOpen(false)}
                   className="block px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                 >
-                  Connexion
+                  {t("login")}
                 </Link>
                 <Link
                   href="/auth/signup"
                   onClick={() => setMenuOpen(false)}
                   className="block px-3 py-2 rounded-md text-sm font-semibold text-primary hover:bg-primary/5 transition-colors"
                 >
-                  Devenir créateur
+                  {t("signup")}
                 </Link>
               </>
             )}
