@@ -22,28 +22,28 @@ interface ConversationItem {
 export default function ChatPage() {
   const t = useTranslations("chat");
   const supabase = createClient();
-  const { creator } = useAuthStore();
+  const { user } = useAuthStore();
 
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!creator?.user_id) {
+    if (!user?.id) {
       setLoading(false);
       return;
     }
     loadConversations();
-  }, [creator]);
+  }, [user]);
 
   async function loadConversations() {
-    if (!creator?.user_id) return;
+    if (!user?.id) return;
     setLoading(true);
     try {
       // Get conversations where the creator is a participant
       const { data: participations } = await supabase
         .from("conversation_participant")
         .select("conversation_id")
-        .eq("user_id", creator.user_id);
+        .eq("user_id", user.id);
 
       if (!participations || participations.length === 0) {
         setConversations([]);
@@ -82,8 +82,8 @@ export default function ChatPage() {
             .from("chat_message")
             .select("id", { count: "exact", head: true })
             .eq("conversation_id", c.id)
-            .neq("user_id", creator.user_id ?? 0)
-            .not("read_by", "cs", `{${creator.user_id}}`);
+            .neq("user_id", user.id)
+            .not("read_by", "cs", `{${user.id}}`);
 
           return {
             id: String(c.id),

@@ -11,9 +11,9 @@ import { useAuthStore } from "@/lib/stores/authStore";
 interface Message {
   id: number;
   content: string;
-  user_id: number;
+  user_id: string;
   created_at: string;
-  read_by: number[];
+  read_by: string[];
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -23,7 +23,7 @@ export default function ConversationPage() {
   const router = useRouter();
   const conversationId = String(params.id);
   const supabase = createClient();
-  const { creator } = useAuthStore();
+  const { user } = useAuthStore();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -32,7 +32,7 @@ export default function ConversationPage() {
   const [conversationTitle, setConversationTitle] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const myUserId = creator?.user_id ?? null;
+  const myUserId = user?.id ?? null;
 
   // ── Load history ────────────────────────────────────────────────────────────
 
