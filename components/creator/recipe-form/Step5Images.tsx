@@ -26,15 +26,17 @@ export default function Step5Images({ data, onChange, draftId }: Step5Props) {
 
   const uploadFile = async (file: File, path: string): Promise<string> => {
     const compressed = await imageCompression(file, COMPRESSION_OPTIONS);
+    const ext = file.type === "image/png" ? "png" : "jpg";
+    const finalPath = path.replace(/.webp$/, "." + ext);
     const { error: uploadError } = await supabase.storage
       .from("recipe-images")
-      .upload(path, compressed, { upsert: true, contentType: "image/webp" });
+      .upload(finalPath, compressed, { upsert: true, contentType: file.type });
 
     if (uploadError) throw uploadError;
 
     const { data: publicData } = supabase.storage
       .from("recipe-images")
-      .getPublicUrl(path);
+      .getPublicUrl(finalPath);
 
     return publicData.publicUrl;
   };

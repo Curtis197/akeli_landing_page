@@ -44,7 +44,7 @@ export default function Step1Basic({ data, onChange }: Step1Props) {
   // Fetch regions from Supabase
   useEffect(() => {
     supabase
-      .from("food_region")
+      .from("food region")
       .select("id, name")
       .order("name")
       .then(({ data }) => {
