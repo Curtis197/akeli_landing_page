@@ -11,15 +11,29 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        router.replace("/dashboard");
-      } else {
-        router.replace("/auth/login");
-      }
-    });
-  // Run once on mount — router and setUser are stable references
+    const code = new URLSearchParams(window.location.search).get("code");
+
+    if (code) {
+      // Exchange the PKCE code for a session
+      supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
+        if (!error && data.session?.user) {
+          setUser(data.session.user);
+          router.replace("/dashboard");
+        } else {
+          router.replace("/auth/login");
+        }
+      });
+    } else {
+      // Fallback: try existing session (e.g. magic link flow)
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          setUser(session.user);
+          router.replace("/dashboard");
+        } else {
+          router.replace("/auth/login");
+        }
+      });
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
