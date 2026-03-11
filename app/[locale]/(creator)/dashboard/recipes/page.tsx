@@ -208,13 +208,7 @@ export default function RecipesListPage() {
       </div>
 
       {/* Content */}
-      {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-24 rounded-xl bg-secondary animate-pulse" />
-          ))}
-        </div>
-      ) : displayed.length === 0 ? (
+      {!loading && displayed.length === 0 ? (
         <EmptyState hasRecipes={recipes.length > 0} />
       ) : (
         <ul className="space-y-3">

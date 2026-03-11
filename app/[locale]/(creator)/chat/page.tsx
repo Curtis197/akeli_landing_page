@@ -107,14 +107,7 @@ export default function ChatPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
-
-      {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-20 rounded-xl bg-secondary animate-pulse" />
-          ))}
-        </div>
-      ) : conversations.length === 0 ? (
+      {!loading && conversations.length === 0 ? (
         <EmptyState />
       ) : (
         <ul className="space-y-2">
