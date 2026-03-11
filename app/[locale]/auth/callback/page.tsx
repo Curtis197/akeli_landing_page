@@ -7,27 +7,48 @@ import { useAuthStore } from "@/lib/stores/authStore";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
-  const { setUser } = useAuthStore();
+  const { setUser, setCreator } = useAuthStore();
 
   useEffect(() => {
     const supabase = createClient();
     const code = new URLSearchParams(window.location.search).get("code");
 
+    async function handleSession(userId: string) {
+      // Ensure a creator row exists for this user
+      const { data: existing } = await supabase
+        .from("creator")
+        .select("id")
+        .eq("user_id", userId)
+        .single();
+
+      if (!existing) {
+        await supabase.from("creator").insert({ user_id: userId, display_name: '' });
+      }
+
+      // Fetch full creator profile
+      const { data: creator } = await supabase
+        .from("creator")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+      setCreator(creator);
+    }
+
     if (code) {
-      // Exchange the PKCE code for a session
-      supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
+      supabase.auth.exchangeCodeForSession(code).then(async ({ data, error }) => {
         if (!error && data.session?.user) {
           setUser(data.session.user);
+          await handleSession(data.session.user.id);
           router.replace("/dashboard");
         } else {
           router.replace("/auth/login");
         }
       });
     } else {
-      // Fallback: try existing session (e.g. magic link flow)
-      supabase.auth.getSession().then(({ data: { session } }) => {
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
         if (session?.user) {
           setUser(session.user);
+          await handleSession(session.user.id);
           router.replace("/dashboard");
         } else {
           router.replace("/auth/login");

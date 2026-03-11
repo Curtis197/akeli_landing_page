@@ -101,8 +101,7 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
     setIsSaving(true);
     try {
       // Only columns that exist on the recipe table
-      const instructions = data.steps.map((s, i) => `${i + 1}. ${s.content}`).join("
-") || "";
+      const instructions = data.steps.map((s, i) => `${i + 1}. ${s.content}`).join("\n") || "";
       const recipePayload = {
         creator_id: creator.id,
         title: data.title || "Brouillon",
@@ -203,21 +202,7 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
             fiber_g: formState.fiber_g ?? null,
           }, { onConflict: "recipe_id" });
         }
-        // Ingredients (only ones linked to the ingredient catalog)
-        await supabase.from("recipe_ingredient").delete().eq("recipe_id", id);
-        const linked = formState.ingredients.filter((ing) => ing.ingredient_id);
-        if (linked.length > 0) {
-          await supabase.from("recipe_ingredient").insert(
-            linked.map((ing) => ({
-              recipe_id: id,
-              ingredient_id: ing.ingredient_id,
-              quantity: ing.quantity,
-              unit: ing.unit,
-              is_optional: ing.is_optional ?? false,
-              sort_order: ing.sort_order,
-            }))
-          );
-        }
+        // Ingredients: catalog linking not yet implemented in form
       }
 
       await supabase.from("recipe").update({ is_published: publish }).eq("id", id);

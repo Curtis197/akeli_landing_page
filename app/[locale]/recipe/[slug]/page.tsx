@@ -30,8 +30,8 @@ interface RecipeDetail {
   meal_types: string[];
   creator_id: string;
   creator: {
-    name: string | null;
-    profil_url: string | null;
+    display_name: string | null;
+    profile_image_url: string | null;
     heritage_region: string | null;
   } | null;
 }
@@ -62,7 +62,7 @@ export default function RecipeDetailPage() {
         id, slug, title, description, cover_image_url, region, difficulty,
         prep_time_min, cook_time_min, servings, calories, protein_g, carbs_g,
         fat_g, fiber_g, tags, is_pork_free, meal_types, creator_id,
-        creator:creator_id(name, profil_url, heritage_region)
+        creator:creator_id(display_name, profile_image_url, heritage_region)
       `)
       .eq("slug", slug)
       .eq("is_published", true)
@@ -124,7 +124,7 @@ export default function RecipeDetailPage() {
       ? `${totalMin} min`
       : null;
 
-  const creatorInitials = (recipe.creator?.name ?? "?")
+  const creatorInitials = (recipe.creator?.display_name ?? "?")
     .split(" ")
     .map((w) => w[0])
     .join("")
@@ -171,10 +171,10 @@ export default function RecipeDetailPage() {
               href={`/creator/${recipe.creator_id}`}
               className="inline-flex items-center gap-2.5 group"
             >
-              {recipe.creator.profil_url ? (
+              {recipe.creator.profile_image_url ? (
                 <img
-                  src={recipe.creator.profil_url}
-                  alt={recipe.creator.name ?? ""}
+                  src={recipe.creator.profile_image_url}
+                  alt={recipe.creator.display_name ?? ""}
                   className="w-8 h-8 rounded-full object-cover"
                 />
               ) : (
@@ -183,7 +183,7 @@ export default function RecipeDetailPage() {
                 </div>
               )}
               <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                {t("by")} <strong>{recipe.creator.name ?? tCreators("defaultName")}</strong>
+                {t("by")} <strong>{recipe.creator.display_name ?? tCreators("defaultName")}</strong>
                 {recipe.creator.heritage_region && ` · ${recipe.creator.heritage_region}`}
               </span>
             </Link>
@@ -266,7 +266,7 @@ export default function RecipeDetailPage() {
               href={`/creator/${recipe.creator_id}`}
               className="text-primary hover:underline"
             >
-              {t("viewAllFrom")} {recipe.creator.name?.split(" ")[0] ?? tCreators("defaultName")} →
+              {t("viewAllFrom")} {recipe.creator.display_name?.split(" ")[0] ?? tCreators("defaultName")} →
             </Link>
           )}
         </div>
