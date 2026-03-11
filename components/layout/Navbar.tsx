@@ -37,59 +37,62 @@ export default function Navbar() {
           akeli
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
-          {navLinks.map(({ href, label }) => {
-            const isActive = pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-secondary text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                }`}
-              >
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Desktop elements container (Nav + Auth) pushed to the right */}
+        <div className="hidden md:flex items-center ml-auto gap-4">
+          {/* Desktop nav */}
+          <nav className="flex items-center gap-1">
+            {navLinks.map(({ href, label }) => {
+              const isActive = pathname.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
 
-        {/* Auth */}
-        <div className="hidden md:flex items-center gap-2">
-          {user ? (
-            <>
-              <Link
-                href="/dashboard"
-                className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
-              >
-                {t("dashboard")}
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
-              >
-                {t("logout")}
-              </button>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/auth/login"
-                className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
-              >
-                {t("login")}
-              </Link>
-              <Link
-                href="/auth/signup"
-                className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-              >
-                {t("signup")}
-              </Link>
-            </>
-          )}
+          {/* Auth */}
+          <div className="flex items-center gap-2">
+            {user ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
+                >
+                  {t("dashboard")}
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
+                >
+                  {t("logout")}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/auth/login"
+                  className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
+                >
+                  {t("login")}
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                >
+                  {t("signup")}
+                </Link>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Mobile menu toggle */}
