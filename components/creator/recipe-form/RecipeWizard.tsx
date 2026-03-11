@@ -100,40 +100,47 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
     if (!creator) return;
     setIsSaving(true);
     try {
-      const payload = {
+      // Only columns that exist on the recipe table
+      const instructions = data.steps.map((s, i) => `${i + 1}. ${s.content}`).join("
+") || "";
+      const recipePayload = {
         creator_id: creator.id,
-        title: data.title || null,
+        title: data.title || "Brouillon",
         description: data.description || null,
+        instructions,
         region: data.region || null,
-        meal_types: data.meal_types,
         difficulty: data.difficulty || null,
         prep_time_min: data.prep_time_min,
         cook_time_min: data.cook_time_min || null,
         servings: data.servings,
         cover_image_url: data.cover_image_url || null,
-        gallery_urls: data.gallery_urls,
-        tags: data.tags,
         is_pork_free: data.is_pork_free,
-        calories: data.calories ?? null,
-        protein_g: data.protein_g ?? null,
-        carbs_g: data.carbs_g ?? null,
-        fat_g: data.fat_g ?? null,
-        fiber_g: data.fiber_g ?? null,
-        macros_skipped: data.macros_skipped,
         is_published: false,
+        language: "fr",
         draft_data: data,
       };
 
-      if (draftId) {
-        await supabase.from("recipe").update(payload).eq("id", draftId);
+      let id = draftId;
+      if (id) {
+        await supabase.from("recipe").update(recipePayload).eq("id", id);
       } else {
-        const { data: newRecipe } = await supabase
+        const { data: newRecipe, error } = await supabase
           .from("recipe")
-          .insert(payload)
+          .insert(recipePayload)
           .select("id")
           .single();
-        if (newRecipe) setDraftId(newRecipe.id);
+        if (error) throw error;
+        if (newRecipe) { id = newRecipe.id; setDraftId(newRecipe.id); }
       }
+
+      // Sync gallery images to recipe_image table
+      if (id && data.gallery_urls.length > 0) {
+        await supabase.from("recipe_image").delete().eq("recipe_id", id);
+        await supabase.from("recipe_image").insert(
+          data.gallery_urls.map((url, i) => ({ recipe_id: id, url, sort_order: i }))
+        );
+      }
+
       setLastSaved(new Date());
       isDirtyRef.current = false;
     } catch (err) {
@@ -173,19 +180,53 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
     setIsPublishing(true);
     try {
       await saveDraft(formState);
-      if (draftId) {
-        await supabase
-          .from("recipe")
-          .update({ is_published: publish })
-          .eq("id", draftId);
+      const id = draftId;
+      if (!id) return;
 
-        if (publish) {
-          // Trigger async translation (fire-and-forget)
-          supabase.functions.invoke("translate-recipe", {
-            body: { recipe_id: draftId },
-          });
+      if (publish) {
+        // Write related tables before publishing
+        // Tags: replace all
+        await supabase.from("recipe_tag").delete().eq("recipe_id", id);
+        if (formState.tags.length > 0) {
+          await supabase.from("recipe_tag").insert(
+            formState.tags.map((tag_id) => ({ recipe_id: id, tag_id }))
+          );
+        }
+        // Macros
+        if (!formState.macros_skipped && formState.calories) {
+          await supabase.from("recipe_macro").upsert({
+            recipe_id: id,
+            calories: formState.calories ?? null,
+            protein_g: formState.protein_g ?? null,
+            carbs_g: formState.carbs_g ?? null,
+            fat_g: formState.fat_g ?? null,
+            fiber_g: formState.fiber_g ?? null,
+          }, { onConflict: "recipe_id" });
+        }
+        // Ingredients (only ones linked to the ingredient catalog)
+        await supabase.from("recipe_ingredient").delete().eq("recipe_id", id);
+        const linked = formState.ingredients.filter((ing) => ing.ingredient_id);
+        if (linked.length > 0) {
+          await supabase.from("recipe_ingredient").insert(
+            linked.map((ing) => ({
+              recipe_id: id,
+              ingredient_id: ing.ingredient_id,
+              quantity: ing.quantity,
+              unit: ing.unit,
+              is_optional: ing.is_optional ?? false,
+              sort_order: ing.sort_order,
+            }))
+          );
         }
       }
+
+      await supabase.from("recipe").update({ is_published: publish }).eq("id", id);
+
+      if (publish) {
+        // Fire-and-forget translation
+        supabase.functions.invoke("translate-recipe", { body: { recipe_id: id } });
+      }
+
       router.push("/dashboard/recipes");
     } catch (err) {
       console.error("Publish failed:", err);
