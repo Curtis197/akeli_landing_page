@@ -30,6 +30,7 @@ export default function ConversationPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [conversationTitle, setConversationTitle] = useState<string | null>(null);
+  const [conversationType, setConversationType] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const myUserId = user?.id ?? null;
@@ -51,10 +52,13 @@ export default function ConversationPage() {
     // Load conversation title
     supabase
       .from("conversation")
-      .select("resume")
+      .select("name, type")
       .eq("id", conversationId)
       .single()
-      .then(({ data }) => setConversationTitle(data?.resume ?? null));
+      .then(({ data }) => {
+        setConversationTitle(data?.name ?? null);
+        setConversationType((data as any)?.type ?? null);
+      });
 
     loadMessages();
   }, [conversationId, loadMessages, supabase]);
@@ -161,7 +165,12 @@ export default function ConversationPage() {
       {/* Header */}
       <div className="flex items-center gap-3 pb-4 border-b border-border shrink-0">
         <button
-          onClick={() => router.push("/dashboard/chat")}
+          onClick={() => {
+            const backPath = conversationType === "creator_group" ? "/chat?tab=groups"
+              : conversationType === "private" ? "/chat?tab=direct"
+              : "/chat";
+            router.push(backPath as any);
+          }}
           className="text-muted-foreground hover:text-foreground transition-colors text-lg leading-none"
           aria-label="Retour"
         >
@@ -174,7 +183,12 @@ export default function ConversationPage() {
           <p className="text-sm font-semibold text-foreground truncate">
             {conversationTitle ?? `Conversation #${conversationId.slice(0, 8)}`}
           </p>
-          <p className="text-xs text-muted-foreground">Fan</p>
+          <p className="text-xs text-muted-foreground">
+            {conversationType === "creator_group" ? "Groupe"
+              : conversationType === "private" ? "Direct"
+              : conversationType === "support" ? "Support"
+              : "Conversation"}
+          </p>
         </div>
       </div>
 

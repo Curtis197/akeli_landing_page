@@ -180,7 +180,39 @@
     "title": "Messages",
     "noConversations": "No conversations",
     "noConversationsHint": "Your fans will be able to contact you from the mobile app.",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "newConversation": "New conversation",
+    "startDirect": "Start a conversation",
+    "createGroup": "Create a group",
+    "tabs": {
+      "all": "All",
+      "groups": "Groups",
+      "direct": "Direct"
+    },
+    "groups": {
+      "search": "Search groups...",
+      "filterAll": "All",
+      "filterPublic": "Public",
+      "filterPrivate": "Private",
+      "sortActivity": "Activity",
+      "sortName": "Name",
+      "empty": "No groups",
+      "groupName": "Group name",
+      "visibility": "Visibility",
+      "public": "Public",
+      "private": "Private",
+      "create": "Create"
+    },
+    "direct": {
+      "search": "Search creators...",
+      "sortName": "Name",
+      "sortFollowers": "Followers",
+      "empty": "No direct conversations",
+      "emptyHint": "Start a conversation with another creator.",
+      "startConversation": "Start"
+    }
   },
   "dashboard": {
     "title": "My dashboard",
