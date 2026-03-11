@@ -18,6 +18,7 @@ export const step2Schema = z.object({
     .array(
       z.object({
         id: z.string(),
+        ingredient_id: z.string().optional(),
         name: z.string().min(1),
         quantity: z.number().positive("Quantité invalide"),
         unit: z.string().min(1, "Unité requise"),

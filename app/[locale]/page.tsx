@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
 import type { Metadata } from "next";
+import Navbar from "@/components/layout/Navbar";
 import { faqData } from "@/data/faq";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 
@@ -19,7 +20,9 @@ export default function LandingPage() {
   const t = useTranslations("landing");
 
   return (
-    <main className="min-h-screen bg-background">
+    <>
+      <Navbar />
+      <main className="min-h-screen bg-background">
       {/* ── Hero ── */}
       <section className="flex flex-col items-center justify-center text-center px-4 pt-24 pb-20">
         <div className="max-w-2xl space-y-6">
@@ -119,5 +122,6 @@ export default function LandingPage() {
         </div>
       </footer>
     </main>
+    </>
   );
 }

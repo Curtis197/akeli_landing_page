@@ -1,5 +1,6 @@
 import { Link } from "@/lib/i18n/navigation";
 import type { Metadata } from "next";
+import Navbar from "@/components/layout/Navbar";
 import { faqData } from "@/data/faq";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 
@@ -43,7 +44,9 @@ const STATS = [
 
 export default function BecomeCreatorPage() {
   return (
-    <main className="min-h-screen bg-background">
+    <>
+      <Navbar />
+      <main className="min-h-screen bg-background">
       {/* ── Hero ── */}
       <section className="px-4 pt-20 pb-16 text-center">
         <div className="max-w-2xl mx-auto space-y-6">
@@ -202,5 +205,6 @@ export default function BecomeCreatorPage() {
         </div>
       </footer>
     </main>
+    </>
   );
 }
