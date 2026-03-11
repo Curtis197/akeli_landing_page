@@ -15,7 +15,7 @@ interface Step1Props {
 
 export default function Step1Basic({ data, onChange }: Step1Props) {
   const supabase = createClient();
-  const [regions, setRegions] = useState<{ id: string; name: string }[]>([]);
+  const [regions, setRegions] = useState<{ code: string; name_fr: string }[]>([]);
 
   const {
     register,
@@ -44,9 +44,9 @@ export default function Step1Basic({ data, onChange }: Step1Props) {
   // Fetch regions from Supabase
   useEffect(() => {
     supabase
-      .from("food region")
-      .select("id, name")
-      .order("name")
+      .from("food_region")
+      .select("code, name_fr")
+      .order("name_fr")
       .then(({ data }) => {
         if (data) setRegions(data);
       });
@@ -134,8 +134,8 @@ export default function Step1Basic({ data, onChange }: Step1Props) {
         >
           <option value="">Sélectionner une région</option>
           {regions.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.name}
+            <option key={r.code} value={r.code}>
+              {r.name_fr}
             </option>
           ))}
         </select>
