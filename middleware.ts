@@ -19,7 +19,7 @@ function hasSupabaseSession(request: NextRequest): boolean {
   );
 }
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Detect if path already has a locale prefix
