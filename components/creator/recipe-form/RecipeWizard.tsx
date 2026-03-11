@@ -101,8 +101,7 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
     setIsSaving(true);
     try {
       // Only columns that exist on the recipe table
-      const instructions = data.steps.map((s, i) => `${i + 1}. ${s.content}`).join("
-") || "";
+      const instructions = data.steps.map((s, i) => `${i + 1}. ${s.content}`).join("\n") || "";
       const recipePayload = {
         creator_id: creator.id,
         title: data.title || "Brouillon",

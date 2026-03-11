@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
+import CreatorMobileNav from "@/components/layout/CreatorMobileNav";
 
 export default async function CreatorLayout({
   children,
@@ -18,7 +19,8 @@ export default async function CreatorLayout({
   ];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex flex-col lg:flex-row min-h-screen">
+      <CreatorMobileNav items={navItems} logoutText={t("logout")} />
       <aside className="w-64 shrink-0 border-r hidden lg:block p-6">
         <div className="text-lg font-bold text-primary mb-6">Akeli Creator</div>
         <nav className="space-y-1">
