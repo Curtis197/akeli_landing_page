@@ -157,11 +157,7 @@ function StatCard({
   return (
     <div className="rounded-xl border border-border bg-card p-5 space-y-1">
       <p className="text-xs text-muted-foreground uppercase tracking-wide">{label}</p>
-      {loading ? (
-        <div className="h-8 w-24 rounded bg-secondary animate-pulse" />
-      ) : (
-        <p className="text-2xl font-bold text-foreground">{value}</p>
-      )}
+      {value && <p className="text-2xl font-bold text-foreground">{value}</p>}
     </div>
   );
 }
@@ -223,13 +219,7 @@ function TopRecipes({
         </Link>
       </div>
 
-      {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: limit }).map((_, i) => (
-            <div key={i} className="h-16 rounded-lg bg-secondary animate-pulse" />
-          ))}
-        </div>
-      ) : displayed.length === 0 ? (
+      {!loading && displayed.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border p-8 text-center">
           <p className="text-sm text-muted-foreground">Aucune recette publiée pour l'instant.</p>
           <Link
@@ -386,15 +376,9 @@ function AiInsightPanel({
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
-          {loading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-4 bg-secondary rounded animate-pulse" style={{ width: `${70 + (i % 3) * 10}%` }} />
-              ))}
-            </div>
-          ) : insight ? (
+          {insight ? (
             <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{insight}</p>
-          ) : null}
+          ): null}
         </div>
         <div className="px-6 py-4 border-t border-border">
           <button

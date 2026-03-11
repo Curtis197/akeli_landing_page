@@ -208,13 +208,7 @@ function UnlockedState({
       {/* Payouts */}
       <section className="space-y-3">
         <h2 className="text-base font-semibold text-foreground">{t("paymentHistory")}</h2>
-        {loading ? (
-          <div className="space-y-2">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-14 rounded-lg bg-secondary animate-pulse" />
-            ))}
-          </div>
-        ) : payouts.length === 0 ? (
+        {!loading && payouts.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-8 text-center">
             <p className="text-sm text-muted-foreground">{t("noPayments")}</p>
           </div>
@@ -271,11 +265,7 @@ function StatCard({
   return (
     <div className="rounded-xl border border-border bg-card p-5 space-y-1">
       <p className="text-xs text-muted-foreground uppercase tracking-wide">{label}</p>
-      {value === null ? (
-        <div className="h-8 w-24 rounded bg-secondary animate-pulse" />
-      ) : (
-        <p className="text-2xl font-bold text-foreground">{value}</p>
-      )}
+      {value && <p className="text-2xl font-bold text-foreground">{value}</p>}
       {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
     </div>
   );
