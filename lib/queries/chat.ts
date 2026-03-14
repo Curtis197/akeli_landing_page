@@ -179,11 +179,10 @@ export async function createGroup(
   name: string,
   isPublic: boolean,
 ): Promise<string> {
-  // Single atomic RPC — creates community_group + conversation + participant in one transaction
-  const { data, error } = await (supabase as any).rpc("create_group_conversation", {
-    p_name: name,
-    p_is_public: isPublic,
+  const { data, error } = await supabase.functions.invoke("create-group", {
+    body: { name, is_public: isPublic },
   });
   if (error) throw error;
-  return data as string;
+  if (!data?.conversation_id) throw new Error("No conversation_id returned");
+  return data.conversation_id as string;
 }
