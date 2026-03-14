@@ -93,11 +93,10 @@ Returns `ConversationListItem[]`
 
 > IMPORTANT: `creatorUserId` = Supabase Auth `user.id` = `user_profile.id`. NOT `creator.id`.
 
-1. INSERT `community_group` with `name, is_public, creator_id: creatorUserId` — get `group_id`
-2. INSERT `conversation` with `type: "creator_group", name, created_by: creatorUserId` — get `conv_id`
-3. UPDATE `conversation SET community_group_id = group_id WHERE id = conv_id` (wrap in try/catch)
-4. INSERT `conversation_participant` with `conversation_id: conv_id, user_id: creatorUserId`
-5. Return `conv_id`
+1. INSERT `community_group` with `{ name, is_public, creator_id: creatorUserId }` — get `group_id`.
+2. INSERT `conversation` with `{ type: "creator_group", name, created_by: creatorUserId, community_group_id: group_id }` — get `conv_id`. This requires the DB migration from Task 1.
+3. INSERT `conversation_participant` with `{ conversation_id: conv_id, user_id: creatorUserId }`.
+4. Return `conv_id`.
 
 **Verification:** `npm run build` — no TypeScript errors in this file.
 
