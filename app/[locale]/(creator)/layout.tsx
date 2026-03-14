@@ -12,6 +12,7 @@ export default async function CreatorLayout({
   const navItems = [
     { label: "Dashboard", href: "/dashboard" },
     { label: t("myRecipes"), href: "/dashboard/recipes" },
+    { label: t("payments"), href: "/dashboard/payments" },
     { label: t("chat"), href: "/chat" },
     { label: t("profile"), href: "/profile" },
     { label: t("fanMode"), href: "/fan-mode" },

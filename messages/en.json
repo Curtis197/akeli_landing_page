@@ -11,7 +11,8 @@
     "chat": "Messages",
     "settings": "Settings",
     "logout": "Log out",
-    "fanMode": "Fan Mode"
+    "fanMode": "Fan Mode",
+    "payments": "Payments"
   },
   "landing": {
     "hero": {
