@@ -1,5 +1,6 @@
 import { Link } from "@/lib/i18n/navigation";
 import type { Metadata } from "next";
+import Navbar from "@/components/layout/Navbar";
 
 export const metadata: Metadata = {
   title: "À propos — Akeli",
@@ -8,6 +9,8 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
+    <>
+    <Navbar />
     <main className="min-h-screen bg-background px-4 py-16">
       <div className="max-w-2xl mx-auto space-y-12">
         {/* Intro */}
@@ -68,5 +71,6 @@ export default function AboutPage() {
         </div>
       </div>
     </main>
+    </>
   );
 }

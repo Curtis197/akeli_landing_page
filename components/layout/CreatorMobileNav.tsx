@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Link, usePathname } from "@/lib/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/lib/i18n/navigation";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { createClient } from "@/lib/supabase/client";
 
@@ -13,12 +13,14 @@ interface NavItem {
 export default function CreatorMobileNav({ items, logoutText }: { items: NavItem[], logoutText: string }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const supabase = createClient();
   const { reset } = useAuthStore();
 
   async function handleLogout() {
     await supabase.auth.signOut();
     reset();
+    router.push("/auth/login");
   }
 
   return (

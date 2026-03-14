@@ -40,7 +40,7 @@ export default function ChatPage() {
   const { data: allConvs = [], isLoading: allLoading } = useQuery({
     queryKey: ["conversations", "all", user?.id],
     queryFn: () => getConversations(supabase, user!.id),
-    enabled: !!user?.id && activeTab === "all",
+    enabled: !!user?.id,
   });
 
   return (

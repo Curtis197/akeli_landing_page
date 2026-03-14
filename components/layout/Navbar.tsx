@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Link, usePathname } from "@/lib/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/lib/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
@@ -10,6 +10,7 @@ import { useAuthStore } from "@/lib/stores/authStore";
 export default function Navbar() {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const router = useRouter();
   const supabase = createClient();
   const { user, reset } = useAuthStore();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -17,6 +18,7 @@ export default function Navbar() {
   async function handleLogout() {
     await supabase.auth.signOut();
     reset();
+    router.push("/auth/login");
   }
 
   const navLinks = [

@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslations } from "next-intl";
+import { useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "@/lib/i18n/navigation";
 import { createGroup } from "@/lib/queries/chat";
@@ -26,6 +27,7 @@ export default function CreateGroupModal({ open, onClose, currentUserId }: Creat
   const t = useTranslations("chat");
   const supabase = createClient();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -46,6 +48,7 @@ export default function CreateGroupModal({ open, onClose, currentUserId }: Creat
     setSubmitError(null);
     try {
       const newId = await createGroup(supabase, data.name, data.isPublic);
+      await queryClient.invalidateQueries({ queryKey: ["conversations"] });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       router.push(("/chat/" + newId) as any);
       reset();
