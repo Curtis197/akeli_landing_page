@@ -179,24 +179,29 @@ export async function createGroup(
   name: string,
   isPublic: boolean,
 ): Promise<string> {
-  const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token;
-  if (!token) throw new Error("Not authenticated");
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token ?? null;
+  console.log("[createGroup] session token:", token ? "present" : "null", "| sessionError:", sessionError);
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-group`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-        "apikey": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      },
-      body: JSON.stringify({ name, is_public: isPublic }),
-    }
-  );
+  const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-group`;
+  console.log("[createGroup] fetching:", url);
 
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "apikey": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ name, is_public: isPublic }),
+  });
+
+  console.log("[createGroup] response status:", res.status);
   const data = await res.json();
+  console.log("[createGroup] response body:", data);
+
   if (!res.ok) throw new Error(data?.error ?? `HTTP ${res.status}`);
   if (!data?.conversation_id) throw new Error("No conversation_id returned");
   return data.conversation_id as string;
