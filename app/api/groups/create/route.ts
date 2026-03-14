@@ -19,7 +19,13 @@ export async function POST(request: NextRequest) {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const admin = getSupabaseAdmin() as any;
+  let admin: any;
+  try {
+    admin = getSupabaseAdmin();
+  } catch (e) {
+    console.error("[api/groups/create] admin init failed:", e);
+    return NextResponse.json({ error: "Server configuration error: missing service key" }, { status: 500 });
+  }
 
   // Verify user is a creator
   const { data: creator, error: creatorError } = await admin
