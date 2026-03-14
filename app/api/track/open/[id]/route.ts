@@ -16,7 +16,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
-    await getSupabaseAdmin()
+    await (getSupabaseAdmin() as any)
       .from('recipe_open')
       .update({
         closed_at: body.closed_at,

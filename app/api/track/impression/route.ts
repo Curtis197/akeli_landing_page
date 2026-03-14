@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    await getSupabaseAdmin().from('recipe_impression').insert({
+    await (getSupabaseAdmin() as any).from('recipe_impression').insert({
       recipe_id: body.recipe_id,
       user_id: user?.id ?? null,
       source: body.source,
