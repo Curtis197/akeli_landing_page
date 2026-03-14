@@ -101,12 +101,10 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
     setIsSaving(true);
     try {
       // Only columns that exist on the recipe table
-      const instructions = data.steps.map((s, i) => `${i + 1}. ${s.content}`).join("\n") || "";
       const recipePayload = {
         creator_id: creator.id,
         title: data.title || "Brouillon",
         description: data.description || null,
-        instructions,
         region: data.region || null,
         difficulty: data.difficulty || null,
         prep_time_min: data.prep_time_min,
@@ -137,6 +135,18 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
         await supabase.from("recipe_image").delete().eq("recipe_id", id);
         await supabase.from("recipe_image").insert(
           data.gallery_urls.map((url, i) => ({ recipe_id: id, url, sort_order: i }))
+        );
+      }
+
+      // Sync steps to recipe_step table
+      if (id && data.steps.length > 0) {
+        await supabase.from("recipe_step").delete().eq("recipe_id", id);
+        await supabase.from("recipe_step").insert(
+          data.steps.map((step, i) => ({
+            recipe_id: id,
+            step_number: step.sort_order ?? i + 1,
+            content: step.content,
+          }))
         );
       }
 

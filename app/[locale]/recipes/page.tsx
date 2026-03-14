@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "@/lib/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
+import { useRecipeImpression } from "@/hooks/use-recipe-impression";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -197,6 +198,11 @@ export default function RecipesPage() {
 
 function RecipeCardComponent({ recipe }: { recipe: RecipeCard }) {
   const tCommon = useTranslations("common");
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  useRecipeImpression(cardRef as React.RefObject<HTMLElement>, {
+    recipeId: recipe.id,
+    source: "feed",
+  });
   const totalMin = (recipe.prep_time_min ?? 0) + (recipe.cook_time_min ?? 0);
   const timeLabel =
     totalMin >= 60
@@ -214,7 +220,8 @@ function RecipeCardComponent({ recipe }: { recipe: RecipeCard }) {
 
   return (
     <Link
-      href={recipe.slug ? `/recipe/${recipe.slug}` : "#"}
+      ref={cardRef}
+      href={recipe.slug ? `/recipe/${recipe.slug}?from=feed` : "#"}
       className="group flex flex-col rounded-xl border border-border bg-card overflow-hidden hover:shadow-md hover:border-primary/30 transition-all"
     >
       {/* Cover */}

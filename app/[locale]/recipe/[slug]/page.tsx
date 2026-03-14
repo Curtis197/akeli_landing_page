@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { Link } from "@/lib/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
+import { useRecipeSession } from "@/hooks/use-recipe-session";
+import type { TrackingSource } from "@/lib/tracking/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,11 +46,22 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+// ─── Session Tracker (invisible) ─────────────────────────────────────────────
+
+function RecipeSessionTracker({ recipeId, source }: { recipeId: string; source: TrackingSource }) {
+  useRecipeSession(recipeId, source);
+  return null;
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function RecipeDetailPage() {
   const t = useTranslations("recipe");
   const tCreators = useTranslations("creators");
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = String(params.slug);
+  const source: TrackingSource = (searchParams.get("from") as TrackingSource) ?? "feed";
   const supabase = createClient();
 
   const [recipe, setRecipe] = useState<RecipeDetail | null>(null);
@@ -140,6 +153,7 @@ export default function RecipeDetailPage() {
   return (
     <>
       <Navbar />
+      <RecipeSessionTracker recipeId={recipe.id} source={source} />
       <main className="max-w-3xl mx-auto px-4 py-10 space-y-8">
         {/* Cover */}
         {recipe.cover_image_url ? (
