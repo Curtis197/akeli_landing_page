@@ -179,10 +179,25 @@ export async function createGroup(
   name: string,
   isPublic: boolean,
 ): Promise<string> {
-  const { data, error } = await supabase.functions.invoke("create-group", {
-    body: { name, is_public: isPublic },
-  });
-  if (error) throw error;
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-group`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+        "apikey": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      },
+      body: JSON.stringify({ name, is_public: isPublic }),
+    }
+  );
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error ?? `HTTP ${res.status}`);
   if (!data?.conversation_id) throw new Error("No conversation_id returned");
   return data.conversation_id as string;
 }
