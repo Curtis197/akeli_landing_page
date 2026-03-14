@@ -203,7 +203,8 @@
       "visibility": "Visibility",
       "public": "Public",
       "private": "Private",
-      "create": "Create"
+      "create": "Create",
+      "createError": "Failed to create the group, please try again."
     },
     "direct": {
       "search": "Search creators...",

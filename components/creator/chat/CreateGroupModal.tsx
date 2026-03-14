@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -38,9 +39,11 @@ export default function CreateGroupModal({ open, onClose, currentUserId }: Creat
     defaultValues: { name: "", isPublic: true },
   });
 
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const isPublic = watch("isPublic");
 
   async function onSubmit(data: FormData) {
+    setSubmitError(null);
     try {
       const newId = await createGroup(supabase, data.name, data.isPublic, currentUserId);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,6 +52,7 @@ export default function CreateGroupModal({ open, onClose, currentUserId }: Creat
       onClose();
     } catch (err) {
       console.error("Failed to create group:", err);
+      setSubmitError(t("groups.createError"));
     }
   }
 
@@ -101,6 +105,11 @@ export default function CreateGroupModal({ open, onClose, currentUserId }: Creat
               </button>
             </div>
           </div>
+
+          {/* Error */}
+          {submitError && (
+            <p className="text-xs text-destructive text-center">{submitError}</p>
+          )}
 
           {/* Submit */}
           <button

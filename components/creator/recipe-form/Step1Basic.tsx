@@ -14,7 +14,6 @@ interface Step1Props {
 }
 
 export default function Step1Basic({ data, onChange }: Step1Props) {
-  const supabase = createClient();
   const [regions, setRegions] = useState<{ code: string; name_fr: string }[]>([]);
 
   const {
@@ -41,16 +40,18 @@ export default function Step1Basic({ data, onChange }: Step1Props) {
   const title = watch("title") ?? "";
   const description = watch("description") ?? "";
 
-  // Fetch regions from Supabase
+  // Fetch regions from Supabase — run once on mount only
   useEffect(() => {
-    supabase
+    createClient()
       .from("food_region")
       .select("code, name_fr")
       .order("name_fr")
-      .then(({ data }) => {
-        if (data) setRegions(data);
+      .then(({ data, error }) => {
+        if (error) console.error("Failed to load regions:", error);
+        else if (data) setRegions(data);
       });
-  }, [supabase]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Sync form changes up to parent
   useEffect(() => {
