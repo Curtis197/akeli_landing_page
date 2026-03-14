@@ -43,7 +43,6 @@ export default function CreateGroupModal({ open, onClose, currentUserId }: Creat
   const isPublic = watch("isPublic");
 
   async function onSubmit(data: FormData) {
-    console.log("[CreateGroupModal] onSubmit called", data);
     setSubmitError(null);
     try {
       const newId = await createGroup(supabase, data.name, data.isPublic);
