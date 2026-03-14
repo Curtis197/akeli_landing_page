@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { supabaseAdmin } from '@/lib/tracking/supabase-admin';
 import type { ClosePayload } from '@/lib/tracking/types';
 

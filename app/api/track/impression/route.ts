@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { supabaseAdmin } from '@/lib/tracking/supabase-admin';
 import { createClient } from '@/lib/supabase/server';
 import type { ImpressionPayload } from '@/lib/tracking/types';
