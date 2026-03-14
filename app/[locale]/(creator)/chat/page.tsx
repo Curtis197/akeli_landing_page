@@ -10,7 +10,7 @@ import { useRouter } from "@/lib/i18n/navigation";
 import { getConversations } from "@/lib/queries/chat";
 import { ConversationList } from "@/components/creator/chat/ConversationList";
 import GroupsTab from "@/components/creator/chat/GroupsTab";
-import DirectTab from "@/components/creator/chat/DirectTab";
+import { DirectTab } from "@/components/creator/chat/DirectTab";
 import NewConversationModal from "@/components/creator/chat/NewConversationModal";
 import CreatorSearchModal from "@/components/creator/chat/CreatorSearchModal";
 import CreateGroupModal from "@/components/creator/chat/CreateGroupModal";

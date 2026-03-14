@@ -32,7 +32,37 @@
   --color-ring: hsl(150 55% 32%);
 
   --radius: 0.625rem;
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Brand custom palette */
+  --color-brand-dark: #1C2B1C;
+  --color-brand-cream: #F7F2EA;
+  --color-brand-amber: #F5A523;
+  --color-brand-green: #2D8C4E;
+  --color-brand-forest: #3D5440;
+
+  /* Fonts */
+  --font-sans: var(--font-dm-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-playfair), Georgia, "Times New Roman", serif;
+
+  /* Animations */
+  --animate-fade-in-up: fadeInUp 0.7s ease both;
+  --animate-ticker: ticker 35s linear infinite;
+  --animate-float: float 5s ease-in-out infinite;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
 }
 
 @layer base {

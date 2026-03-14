@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Link, usePathname } from "@/lib/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 
-// ─── Navbar ───────────────────────────────────────────────────────────────────
-
 export default function Navbar() {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const supabase = createClient();
-  const { user, creator, reset } = useAuthStore();
+  const { user, reset } = useAuthStore();
   const [menuOpen, setMenuOpen] = useState(false);
 
   async function handleLogout() {
@@ -30,16 +29,21 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
         {/* Logo */}
-        <Link
-          href="/"
-          className="text-lg font-bold text-primary tracking-tight shrink-0"
-        >
-          akeli
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <Image
+            src="/akeli/logo.png"
+            width={32}
+            height={32}
+            alt="Akeli"
+            className="rounded-full"
+          />
+          <span className="text-base font-bold text-primary tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+            akeli
+          </span>
         </Link>
 
-        {/* Desktop elements container (Nav + Auth) pushed to the right */}
+        {/* Desktop elements */}
         <div className="hidden md:flex items-center ml-auto gap-4">
-          {/* Desktop nav */}
           <nav className="flex items-center gap-1">
             {navLinks.map(({ href, label }) => {
               const isActive = pathname.startsWith(href);
@@ -59,7 +63,6 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Auth */}
           <div className="flex items-center gap-2">
             {user ? (
               <>
@@ -95,7 +98,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile menu toggle */}
+        {/* Mobile toggle */}
         <button
           className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           onClick={() => setMenuOpen((o) => !o)}
