@@ -50,9 +50,10 @@ export default function CreateGroupModal({ open, onClose, currentUserId }: Creat
       router.push(("/chat/" + newId) as any);
       reset();
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to create group:", err);
-      setSubmitError(t("groups.createError"));
+      const msg = err?.message ?? err?.error_description ?? JSON.stringify(err);
+      setSubmitError(msg || t("groups.createError"));
     }
   }
 
