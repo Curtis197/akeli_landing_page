@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
-import { supabaseAdmin } from '@/lib/tracking/supabase-admin';
+import { getSupabaseAdmin } from '@/lib/tracking/supabase-admin';
 import type { ClosePayload } from '@/lib/tracking/types';
 
 export async function PATCH(
@@ -16,7 +16,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('recipe_open')
       .update({
         closed_at: body.closed_at,

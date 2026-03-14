@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
-import { supabaseAdmin } from '@/lib/tracking/supabase-admin';
+import { getSupabaseAdmin } from '@/lib/tracking/supabase-admin';
 import { createClient } from '@/lib/supabase/server';
 import type { OpenPayload, OpenResponse } from '@/lib/tracking/types';
 
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('recipe_open')
       .insert({
         recipe_id: body.recipe_id,
