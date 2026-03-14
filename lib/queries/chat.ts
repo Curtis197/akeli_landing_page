@@ -178,34 +178,12 @@ export async function createGroup(
   supabase: Supabase,
   name: string,
   isPublic: boolean,
-  creatorUserId: string
 ): Promise<string> {
-  const { data: group, error: groupError } = await supabase
-    .from("community_group")
-    .insert({ name, is_public: isPublic, creator_id: creatorUserId })
-    .select("id")
-    .single();
-  if (groupError) throw groupError;
-  const groupId = group.id;
-  const { data: conv, error: convError } = await supabase
-    .from("conversation")
-    .insert({ type: "creator_group", name, created_by: creatorUserId })
-    .select("id")
-    .single();
-  if (convError) throw convError;
-  const convId = conv.id;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from("conversation") as any)
-      .update({ community_group_id: groupId })
-      .eq("id", convId);
-  } catch (err) {
-    // Non-fatal: community_group_id may not be in generated types yet
-    console.error("Failed to link community_group_id:", err);
-  }
-  const { error: partError } = await supabase
-    .from("conversation_participant")
-    .insert({ conversation_id: convId, user_id: creatorUserId });
-  if (partError) throw partError;
-  return convId;
+  // Single atomic RPC — creates community_group + conversation + participant in one transaction
+  const { data, error } = await (supabase as any).rpc("create_group_conversation", {
+    p_name: name,
+    p_is_public: isPublic,
+  });
+  if (error) throw error;
+  return data as string;
 }

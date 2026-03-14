@@ -45,7 +45,7 @@ export default function CreateGroupModal({ open, onClose, currentUserId }: Creat
   async function onSubmit(data: FormData) {
     setSubmitError(null);
     try {
-      const newId = await createGroup(supabase, data.name, data.isPublic, currentUserId);
+      const newId = await createGroup(supabase, data.name, data.isPublic);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       router.push(("/chat/" + newId) as any);
       reset();
