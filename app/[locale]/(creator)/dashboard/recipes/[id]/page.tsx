@@ -77,7 +77,7 @@ export default function RecipeDetailPage() {
         return;
       }
 
-      setRecipe(data as Recipe);
+      setRecipe(data as unknown as Recipe);
 
       // Load performance stats if creator is available
       if (creator?.id) {
