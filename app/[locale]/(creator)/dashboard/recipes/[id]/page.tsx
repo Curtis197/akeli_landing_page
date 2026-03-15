@@ -57,9 +57,11 @@ export default function RecipeDetailPage() {
 
   // ── Load data ──────────────────────────────────────────────────────────────
 
+  // Fetch recipe — runs only when id changes
   useEffect(() => {
     async function load() {
       setLoading(true);
+      setNotFound(false);
 
       const { data, error } = await supabase
         .from("recipe")
@@ -78,22 +80,18 @@ export default function RecipeDetailPage() {
       }
 
       setRecipe(data as unknown as Recipe);
-
-      // Load performance stats if creator is available
-      if (creator?.id) {
-        try {
-          const perf = await getRecipePerformance(supabase, creator.id);
-          const found = perf.find((p) => p.recipe_id === id) ?? null;
-          setPerformance(found);
-        } catch (e) {
-          console.error("[recipe-detail] performance error:", e);
-        }
-      }
-
       setLoading(false);
     }
 
     load();
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch performance stats separately — runs when creator is ready
+  useEffect(() => {
+    if (!creator?.id || !id) return;
+    getRecipePerformance(supabase, creator.id)
+      .then((perf) => setPerformance(perf.find((p) => p.recipe_id === id) ?? null))
+      .catch((e) => console.error("[recipe-detail] performance error:", e));
   }, [id, creator?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Toggle publish ─────────────────────────────────────────────────────────
