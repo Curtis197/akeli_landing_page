@@ -30,7 +30,7 @@ export default function ConversationPage() {
   const [sending, setSending] = useState(false);
   const [conversationTitle, setConversationTitle] = useState<string | null>(null);
   const [conversationType, setConversationType] = useState<string | null>(null);
-  const [otherCreatorUsername, setOtherCreatorUsername] = useState<string | null>(null);
+  const [otherCreatorId, setOtherCreatorId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const myUserId = user?.id ?? null;
@@ -72,10 +72,10 @@ export default function ConversationPage() {
           if (otherId) {
             const { data: creator } = await supabase
               .from("creator")
-              .select("username")
+              .select("id")
               .eq("user_id", otherId)
               .single();
-            setOtherCreatorUsername(creator?.username ?? null);
+            setOtherCreatorId(creator?.id ?? null);
           }
         }
       });
@@ -169,9 +169,9 @@ export default function ConversationPage() {
         >
           ←
         </button>
-        {conversationType === "private" && otherCreatorUsername ? (
+        {conversationType === "private" && otherCreatorId ? (
           <Link
-            href={`/creator/${otherCreatorUsername}` as any}
+            href={`/dashboard/creators/${otherCreatorId}` as any}
             className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
           >
             <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-base shrink-0">
