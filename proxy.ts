@@ -9,7 +9,6 @@ const CREATOR_PATHS = [
   "/profile",
   "/fan-mode",
   "/settings",
-  "/recipes",
 ];
 
 /** Cookie-only session check — safe for Edge runtime (no @supabase/ssr). */
