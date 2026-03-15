@@ -131,7 +131,7 @@ export default function GroupDetailPage() {
     setDeleting(true);
     try {
       // Delete child records first in case FK lacks CASCADE
-      await supabase.from("message").delete().eq("conversation_id", conversationId);
+      await supabase.from("chat_message").delete().eq("conversation_id", conversationId);
       await supabase.from("conversation_participant").delete().eq("conversation_id", conversationId);
       const { error } = await supabase.from("conversation").delete().eq("id", conversationId);
       if (error) throw error;

@@ -141,7 +141,7 @@ export default function CreatorDetailPage() {
     setDeleting(true);
     try {
       // Delete child records first in case FK lacks CASCADE
-      await supabase.from("message").delete().eq("conversation_id", existingConvId);
+      await supabase.from("chat_message").delete().eq("conversation_id", existingConvId);
       await supabase.from("conversation_participant").delete().eq("conversation_id", existingConvId);
       const { error } = await supabase.from("conversation").delete().eq("id", existingConvId);
       if (error) throw error;
