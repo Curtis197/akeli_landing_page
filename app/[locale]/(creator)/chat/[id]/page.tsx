@@ -186,7 +186,7 @@ export default function ConversationPage() {
           </Link>
         ) : conversationType === "creator_group" ? (
           <Link
-            href={"/chat?tab=groups" as any}
+            href={("/chat/groups/" + conversationId) as any}
             className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
           >
             <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-base shrink-0">

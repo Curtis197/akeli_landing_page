@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Link, useRouter } from "@/lib/i18n/navigation";
+
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { getRecipePerformance, type SortKey, type RecipePerformance } from "@/lib/queries/recipe-performance";
@@ -262,7 +263,7 @@ function RecipeRow({ recipe, perf, actionLoading, onEdit, onDuplicate, onToggleP
       }
       <div className="flex-1 min-w-0 space-y-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-sm font-semibold text-foreground truncate">{recipe.title}</p>
+          <Link href={("/dashboard/recipes/" + recipe.id) as any} className="text-sm font-semibold text-foreground truncate hover:text-primary transition-colors">{recipe.title}</Link>
           <span className={"px-2 py-0.5 rounded-full text-[10px] font-medium " + (recipe.is_published ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700")}>
             {recipe.is_published ? "Publiée" : "Brouillon"}
           </span>
