@@ -11,11 +11,11 @@ import { formatEuro } from "@/lib/utils/format";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Ingredient {
-  sort_order: number;
+  name: string;
   quantity: number | null;
   unit: string | null;
-  is_optional: boolean | null;
-  ingredient: { name_fr: string | null; name: string } | null;
+  is_optional: boolean;
+  sort_order: number;
 }
 
 interface Step {
@@ -85,10 +85,9 @@ export default function RecipeDetailPage() {
         .select(
           "id, slug, title, description, cover_image_url, region, difficulty, " +
           "prep_time_min, cook_time_min, servings, is_published, is_pork_free, " +
-          "created_at, updated_at, " +
+          "created_at, updated_at, draft_data, " +
           "recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ), " +
           "recipe_tag ( tag ( name ) ), " +
-          "recipe_ingredient ( sort_order, quantity, unit, is_optional, ingredient ( name_fr, name ) ), " +
           "recipe_step ( step_number, title, content, image_url, timer_seconds )"
         )
         .eq("id", id)
@@ -102,6 +101,9 @@ export default function RecipeDetailPage() {
 
       const raw = data as any;
       const macro = Array.isArray(raw.recipe_macro) ? raw.recipe_macro[0] : raw.recipe_macro;
+      // Ingredients are stored only in draft_data (recipe_ingredient table not yet used)
+      const draftIngredients: Ingredient[] = ((raw.draft_data as any)?.ingredients ?? [])
+        .sort((a: Ingredient, b: Ingredient) => a.sort_order - b.sort_order);
       setRecipe({
         ...raw,
         tags: (raw.recipe_tag ?? []).map((t: { tag: { name: string } | null }) => t.tag?.name).filter(Boolean),
@@ -110,7 +112,7 @@ export default function RecipeDetailPage() {
         carbs_g: macro?.carbs_g ?? null,
         fat_g: macro?.fat_g ?? null,
         fiber_g: macro?.fiber_g ?? null,
-        ingredients: [...(raw.recipe_ingredient ?? [])].sort((a: Ingredient, b: Ingredient) => a.sort_order - b.sort_order),
+        ingredients: draftIngredients,
         steps: [...(raw.recipe_step ?? [])].sort((a: Step, b: Step) => a.step_number - b.step_number),
       });
       setLoading(false);
@@ -327,7 +329,7 @@ export default function RecipeDetailPage() {
           </h2>
           <ul className="divide-y divide-border rounded-xl border border-border overflow-hidden">
             {recipe.ingredients.map((ing, i) => {
-              const name = ing.ingredient?.name_fr ?? ing.ingredient?.name ?? "—";
+              const name = ing.name || "—";
               return (
                 <li key={i} className="flex items-center justify-between px-4 py-2.5 bg-card text-sm">
                   <span className={`text-foreground ${ing.is_optional ? "text-muted-foreground" : ""}`}>
