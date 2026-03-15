@@ -56,19 +56,6 @@ export default function LandingPage() {
                 {t("hero.ctaCreator")}
               </Link>
             </div>
-            <div className="flex items-center gap-3" style={{ animation: "fadeInUp 0.65s 0.4s ease both" }}>
-              <div className="flex -space-x-2.5">
-                {["/akeli/friends-meal.jpg","/akeli/couple-phone.jpg","/akeli/diaspora-couple.jpg"].map((src,i) => (
-                  <div key={i} className="relative w-9 h-9 rounded-full overflow-hidden border-2"
-                    style={{ borderColor: "var(--color-brand-cream)" }}>
-                    <Image src={src} fill className="object-cover" alt="" />
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs font-medium" style={{ color: "var(--color-brand-forest)" }}>
-                &#9733;&#9733;&#9733;&#9733;&#9733; Rejoignez des centaines de createurs
-              </p>
-            </div>
           </div>
           <div className="relative min-h-[65vw] sm:min-h-[55vw] lg:min-h-0 order-1 lg:order-2 overflow-hidden"
             style={{ backgroundColor: "var(--color-brand-dark)" }}>
@@ -76,26 +63,6 @@ export default function LandingPage() {
               className="object-cover object-center" style={{ opacity: 0.88 }} priority />
             <div className="absolute inset-0 pointer-events-none"
               style={{ background: "linear-gradient(to top, rgba(28,43,28,0.55) 0%, transparent 50%)" }} />
-            <div className="absolute bottom-8 left-6 sm:bottom-10 sm:left-10 bg-white rounded-2xl p-3 shadow-2xl"
-              style={{ maxWidth:"155px", animation:"fadeInUp 0.8s 0.55s ease both, float 5s 1.5s ease-in-out infinite" }}>
-              <div className="relative w-full rounded-xl overflow-hidden" style={{ height:"90px" }}>
-                <Image src="/akeli/plantains.jpg" fill className="object-cover" alt="Alloco" />
-              </div>
-              <div className="mt-2 px-0.5">
-                <p className="text-[11px] font-semibold leading-tight" style={{ color:"var(--color-brand-dark)" }}>
-                  Alloco maison &#127820;
-                </p>
-                <p className="text-[10px] text-gray-400 mt-1">
-                  <span style={{ color:"var(--color-brand-amber)" }}>&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-                  {" "}4.9 &middot; 120 fans
-                </p>
-              </div>
-            </div>
-            <div className="absolute top-6 right-6 rounded-full px-4 py-2 text-xs font-bold shadow-lg"
-              style={{ backgroundColor:"var(--color-brand-amber)", color:"var(--color-brand-dark)",
-                animation:"fadeInUp 0.6s 0.65s ease both" }}>
-              500+ recettes
-            </div>
           </div>
         </section>
 
