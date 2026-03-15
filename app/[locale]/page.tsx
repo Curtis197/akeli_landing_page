@@ -29,12 +29,6 @@ export default function LandingPage() {
         <section className="grid lg:grid-cols-2 min-h-[calc(100svh-56px)]">
           <div className="flex flex-col justify-center px-6 sm:px-12 lg:px-16 xl:px-20 py-16 lg:py-0 order-2 lg:order-1"
             style={{ backgroundColor: "var(--color-brand-cream)" }}>
-            <div className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold self-start mb-8"
-              style={{ borderColor: "var(--color-brand-green)", color: "var(--color-brand-green)",
-                backgroundColor: "rgba(45,140,78,0.06)", animation: "fadeInUp 0.5s ease both" }}>
-              <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: "var(--color-brand-amber)" }} />
-              Cuisine africaine authentique
-            </div>
             <h1 className="font-bold leading-[0.92] mb-6 text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem]"
               style={{ fontFamily: "var(--font-display)", color: "var(--color-brand-dark)",
                 animation: "fadeInUp 0.65s 0.1s ease both" }}>
@@ -122,11 +116,6 @@ export default function LandingPage() {
           <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="relative h-[420px] sm:h-[480px] rounded-3xl overflow-hidden">
               <Image src="/akeli/couple-phone.jpg" fill className="object-cover object-top" alt="Createurs Akeli" />
-              <div className="absolute bottom-6 right-6 rounded-2xl p-4 text-center"
-                style={{ backgroundColor:"rgba(245,165,35,0.95)", color:"var(--color-brand-dark)" }}>
-                <p className="text-3xl font-bold leading-none">12+</p>
-                <p className="text-[11px] font-semibold mt-1">regions africaines</p>
-              </div>
             </div>
             <div>
               <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color:"var(--color-brand-amber)" }}>
