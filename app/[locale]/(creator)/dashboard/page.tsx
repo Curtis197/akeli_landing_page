@@ -246,28 +246,30 @@ function TopRecipes({
       ) : (
         <ol className="space-y-2">
           {displayed.map((recipe, i) => (
-            <li
-              key={recipe.id}
-              className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:bg-secondary/40 transition-colors"
-            >
-              <span className="w-5 text-sm font-bold text-muted-foreground text-center shrink-0">
-                {i + 1}.
-              </span>
-              {recipe.cover_image_url ? (
-                <img
-                  src={recipe.cover_image_url}
-                  alt={recipe.title}
-                  className="w-12 h-12 rounded-md object-cover shrink-0"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-md bg-secondary shrink-0 flex items-center justify-center text-lg">
-                  🍽️
+            <li key={recipe.id}>
+              <Link
+                href={`/dashboard/recipes/${recipe.id}` as any}
+                className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:bg-secondary/40 transition-colors"
+              >
+                <span className="w-5 text-sm font-bold text-muted-foreground text-center shrink-0">
+                  {i + 1}.
+                </span>
+                {recipe.cover_image_url ? (
+                  <img
+                    src={recipe.cover_image_url}
+                    alt={recipe.title}
+                    className="w-12 h-12 rounded-md object-cover shrink-0"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-md bg-secondary shrink-0 flex items-center justify-center text-lg">
+                    🍽️
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{recipe.title}</p>
+                  <p className="text-xs text-muted-foreground">Publiée</p>
                 </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{recipe.title}</p>
-                <p className="text-xs text-muted-foreground">Publiée</p>
-              </div>
+              </Link>
             </li>
           ))}
         </ol>
