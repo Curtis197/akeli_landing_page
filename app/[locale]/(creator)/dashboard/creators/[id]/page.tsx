@@ -57,6 +57,9 @@ export default function CreatorDetailPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [messaging, setMessaging] = useState(false);
+  const [existingConvId, setExistingConvId] = useState<string | null>(null);
+  const [convClosed, setConvClosed] = useState(false);
+  const [closing, setClosing] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -89,13 +92,27 @@ export default function CreatorDetailPage() {
     });
   }, [creatorId, supabase]);
 
+  // Load existing conversation state
+  useEffect(() => {
+    if (!user?.id || !creator?.user_id) return;
+    getExistingDirectConversation(supabase, user.id, creator.user_id).then(async (convId) => {
+      if (!convId) return;
+      setExistingConvId(convId);
+      const { data } = await supabase
+        .from("conversation")
+        .select("closed_at")
+        .eq("id", convId)
+        .single();
+      setConvClosed(!!data?.closed_at);
+    });
+  }, [creator?.user_id, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   async function handleMessage() {
     if (!user?.id || !creator?.user_id || messaging) return;
     setMessaging(true);
     try {
-      const existing = await getExistingDirectConversation(supabase, user.id, creator.user_id);
-      if (existing) {
-        router.push(`/chat/${existing}` as any);
+      if (existingConvId) {
+        router.push(`/chat/${existingConvId}` as any);
       } else {
         const newId = await createDirectConversation(supabase, user.id, creator.user_id);
         router.push(`/chat/${newId}` as any);
@@ -104,6 +121,17 @@ export default function CreatorDetailPage() {
       console.error("Failed to open conversation:", err);
       setMessaging(false);
     }
+  }
+
+  async function handleCloseConversation() {
+    if (!existingConvId || closing) return;
+    setClosing(true);
+    const { error } = await supabase
+      .from("conversation")
+      .update({ closed_at: new Date().toISOString() })
+      .eq("id", existingConvId);
+    if (!error) setConvClosed(true);
+    setClosing(false);
   }
 
   // ─── Loading ──────────────────────────────────────────────────────────────
@@ -225,18 +253,35 @@ export default function CreatorDetailPage() {
           {/* Actions */}
           <div className="flex items-center gap-3 pt-1 flex-wrap">
             {!isOwnProfile && (
-              <button
-                onClick={handleMessage}
-                disabled={messaging}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
-                {messaging ? (
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <>
+                {convClosed ? (
+                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-destructive/40 bg-destructive/5 text-destructive text-sm font-medium">
+                    Conversation terminée
+                  </span>
                 ) : (
-                  "✉️"
+                  <button
+                    onClick={handleMessage}
+                    disabled={messaging}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  >
+                    {messaging ? (
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      "✉️"
+                    )}
+                    {existingConvId ? "Ouvrir la conversation" : "Envoyer un message"}
+                  </button>
                 )}
-                Envoyer un message
-              </button>
+                {existingConvId && !convClosed && (
+                  <button
+                    onClick={handleCloseConversation}
+                    disabled={closing}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-destructive text-destructive text-sm font-semibold hover:bg-destructive/10 transition-colors disabled:opacity-50"
+                  >
+                    {closing ? "Fermeture…" : "Terminer la conversation"}
+                  </button>
+                )}
+              </>
             )}
             <Link
               href={`/creator/${creatorId}` as any}

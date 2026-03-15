@@ -31,6 +31,7 @@ export default function ConversationPage() {
   const [conversationTitle, setConversationTitle] = useState<string | null>(null);
   const [conversationType, setConversationType] = useState<string | null>(null);
   const [otherCreatorId, setOtherCreatorId] = useState<string | null>(null);
+  const [isClosed, setIsClosed] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const myUserId = user?.id ?? null;
@@ -53,13 +54,14 @@ export default function ConversationPage() {
     // Load conversation metadata
     supabase
       .from("conversation")
-      .select("name, type")
+      .select("name, type, closed_at")
       .eq("id", conversationId)
       .single()
       .then(async ({ data }) => {
         const convType = (data as any)?.type ?? null;
         setConversationTitle(data?.name ?? null);
         setConversationType(convType);
+        setIsClosed(!!(data as any)?.closed_at);
 
         // For private conversations, find the other participant's creator profile
         if (convType === "private" && myUserId) {
@@ -238,6 +240,13 @@ export default function ConversationPage() {
         <div ref={bottomRef} />
       </div>
 
+      {/* Closed banner */}
+      {isClosed && (
+        <div className="shrink-0 px-4 py-2.5 rounded-xl border border-destructive/40 bg-destructive/5 text-sm text-destructive font-medium text-center">
+          Cette conversation est terminée — lecture seule.
+        </div>
+      )}
+
       {/* Input */}
       <form
         onSubmit={sendMessage}
@@ -252,14 +261,15 @@ export default function ConversationPage() {
               sendMessage(e as unknown as React.FormEvent);
             }
           }}
-          placeholder="Tape ton message…"
+          disabled={isClosed}
+          placeholder={isClosed ? "Conversation terminée" : "Tape ton message…"}
           rows={1}
-          className="flex-1 px-4 py-3 rounded-2xl border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none max-h-32 overflow-y-auto"
+          className="flex-1 px-4 py-3 rounded-2xl border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none max-h-32 overflow-y-auto disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ minHeight: "2.75rem" }}
         />
         <button
           type="submit"
-          disabled={!input.trim() || sending}
+          disabled={!input.trim() || sending || isClosed}
           className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 hover:bg-primary/90 transition-colors disabled:opacity-40"
           aria-label="Envoyer"
         >

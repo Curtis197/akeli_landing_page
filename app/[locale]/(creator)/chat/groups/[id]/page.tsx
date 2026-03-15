@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Link } from "@/lib/i18n/navigation";
+import { Link, useRouter } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useAuthStore } from "@/lib/stores/authStore";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -13,6 +14,8 @@ interface Conversation {
   type: string | null;
   community_group_id: string | null;
   updated_at: string | null;
+  created_by: string | null;
+  closed_at: string | null;
 }
 
 interface CommunityGroup {
@@ -38,12 +41,15 @@ export default function GroupDetailPage() {
   const params = useParams();
   const conversationId = String(params.id);
   const supabase = createClient();
+  const router = useRouter();
+  const { user } = useAuthStore();
 
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [group, setGroup] = useState<CommunityGroup | null>(null);
   const [members, setMembers] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [closing, setClosing] = useState(false);
 
   // ── Load data ──────────────────────────────────────────────────────────────
 
@@ -54,7 +60,7 @@ export default function GroupDetailPage() {
       // 1. Fetch conversation
       const { data: convData, error: convError } = await supabase
         .from("conversation")
-        .select("id, name, type, community_group_id, updated_at")
+        .select("id, name, type, community_group_id, updated_at, created_by, closed_at")
         .eq("id", conversationId)
         .single();
 
@@ -104,6 +110,20 @@ export default function GroupDetailPage() {
     load();
   }, [conversationId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  async function closeGroup() {
+    if (closing) return;
+    setClosing(true);
+    const { error } = await supabase
+      .from("conversation")
+      .update({ closed_at: new Date().toISOString() })
+      .eq("id", conversationId);
+    if (!error) {
+      setConversation((prev) => prev ? { ...prev, closed_at: new Date().toISOString() } : prev);
+      router.push("/chat?tab=groups" as any);
+    }
+    setClosing(false);
+  }
+
   // ─── Loading ───────────────────────────────────────────────────────────────
 
   if (loading) {
@@ -149,6 +169,8 @@ export default function GroupDetailPage() {
   const groupName = group?.name ?? conversation.name ?? `Groupe #${conversationId.slice(0, 8)}`;
   const isPublic = group?.is_public ?? true;
   const memberCount = group?.member_count ?? members.length;
+  const isAdmin = user?.id === conversation.created_by;
+  const isClosed = !!conversation.closed_at;
   const createdAt = group?.created_at
     ? new Date(group.created_at).toLocaleDateString("fr-FR", {
         day: "numeric",
@@ -214,13 +236,31 @@ export default function GroupDetailPage() {
         )}
       </div>
 
-      {/* CTA */}
-      <Link
-        href={`/chat/${conversationId}` as any}
-        className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
-      >
-        Ouvrir la conversation
-      </Link>
+      {/* Closed banner */}
+      {isClosed && (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive font-medium">
+          Ce groupe a été fermé. La conversation est en lecture seule.
+        </div>
+      )}
+
+      {/* CTAs */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <Link
+          href={`/chat/${conversationId}` as any}
+          className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+        >
+          Ouvrir la conversation
+        </Link>
+        {isAdmin && !isClosed && (
+          <button
+            onClick={closeGroup}
+            disabled={closing}
+            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-destructive text-destructive text-sm font-semibold hover:bg-destructive/10 transition-colors disabled:opacity-50"
+          >
+            {closing ? "Fermeture…" : "Fermer le groupe"}
+          </button>
+        )}
+      </div>
 
       {/* Members */}
       {members.length > 0 && (
