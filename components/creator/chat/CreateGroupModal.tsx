@@ -48,6 +48,7 @@ export default function CreateGroupModal({ open, onClose, currentUserId }: Creat
     setSubmitError(null);
     try {
       const newId = await createGroup(supabase, data.name, data.isPublic);
+      console.log("[CreateGroupModal] group created, conversation_id:", newId, "navigating to /chat/" + newId);
       await queryClient.invalidateQueries({ queryKey: ["conversations"] });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       router.push(("/chat/" + newId) as any);

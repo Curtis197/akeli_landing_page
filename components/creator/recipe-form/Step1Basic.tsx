@@ -47,6 +47,7 @@ export default function Step1Basic({ data, onChange }: Step1Props) {
       .select("code, name_fr")
       .order("name_fr")
       .then(({ data, error }) => {
+        console.log("[Step1Basic] food_region fetch:", { count: data?.length ?? 0, error: error?.message, data });
         if (error) console.error("Failed to load regions:", error);
         else if (data) setRegions(data);
       });

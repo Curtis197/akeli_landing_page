@@ -130,6 +130,7 @@ export default function ProfilePage() {
       if (avatarFile) {
         newAvatarUrl = await uploadAvatar();
       }
+      console.log("[ProfilePage] updating creator id:", creator.id);
       const { data, error } = await supabase
         .from("creator")
         .update({
@@ -142,6 +143,7 @@ export default function ProfilePage() {
         .eq("id", creator.id)
         .select("*")
         .single();
+      console.log("[ProfilePage] update result:", { data: data?.id, error: error?.message, code: error?.code });
       if (error) throw new Error(error.message);
       if (data) {
         setCreator(data);

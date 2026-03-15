@@ -12,13 +12,15 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Initial session check
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log("[AuthProvider] session user:", session?.user?.id ?? "null");
       setUser(session?.user ?? null);
       if (session?.user) {
-        const { data: creator } = await supabase
+        const { data: creator, error: creatorError } = await supabase
           .from("creator")
           .select("*")
           .eq("user_id", session.user.id)
           .single();
+        console.log("[AuthProvider] creator fetch:", { id: creator?.id, error: creatorError?.message });
         setCreator(creator);
       }
       setLoading(false);
@@ -28,13 +30,15 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("[AuthProvider] auth event:", event, "user:", session?.user?.id ?? "null");
       setUser(session?.user ?? null);
       if (session?.user) {
-        const { data: creator } = await supabase
+        const { data: creator, error: creatorError } = await supabase
           .from("creator")
           .select("*")
           .eq("user_id", session.user.id)
           .single();
+        console.log("[AuthProvider] creator (event):", { id: creator?.id, error: creatorError?.message });
         setCreator(creator);
       } else {
         setCreator(null);

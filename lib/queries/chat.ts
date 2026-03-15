@@ -26,11 +26,13 @@ export async function getConversations(
   userId: string,
   type?: "private" | "creator_group" | "support"
 ): Promise<ConversationListItem[]> {
+  console.log("[getConversations] userId:", userId, "type:", type ?? "all");
   const { data: participations, error: partError } = await supabase
     .from("conversation_participant")
     .select("conversation_id, last_read_at")
     .eq("user_id", userId);
 
+  console.log("[getConversations] participations:", participations?.length ?? 0, "error:", partError?.message);
   if (partError) throw partError;
   if (!participations || participations.length === 0) return [];
 
@@ -53,6 +55,7 @@ export async function getConversations(
   }
 
   const { data: conversations, error: convError } = await convQuery;
+  console.log("[getConversations] conversations:", conversations?.length ?? 0, "error:", convError?.message);
   if (convError) throw convError;
   if (!conversations || conversations.length === 0) return [];
 
