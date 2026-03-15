@@ -88,6 +88,7 @@ export default function RecipeDetailPage() {
           "id, slug, title, description, cover_image_url, region, difficulty, " +
           "prep_time_min, cook_time_min, servings, is_published, is_pork_free, " +
           "created_at, updated_at, draft_data, " +
+          "food_region:region ( name_fr ), " +
           "recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ), " +
           "recipe_tag ( tag ( name ) ), " +
           "recipe_step ( step_number, title, content, image_url, timer_seconds )"
@@ -108,6 +109,7 @@ export default function RecipeDetailPage() {
         .sort((a: Ingredient, b: Ingredient) => a.sort_order - b.sort_order);
       setRecipe({
         ...raw,
+        region: raw.food_region?.name_fr ?? raw.region,
         tags: (raw.recipe_tag ?? []).map((t: { tag: { name: string } | null }) => t.tag?.name).filter(Boolean),
         calories: macro?.calories ?? null,
         protein_g: macro?.protein_g ?? null,
