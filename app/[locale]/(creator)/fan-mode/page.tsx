@@ -290,7 +290,7 @@ function FanRevenueChart({ history }: { history: MonthlyRevenue[] }) {
                 title={`${m.fan_revenue.toFixed(2)} €`}
               />
               <span className="text-[10px] text-muted-foreground truncate w-full text-center">
-                {m.month.slice(0, 3)}
+                {(m.month ?? "").slice(0, 3)}
               </span>
             </div>
           );

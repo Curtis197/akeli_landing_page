@@ -328,7 +328,7 @@ function RevenueChart({ history }: { history: MonthlyRevenue[] }) {
                 <div className="w-full bg-primary" style={{ height: `${100 - fanPct}%` }} />
               </div>
               <span className="text-[10px] text-muted-foreground truncate w-full text-center">
-                {m.month.slice(0, 3)}
+                {(m.month ?? "").slice(0, 3)}
               </span>
             </div>
           );

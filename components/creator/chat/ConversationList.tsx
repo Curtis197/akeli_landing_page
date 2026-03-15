@@ -33,7 +33,7 @@ export function ConversationList({ conversations }: ConversationListProps) {
             {/* Name + unread */}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">
-                {conv.name ?? "Conversation #" + conv.id.slice(0, 8)}
+                {conv.name ?? "Conversation #" + (conv.id ?? "").slice(0, 8)}
               </p>
             </div>
 

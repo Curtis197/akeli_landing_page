@@ -31,7 +31,19 @@ export default function AuthCallbackPage() {
         .select("*")
         .eq("user_id", userId)
         .single();
-      setCreator(creator);
+      if (creator) {
+        setCreator({
+          ...creator,
+          specialties: creator.specialties ?? [],
+          specialty_codes: creator.specialty_codes ?? [],
+          language_codes: creator.language_codes ?? [],
+          recipe_count: creator.recipe_count ?? 0,
+          fan_count: creator.fan_count ?? 0,
+          total_revenue: creator.total_revenue ?? 0,
+        });
+      } else {
+        setCreator(null);
+      }
     }
 
     if (code) {
