@@ -52,27 +52,28 @@ export default function RecipesPage() {
       .select(`
         id, slug, title, cover_image_url, region, difficulty,
         prep_time_min, cook_time_min, creator_id,
-        creator:creator_id(name, profil_url)
+        food_region:region ( name_fr ),
+        creator:creator_id ( display_name, profile_image_url )
       `)
       .eq("is_published", true)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         if (data) {
           setRecipes(
-            data.map((r) => {
+            data.map((r: any) => {
               const c = Array.isArray(r.creator) ? r.creator[0] : r.creator;
               return {
                 id: r.id,
                 slug: r.slug,
                 title: r.title,
                 cover_image_url: r.cover_image_url,
-                region: r.region,
+                region: r.food_region?.name_fr ?? r.region,
                 difficulty: r.difficulty,
                 prep_time_min: r.prep_time_min,
                 cook_time_min: r.cook_time_min,
                 creator_id: r.creator_id,
-                creator_name: c?.name ?? null,
-                creator_profil_url: c?.profil_url ?? null,
+                creator_name: c?.display_name ?? null,
+                creator_profil_url: c?.profile_image_url ?? null,
               };
             })
           );
