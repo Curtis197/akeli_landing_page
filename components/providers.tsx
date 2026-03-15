@@ -21,7 +21,18 @@ async function fetchCreator(userId: string, accessToken: string) {
   );
   if (!res.ok) return null;
   const rows = await res.json();
-  return rows?.[0] ?? null;
+  const row = rows?.[0];
+  if (!row) return null;
+  // Normalize nullable DB fields to match CreatorProfile types
+  return {
+    ...row,
+    specialties: row.specialties ?? [],
+    specialty_codes: row.specialty_codes ?? [],
+    language_codes: row.language_codes ?? [],
+    recipe_count: row.recipe_count ?? 0,
+    fan_count: row.fan_count ?? 0,
+    total_revenue: row.total_revenue ?? 0,
+  };
 }
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
