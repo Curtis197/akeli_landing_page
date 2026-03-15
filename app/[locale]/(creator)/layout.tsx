@@ -23,7 +23,7 @@ export default async function CreatorLayout({
     <div className="flex flex-col lg:flex-row min-h-screen">
       <CreatorMobileNav items={navItems} logoutText={t("logout")} />
       <aside className="w-64 shrink-0 border-r hidden lg:block p-6">
-        <div className="text-lg font-bold text-primary mb-6">Akeli Creator</div>
+        <Link href="/" className="text-lg font-bold text-primary mb-6 block hover:opacity-80 transition-opacity">Akeli Creator</Link>
         <nav className="space-y-1">
           {navItems.map((item) => (
             <Link

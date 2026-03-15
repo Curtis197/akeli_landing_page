@@ -118,15 +118,6 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-bold text-foreground">
           Bonjour, {firstName} 👋
         </h1>
-        <button
-          onClick={() => {
-            setAiPanelOpen(true);
-            if (!aiInsight) fetchAiInsight();
-          }}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-foreground text-sm font-medium hover:bg-secondary/80 transition-colors"
-        >
-          💬 Explique-moi mes stats
-        </button>
       </div>
 
       {/* Stats */}

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { useRouter } from "@/lib/i18n/navigation";
+import { useRouter, Link } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 
@@ -30,6 +30,7 @@ export default function ConversationPage() {
   const [sending, setSending] = useState(false);
   const [conversationTitle, setConversationTitle] = useState<string | null>(null);
   const [conversationType, setConversationType] = useState<string | null>(null);
+  const [otherCreatorUsername, setOtherCreatorUsername] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const myUserId = user?.id ?? null;
@@ -49,19 +50,38 @@ export default function ConversationPage() {
   }, [conversationId, supabase]);
 
   useEffect(() => {
-    // Load conversation title
+    // Load conversation metadata
     supabase
       .from("conversation")
       .select("name, type")
       .eq("id", conversationId)
       .single()
-      .then(({ data }) => {
+      .then(async ({ data }) => {
+        const convType = (data as any)?.type ?? null;
         setConversationTitle(data?.name ?? null);
-        setConversationType((data as any)?.type ?? null);
+        setConversationType(convType);
+
+        // For private conversations, find the other participant's creator profile
+        if (convType === "private" && myUserId) {
+          const { data: participants } = await supabase
+            .from("conversation_participant")
+            .select("user_id")
+            .eq("conversation_id", conversationId);
+
+          const otherId = participants?.find((p) => p.user_id !== myUserId)?.user_id;
+          if (otherId) {
+            const { data: creator } = await supabase
+              .from("creator")
+              .select("username")
+              .eq("user_id", otherId)
+              .single();
+            setOtherCreatorUsername(creator?.username ?? null);
+          }
+        }
       });
 
     loadMessages();
-  }, [conversationId, loadMessages, supabase]);
+  }, [conversationId, loadMessages, myUserId, supabase]);
 
   // ── Supabase Realtime ───────────────────────────────────────────────────────
 
@@ -149,20 +169,51 @@ export default function ConversationPage() {
         >
           ←
         </button>
-        <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-base shrink-0">
-          👤
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground truncate">
-            {conversationTitle ?? `Conversation #${conversationId.slice(0, 8)}`}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {conversationType === "creator_group" ? "Groupe"
-              : conversationType === "private" ? "Direct"
-              : conversationType === "support" ? "Support"
-              : "Conversation"}
-          </p>
-        </div>
+        {conversationType === "private" && otherCreatorUsername ? (
+          <Link
+            href={`/creator/${otherCreatorUsername}` as any}
+            className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+          >
+            <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-base shrink-0">
+              👤
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">
+                {conversationTitle ?? `Conversation #${conversationId.slice(0, 8)}`}
+              </p>
+              <p className="text-xs text-muted-foreground">Direct</p>
+            </div>
+          </Link>
+        ) : conversationType === "creator_group" ? (
+          <Link
+            href={"/chat?tab=groups" as any}
+            className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+          >
+            <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-base shrink-0">
+              💬
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">
+                {conversationTitle ?? `Conversation #${conversationId.slice(0, 8)}`}
+              </p>
+              <p className="text-xs text-muted-foreground">Groupe</p>
+            </div>
+          </Link>
+        ) : (
+          <>
+            <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-base shrink-0">
+              👤
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">
+                {conversationTitle ?? `Conversation #${conversationId.slice(0, 8)}`}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {conversationType === "support" ? "Support" : "Conversation"}
+              </p>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Messages */}

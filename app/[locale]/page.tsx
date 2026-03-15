@@ -35,7 +35,7 @@ export default function LandingPage() {
               <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: "var(--color-brand-amber)" }} />
               Cuisine africaine authentique
             </div>
-            <h1 className="font-bold italic leading-[0.92] mb-6 text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem]"
+            <h1 className="font-bold leading-[0.92] mb-6 text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem]"
               style={{ fontFamily: "var(--font-display)", color: "var(--color-brand-dark)",
                 animation: "fadeInUp 0.65s 0.1s ease both" }}>
               {t("hero.title")}
@@ -117,7 +117,7 @@ export default function LandingPage() {
               <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color:"var(--color-brand-green)" }}>
                 Simple &amp; intuitif
               </p>
-              <h2 className="text-4xl sm:text-5xl font-bold italic"
+              <h2 className="text-4xl sm:text-5xl font-bold"
                 style={{ fontFamily:"var(--font-display)", color:"var(--color-brand-dark)" }}>
                 {t("howItWorks.title")}
               </h2>
@@ -165,7 +165,7 @@ export default function LandingPage() {
               <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color:"var(--color-brand-amber)" }}>
                 Pour les createurs de contenu
               </p>
-              <h2 className="text-4xl sm:text-5xl font-bold italic leading-[1.05] mb-6"
+              <h2 className="text-4xl sm:text-5xl font-bold leading-[1.05] mb-6"
                 style={{ fontFamily:"var(--font-display)", color:"#F7F2EA" }}>
                 Creez.<br/>Partagez.<br/>Gagnez.
               </h2>
@@ -209,7 +209,7 @@ export default function LandingPage() {
               <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color:"var(--color-brand-amber)" }}>
                 Notre raison d&apos;être
               </p>
-              <h2 className="text-3xl sm:text-5xl font-bold italic text-white max-w-3xl mx-auto leading-tight"
+              <h2 className="text-3xl sm:text-5xl font-bold text-white max-w-3xl mx-auto leading-tight"
                 style={{ fontFamily:"var(--font-display)" }}>
                 &ldquo;La cuisine africaine, racontee par ceux qui la vivent.&rdquo;
               </h2>
@@ -228,7 +228,7 @@ export default function LandingPage() {
               <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color:"var(--color-brand-amber)" }}>
                 La communaute grandit
               </p>
-              <h2 className="text-4xl sm:text-5xl font-bold italic text-white"
+              <h2 className="text-4xl sm:text-5xl font-bold text-white"
                 style={{ fontFamily:"var(--font-display)" }}>
                 Une famille qui partage
               </h2>
@@ -258,7 +258,7 @@ export default function LandingPage() {
             <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color:"var(--color-brand-green)" }}>
               Tarif
             </p>
-            <h2 className="text-4xl sm:text-5xl font-bold italic mb-12"
+            <h2 className="text-4xl sm:text-5xl font-bold mb-12"
               style={{ fontFamily:"var(--font-display)", color:"var(--color-brand-dark)" }}>
               {t("pricing.title")}
             </h2>
@@ -303,7 +303,7 @@ export default function LandingPage() {
         <section className="px-6 sm:px-12 py-20 sm:py-28" style={{ backgroundColor:"#fff" }}>
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-4xl sm:text-5xl font-bold italic"
+              <h2 className="text-4xl sm:text-5xl font-bold"
                 style={{ fontFamily:"var(--font-display)", color:"var(--color-brand-dark)" }}>
                 {t("faqTitle")}
               </h2>
@@ -321,7 +321,7 @@ export default function LandingPage() {
             <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color:"var(--color-brand-amber)" }}>
               Pret a commencer ?
             </p>
-            <h2 className="text-4xl sm:text-6xl font-bold italic text-white mb-8"
+            <h2 className="text-4xl sm:text-6xl font-bold text-white mb-8"
               style={{ fontFamily:"var(--font-display)" }}>
               Mangez comme vous &ecirc;tes.
             </h2>
@@ -347,7 +347,7 @@ export default function LandingPage() {
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
             <Link href="/" className="flex items-center gap-2">
               <Image src="/akeli/logo.png" width={28} height={28} alt="Akeli" className="rounded-full opacity-90" />
-              <span className="text-base font-bold italic"
+              <span className="text-base font-bold"
                 style={{ fontFamily:"var(--font-display)", color:"var(--color-brand-cream)" }}>
                 akeli
               </span>
