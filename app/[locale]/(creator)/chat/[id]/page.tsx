@@ -9,11 +9,10 @@ import { useAuthStore } from "@/lib/stores/authStore";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Message {
-  id: number;
+  id: string;
   content: string;
-  user_id: string;
-  created_at: string;
-  read_by: string[];
+  sender_id: string | null;
+  sent_at: string | null;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -38,12 +37,13 @@ export default function ConversationPage() {
   // ── Load history ────────────────────────────────────────────────────────────
 
   const loadMessages = useCallback(async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("chat_message")
-      .select("id, content, user_id, created_at, read_by")
+      .select("id, content, sender_id, sent_at")
       .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
+      .order("sent_at", { ascending: true });
 
+    if (error) console.error("[chat] loadMessages error:", error);
     if (data) setMessages(data as Message[]);
     setLoading(false);
   }, [conversationId, supabase]);
@@ -83,10 +83,6 @@ export default function ConversationPage() {
             if (prev.find((m) => m.id === newMsg.id)) return prev;
             return [...prev, newMsg];
           });
-          // Mark as read if not sent by self
-          if (myUserId && newMsg.user_id !== myUserId) {
-            markAsRead(newMsg.id);
-          }
         }
       )
       .subscribe();
@@ -102,25 +98,6 @@ export default function ConversationPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ── Mark read ───────────────────────────────────────────────────────────────
-
-  async function markAsRead(messageId: number) {
-    if (!myUserId) return;
-    // Append creator's user_id to read_by array
-    await supabase.rpc("append_read_by", {
-      message_id: messageId,
-      reader_user_id: myUserId,
-    });
-  }
-
-  // Mark all incoming messages as read on load
-  useEffect(() => {
-    if (!myUserId || messages.length === 0) return;
-    messages
-      .filter((m) => m.user_id !== myUserId && !m.read_by?.includes(myUserId))
-      .forEach((m) => markAsRead(m.id));
-  }, [messages, myUserId]);
-
   // ── Send message ─────────────────────────────────────────────────────────────
 
   async function sendMessage(e: React.FormEvent) {
@@ -133,29 +110,25 @@ export default function ConversationPage() {
 
     // Optimistic update
     const optimistic: Message = {
-      id: Date.now(), // temp id
+      id: `optimistic-${Date.now()}`,
       content: text,
-      user_id: myUserId,
-      created_at: new Date().toISOString(),
-      read_by: [myUserId],
+      sender_id: myUserId,
+      sent_at: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, optimistic]);
 
-    try {
-      await supabase.from("chat_message").insert({
-        content: text,
-        user_id: myUserId,
-        conversation_id: conversationId,
-        received: false,
-        read_by: [myUserId],
-      });
-    } catch {
-      // Remove optimistic on failure
+    const { error } = await supabase.from("chat_message").insert({
+      content: text,
+      sender_id: myUserId,
+      conversation_id: conversationId,
+    });
+
+    if (error) {
+      console.error("[chat] sendMessage error:", error);
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
       setInput(text);
-    } finally {
-      setSending(false);
     }
+    setSending(false);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -207,7 +180,7 @@ export default function ConversationPage() {
             <MessageBubble
               key={msg.id}
               message={msg}
-              isOwn={msg.user_id === myUserId}
+              isOwn={msg.sender_id === myUserId}
             />
           ))
         )}
@@ -271,7 +244,7 @@ function MessageBubble({
   message: Message;
   isOwn: boolean;
 }) {
-  const timeLabel = new Date(message.created_at).toLocaleTimeString("fr-FR", {
+  const timeLabel = new Date(message.sent_at ?? Date.now()).toLocaleTimeString("fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
   });
