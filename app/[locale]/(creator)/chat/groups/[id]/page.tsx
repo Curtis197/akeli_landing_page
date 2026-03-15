@@ -138,7 +138,7 @@ export default function GroupDetailPage() {
       if (conversation?.community_group_id) {
         await supabase.from("community_group").delete().eq("id", conversation.community_group_id);
       }
-      router.push("/chat?tab=groups" as any);
+      window.location.href = window.location.pathname.replace(/\/chat\/groups\/.*$/, "/chat");
     } catch (err) {
       console.error("Delete group failed:", err);
       alert("La suppression a échoué. Veuillez réessayer.");

@@ -145,9 +145,8 @@ export default function CreatorDetailPage() {
       await supabase.from("conversation_participant").delete().eq("conversation_id", existingConvId);
       const { error } = await supabase.from("conversation").delete().eq("id", existingConvId);
       if (error) throw error;
-      setExistingConvId(null);
-      setConvClosed(false);
       setConfirmDeleteConv(false);
+      window.location.reload();
     } catch (err) {
       console.error("Delete conversation failed:", err);
       alert("La suppression a échoué. Veuillez réessayer.");
