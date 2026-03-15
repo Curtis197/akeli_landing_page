@@ -10,6 +10,22 @@ import { formatEuro } from "@/lib/utils/format";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+interface Ingredient {
+  sort_order: number;
+  quantity: number | null;
+  unit: string | null;
+  is_optional: boolean | null;
+  ingredient: { name_fr: string | null; name: string } | null;
+}
+
+interface Step {
+  step_number: number;
+  title: string | null;
+  content: string | null;
+  image_url: string | null;
+  timer_seconds: number | null;
+}
+
 interface Recipe {
   id: string;
   slug: string | null;
@@ -29,6 +45,8 @@ interface Recipe {
   carbs_g: number | null;
   fat_g: number | null;
   fiber_g: number | null;
+  ingredients: Ingredient[];
+  steps: Step[];
   created_at: string | null;
   updated_at: string | null;
 }
@@ -69,7 +87,9 @@ export default function RecipeDetailPage() {
           "prep_time_min, cook_time_min, servings, is_published, is_pork_free, " +
           "created_at, updated_at, " +
           "recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ), " +
-          "recipe_tag ( tag:tag_id ( name ) )"
+          "recipe_tag ( tag:tag_id ( name ) ), " +
+          "recipe_ingredient ( sort_order, quantity, unit, is_optional, ingredient:ingredient_id ( name_fr, name ) ), " +
+          "recipe_step ( step_number, title, content, image_url, timer_seconds )"
         )
         .eq("id", id)
         .single();
@@ -90,6 +110,8 @@ export default function RecipeDetailPage() {
         carbs_g: macro?.carbs_g ?? null,
         fat_g: macro?.fat_g ?? null,
         fiber_g: macro?.fiber_g ?? null,
+        ingredients: [...(raw.recipe_ingredient ?? [])].sort((a: Ingredient, b: Ingredient) => a.sort_order - b.sort_order),
+        steps: [...(raw.recipe_step ?? [])].sort((a: Step, b: Step) => a.step_number - b.step_number),
       });
       setLoading(false);
     }
@@ -292,6 +314,78 @@ export default function RecipeDetailPage() {
         </div>
       )}
 
+      {/* Ingredients */}
+      {recipe.ingredients.length > 0 && (
+        <div>
+          <h2 className="text-base font-semibold text-foreground mb-3">
+            Ingrédients
+            {recipe.servings !== null && (
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                — {recipe.servings} portion{recipe.servings > 1 ? "s" : ""}
+              </span>
+            )}
+          </h2>
+          <ul className="divide-y divide-border rounded-xl border border-border overflow-hidden">
+            {recipe.ingredients.map((ing, i) => {
+              const name = ing.ingredient?.name_fr ?? ing.ingredient?.name ?? "—";
+              return (
+                <li key={i} className="flex items-center justify-between px-4 py-2.5 bg-card text-sm">
+                  <span className={`text-foreground ${ing.is_optional ? "text-muted-foreground" : ""}`}>
+                    {name}
+                    {ing.is_optional && (
+                      <span className="ml-1.5 text-[10px] text-muted-foreground uppercase tracking-wide">(optionnel)</span>
+                    )}
+                  </span>
+                  {(ing.quantity !== null || ing.unit) && (
+                    <span className="text-muted-foreground shrink-0 ml-4">
+                      {ing.quantity !== null ? ing.quantity : ""}{ing.unit ? ` ${ing.unit}` : ""}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Steps */}
+      {recipe.steps.length > 0 && (
+        <div>
+          <h2 className="text-base font-semibold text-foreground mb-3">Préparation</h2>
+          <ol className="space-y-4">
+            {recipe.steps.map((step) => (
+              <li key={step.step_number} className="flex gap-4">
+                <span className="shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center mt-0.5">
+                  {step.step_number}
+                </span>
+                <div className="flex-1 space-y-1.5">
+                  {step.title && (
+                    <p className="text-sm font-semibold text-foreground">{step.title}</p>
+                  )}
+                  {step.content && (
+                    <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
+                  )}
+                  {step.timer_seconds && step.timer_seconds > 0 && (
+                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                      ⏱ {step.timer_seconds >= 60
+                        ? `${Math.floor(step.timer_seconds / 60)} min${step.timer_seconds % 60 > 0 ? ` ${step.timer_seconds % 60} s` : ""}`
+                        : `${step.timer_seconds} s`}
+                    </span>
+                  )}
+                  {step.image_url && (
+                    <img
+                      src={step.image_url}
+                      alt={step.title ?? `Étape ${step.step_number}`}
+                      className="mt-2 w-full max-w-sm rounded-xl object-cover"
+                    />
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
       {/* Macros */}
       {hasMacros && (
         <div>
@@ -314,7 +408,7 @@ export default function RecipeDetailPage() {
       )}
 
       {/* Tags */}
-      {recipe.tags && recipe.tags.length > 0 && (
+      {recipe.tags.length > 0 && (
         <div>
           <h2 className="text-base font-semibold text-foreground mb-3">Tags</h2>
           <div className="flex flex-wrap gap-2">
