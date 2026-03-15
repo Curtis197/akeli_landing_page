@@ -42,6 +42,8 @@ const EMPTY_INGREDIENT = (): Ingredient => ({
 export default function Step2Ingredients({ data, onChange }: Step2Props) {
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState<Ingredient>(EMPTY_INGREDIENT());
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<Ingredient | null>(null);
   const dndId = useId();
 
   const ingredients = data.ingredients;
@@ -72,6 +74,23 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
 
   const removeIngredient = (id: string) => {
     updateIngredients(ingredients.filter((i) => i.id !== id));
+  };
+
+  const startEdit = (ing: Ingredient) => {
+    setEditingId(ing.id);
+    setEditDraft({ ...ing });
+  };
+
+  const saveEdit = () => {
+    if (!editDraft) return;
+    updateIngredients(ingredients.map((i) => i.id === editDraft.id ? editDraft : i));
+    setEditingId(null);
+    setEditDraft(null);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditDraft(null);
   };
 
   const handleAddIngredient = () => {
@@ -117,6 +136,7 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
                       key={ing.id}
                       ingredient={ing}
                       onRemove={removeIngredient}
+                      onEdit={startEdit}
                     />
                   ))}
                 </ul>
@@ -160,6 +180,66 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
             ))}
           </ul>
         </>
+      )}
+
+      {/* Edit form */}
+      {editingId && editDraft && (
+        <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-foreground">
+              {editDraft.is_section_header ? "Modifier le titre de section" : "Modifier l'ingrédient"}
+            </h3>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={editDraft.is_section_header}
+                onChange={(e) => setEditDraft((d) => d ? { ...d, is_section_header: e.target.checked } : d)}
+                className="rounded border-input accent-primary" />
+              <span className="text-xs text-muted-foreground">Section</span>
+            </label>
+          </div>
+
+          {editDraft.is_section_header ? (
+            <input type="text" placeholder="Titre de la section"
+              value={editDraft.title ?? ""}
+              onChange={(e) => setEditDraft((d) => d ? { ...d, title: e.target.value } : d)}
+              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+          ) : (
+            <div className="space-y-3">
+              <input type="text" placeholder="Nom de l'ingrédient *"
+                value={editDraft.name}
+                onChange={(e) => setEditDraft((d) => d ? { ...d, name: e.target.value } : d)}
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+              <div className="grid grid-cols-2 gap-3">
+                <input type="number" placeholder="Quantité" min={0.01} step={0.01}
+                  value={editDraft.quantity ?? ""}
+                  onChange={(e) => setEditDraft((d) => d ? { ...d, quantity: parseFloat(e.target.value) || undefined } : d)}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                <select value={editDraft.unit ?? "g"}
+                  onChange={(e) => setEditDraft((d) => d ? { ...d, unit: e.target.value } : d)}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                  {UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
+                </select>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={editDraft.is_optional}
+                  onChange={(e) => setEditDraft((d) => d ? { ...d, is_optional: e.target.checked } : d)}
+                  className="rounded border-input accent-primary" />
+                <span className="text-sm text-foreground">Ingrédient optionnel</span>
+              </label>
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <button type="button" onClick={saveEdit}
+              disabled={editDraft.is_section_header ? !editDraft.title?.trim() : !editDraft.name.trim()}
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40">
+              Enregistrer
+            </button>
+            <button type="button" onClick={cancelEdit}
+              className="px-4 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors">
+              Annuler
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Add form */}
@@ -271,9 +351,11 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
 function SortableIngredientRow({
   ingredient,
   onRemove,
+  onEdit,
 }: {
   ingredient: Ingredient;
   onRemove: (id: string) => void;
+  onEdit: (ing: Ingredient) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: ingredient.id });
@@ -296,6 +378,8 @@ function SortableIngredientRow({
           ⠿
         </button>
         <span className="flex-1 text-sm font-semibold text-primary">{ingredient.title || "Section sans titre"}</span>
+        <button type="button" onClick={() => onEdit(ingredient)}
+          className="p-1 text-muted-foreground hover:text-foreground transition-colors text-xs">✎</button>
         <button type="button" onClick={() => onRemove(ingredient.id)}
           className="p-1 text-muted-foreground hover:text-destructive transition-colors">✕</button>
       </li>
@@ -319,6 +403,8 @@ function SortableIngredientRow({
           {ingredient.is_optional && " · optionnel"}
         </p>
       </div>
+      <button type="button" onClick={() => onEdit(ingredient)}
+        className="p-1 text-muted-foreground hover:text-foreground transition-colors text-xs">✎</button>
       <button type="button" onClick={() => onRemove(ingredient.id)}
         className="p-1 text-muted-foreground hover:text-destructive transition-colors">✕</button>
     </li>

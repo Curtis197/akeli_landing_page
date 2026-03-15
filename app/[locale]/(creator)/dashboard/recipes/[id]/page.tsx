@@ -73,6 +73,8 @@ export default function RecipeDetailPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // ── Load data ──────────────────────────────────────────────────────────────
 
@@ -162,6 +164,19 @@ export default function RecipeDetailPage() {
     }
 
     setPublishing(false);
+  }
+
+  async function deleteRecipe() {
+    if (deleting) return;
+    setDeleting(true);
+    const { error } = await supabase.from("recipe").delete().eq("id", id);
+    if (!error) {
+      router.push("/dashboard/recipes" as any);
+    } else {
+      console.error("[recipe-detail] delete error:", error);
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
   }
 
   // ─── Loading ───────────────────────────────────────────────────────────────
@@ -264,7 +279,36 @@ export default function RecipeDetailPage() {
             ? "Dépublier"
             : "Publier"}
         </button>
+        <button
+          onClick={() => setConfirmDelete(true)}
+          className="px-4 py-2 rounded-xl border border-destructive text-destructive text-sm font-medium hover:bg-destructive/10 transition-colors"
+        >
+          Supprimer
+        </button>
       </div>
+
+      {/* Delete confirmation */}
+      {confirmDelete && (
+        <>
+          <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setConfirmDelete(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-background border border-border rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
+              <h2 className="text-base font-semibold text-foreground">Supprimer la recette ?</h2>
+              <p className="text-sm text-muted-foreground">Cette action est irréversible.</p>
+              <div className="flex items-center gap-3 justify-end">
+                <button onClick={() => setConfirmDelete(false)}
+                  className="px-4 py-2 rounded-lg border border-border text-sm text-foreground hover:bg-secondary transition-colors">
+                  Annuler
+                </button>
+                <button onClick={deleteRecipe} disabled={deleting}
+                  className="px-4 py-2 rounded-lg bg-destructive text-white text-sm font-medium hover:bg-destructive/90 transition-colors disabled:opacity-50">
+                  {deleting ? "Suppression…" : "Supprimer"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Meta chips */}
       <div className="flex flex-wrap gap-2">
