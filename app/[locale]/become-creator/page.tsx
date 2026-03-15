@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Link } from "@/lib/i18n/navigation";
 import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
@@ -17,21 +18,25 @@ const STEPS = [
     number: "1",
     title: "Créez votre compte",
     description: "Inscription gratuite en 2 minutes. Aucune carte bancaire requise.",
+    img: "/akeli/creator-kitchen.jpg",
   },
   {
     number: "2",
     title: "Publiez vos premières recettes",
     description: "Un wizard guidé en 6 étapes. L'IA traduit automatiquement dans 8 langues.",
+    img: "/akeli/plantains.jpg",
   },
   {
     number: "3",
     title: "Partagez avec votre audience",
     description: "Votre profil public et vos recettes sont accessibles depuis l'app mobile.",
+    img: "/akeli/couple-phone.jpg",
   },
   {
     number: "4",
     title: "Percevez vos revenus",
     description: "1€ par tranche de 90 consommations. Paiement le 5 de chaque mois via Stripe.",
+    img: "/akeli/friends-meal.jpg",
   },
 ];
 
@@ -46,165 +51,290 @@ export default function BecomeCreatorPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-background">
-      {/* ── Hero ── */}
-      <section className="px-4 pt-20 pb-16 text-center">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
-            Créateurs Akeli V1
-          </div>
-          <h1 className="text-4xl font-bold text-foreground tracking-tight leading-tight">
-            Votre cuisine vaut plus qu'un like.
-          </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            Publiez vos recettes sur Akeli, touchez une audience qui cherche exactement votre
-            cuisine, et générez des revenus durables — sans dépendre des algorithmes.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-            <Link
-              href="/auth/signup"
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Rejoindre gratuitement
-            </Link>
-            <a
-              href="#faq"
-              className="inline-flex items-center justify-center rounded-lg border border-border px-8 py-3 text-sm font-semibold text-foreground hover:bg-secondary transition-colors"
-            >
-              Questions fréquentes
-            </a>
-          </div>
-        </div>
-      </section>
+      <main style={{ fontFamily: "var(--font-sans)" }}>
 
-      {/* ── Stats ── */}
-      <section className="bg-secondary/40 px-4 py-10">
-        <div className="max-w-3xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6">
-          {STATS.map((stat) => (
-            <div key={stat.label} className="text-center space-y-1">
-              <p className="text-3xl font-bold text-primary">{stat.value}</p>
-              <p className="text-xs text-muted-foreground">{stat.label}</p>
+        {/* ── Hero ── */}
+        <section className="grid lg:grid-cols-2 min-h-[calc(100svh-56px)]">
+          {/* Left — text */}
+          <div
+            className="flex flex-col justify-center px-6 sm:px-12 lg:px-16 xl:px-20 py-16 lg:py-0 order-2 lg:order-1"
+            style={{ backgroundColor: "var(--color-brand-cream)" }}
+          >
+            <div
+              className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold self-start mb-8"
+              style={{
+                borderColor: "var(--color-brand-green)",
+                color: "var(--color-brand-green)",
+                backgroundColor: "rgba(45,140,78,0.06)",
+              }}
+            >
+              <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: "var(--color-brand-amber)" }} />
+              Créateurs Akeli V1
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* ── Comment ça marche ── */}
-      <section className="px-4 py-16">
-        <div className="max-w-3xl mx-auto space-y-10">
-          <h2 className="text-2xl font-bold text-foreground text-center">
-            Démarrer en 4 étapes
-          </h2>
-          <div className="grid sm:grid-cols-2 gap-5">
-            {STEPS.map((step) => (
-              <div
-                key={step.number}
-                className="rounded-xl border border-border bg-card p-5 flex gap-4"
+            <h1
+              className="font-bold leading-[1.05] mb-6 text-4xl sm:text-5xl lg:text-6xl xl:text-[4.5rem]"
+              style={{ fontFamily: "var(--font-display)", color: "var(--color-brand-dark)" }}
+            >
+              Votre cuisine vaut plus qu'un like.
+            </h1>
+
+            <p
+              className="text-base sm:text-lg max-w-md mb-10 leading-relaxed"
+              style={{ color: "var(--color-brand-forest)" }}
+            >
+              Publiez vos recettes sur Akeli, touchez une audience qui cherche exactement votre
+              cuisine, et générez des revenus durables — sans dépendre des algorithmes.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 mb-10">
+              <Link
+                href="/auth/signup"
+                className="inline-flex items-center justify-center gap-2 rounded-xl px-7 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
+                style={{ backgroundColor: "var(--color-brand-dark)", color: "#fff" }}
               >
-                <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0">
-                  {step.number}
+                Rejoindre gratuitement
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </Link>
+              <a
+                href="#faq"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border-2 px-7 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
+                style={{ borderColor: "var(--color-brand-green)", color: "var(--color-brand-green)" }}
+              >
+                Questions fréquentes
+              </a>
+            </div>
+
+            {/* Quick stats */}
+            <div className="grid grid-cols-2 gap-4">
+              {STATS.map((s) => (
+                <div key={s.label}>
+                  <p className="text-2xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--color-brand-dark)" }}>
+                    {s.value}
+                  </p>
+                  <p className="text-xs" style={{ color: "var(--color-brand-forest)" }}>{s.label}</p>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-foreground">{step.title}</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
+              ))}
+            </div>
+          </div>
+
+          {/* Right — image */}
+          <div
+            className="relative min-h-[65vw] sm:min-h-[55vw] lg:min-h-0 order-1 lg:order-2 overflow-hidden"
+            style={{ backgroundColor: "var(--color-brand-dark)" }}
+          >
+            <Image
+              src="/akeli/creator-kitchen.jpg"
+              fill
+              alt="Créatrice Akeli en cuisine"
+              className="object-cover object-center"
+              style={{ opacity: 0.88 }}
+              priority
+            />
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "linear-gradient(to top, rgba(28,43,28,0.6) 0%, transparent 50%)" }}
+            />
+            <div
+              className="absolute bottom-8 left-6 sm:bottom-10 sm:left-10 rounded-2xl px-5 py-3"
+              style={{ backgroundColor: "rgba(245,165,35,0.95)", color: "var(--color-brand-dark)" }}
+            >
+              <p className="text-2xl font-bold leading-none" style={{ fontFamily: "var(--font-display)" }}>0%</p>
+              <p className="text-xs font-semibold mt-0.5">de commission Akeli</p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Comment ça marche ── */}
+        <section className="px-6 sm:px-12 py-20 sm:py-28" style={{ backgroundColor: "var(--color-brand-cream)" }}>
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-16">
+              <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "var(--color-brand-green)" }}>
+                Simple &amp; guidé
+              </p>
+              <h2
+                className="text-4xl sm:text-5xl font-bold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--color-brand-dark)" }}
+              >
+                Démarrer en 4 étapes
+              </h2>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {STEPS.map((step) => (
+                <div key={step.number} className="group flex flex-col">
+                  <div className="relative h-48 rounded-2xl overflow-hidden mb-5">
+                    <Image
+                      src={step.img}
+                      fill
+                      alt={step.title}
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div
+                      className="absolute inset-0"
+                      style={{ background: "linear-gradient(to top, rgba(28,43,28,0.65) 0%, transparent 55%)" }}
+                    />
+                    <div
+                      className="absolute top-4 left-4 w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
+                      style={{ backgroundColor: "var(--color-brand-amber)", color: "var(--color-brand-dark)" }}
+                    >
+                      {step.number}
+                    </div>
+                  </div>
+                  <h3 className="font-semibold text-base mb-2" style={{ color: "var(--color-brand-dark)" }}>
+                    {step.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--color-brand-forest)" }}>
                     {step.description}
                   </p>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Modèle économique ── */}
-      <section className="bg-secondary/40 px-4 py-16">
-        <div className="max-w-3xl mx-auto space-y-8">
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold text-foreground">Comment vous êtes rémunéré</h2>
-            <p className="text-sm text-muted-foreground">
-              Deux sources de revenus complémentaires, sans commission Akeli.
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-5">
-            {/* Mode standard */}
-            <div className="rounded-xl border border-border bg-card p-6 space-y-3">
-              <h3 className="text-base font-semibold text-foreground">Mode standard</h3>
-              <p className="text-3xl font-bold text-primary">1€</p>
-              <p className="text-xs text-muted-foreground">par tranche de 90 consommations</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Chaque fois qu'un utilisateur consomme l'une de vos recettes dans son plan
-                alimentaire, c'est comptabilisé. Les consommations s'accumulent d'un mois à
-                l'autre — rien n'est perdu.
-              </p>
+              ))}
             </div>
-            {/* Mode Fan */}
-            <div className="rounded-xl border border-primary/40 bg-primary/5 p-6 space-y-3">
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-semibold text-foreground">Mode Fan</h3>
-                <span className="px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-                  dès 30 recettes
-                </span>
-              </div>
-              <p className="text-3xl font-bold text-primary">1€/fan</p>
-              <p className="text-xs text-muted-foreground">garanti chaque mois</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Vos fans les plus fidèles vous dédient leur abonnement complet. 100 fans =
-                100€/mois stables, indépendamment des consommations.
-              </p>
-              <Link
-                href="/help/mode-fan"
-                className="inline-flex items-center text-xs font-medium text-primary hover:underline gap-1"
+          </div>
+        </section>
+
+        {/* ── Modèle économique ── */}
+        <section className="px-6 sm:px-12 py-20 sm:py-28" style={{ backgroundColor: "var(--color-brand-dark)" }}>
+          <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            {/* Image */}
+            <div className="relative h-[380px] sm:h-[440px] rounded-3xl overflow-hidden">
+              <Image
+                src="/akeli/diaspora-couple.jpg"
+                fill
+                alt="Créateurs Akeli"
+                className="object-cover object-center"
+              />
+              <div
+                className="absolute bottom-6 left-6 rounded-2xl px-5 py-4"
+                style={{ backgroundColor: "rgba(245,165,35,0.95)", color: "var(--color-brand-dark)" }}
               >
-                En savoir plus →
-              </Link>
+                <p className="text-3xl font-bold leading-none" style={{ fontFamily: "var(--font-display)" }}>1€/fan</p>
+                <p className="text-xs font-semibold mt-1">garanti chaque mois</p>
+              </div>
+            </div>
+
+            {/* Text */}
+            <div className="space-y-8">
+              <div>
+                <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: "var(--color-brand-amber)" }}>
+                  Deux sources de revenus
+                </p>
+                <h2
+                  className="text-4xl sm:text-5xl font-bold leading-[1.05] mb-4"
+                  style={{ fontFamily: "var(--font-display)", color: "#F7F2EA" }}
+                >
+                  Sans commission.<br />Sans algorithme.
+                </h2>
+                <p className="text-base leading-relaxed" style={{ color: "rgba(247,242,234,0.75)" }}>
+                  Akeli ne prend aucune commission sur vos revenus. Vous gagnez sur chaque consommation et sur chaque fan fidèle.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {/* Standard */}
+                <div className="rounded-2xl p-5 space-y-1" style={{ backgroundColor: "rgba(247,242,234,0.08)", border: "1px solid rgba(247,242,234,0.12)" }}>
+                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(247,242,234,0.5)" }}>Mode standard</p>
+                  <p className="text-2xl font-bold" style={{ color: "var(--color-brand-amber)", fontFamily: "var(--font-display)" }}>1€</p>
+                  <p className="text-sm" style={{ color: "rgba(247,242,234,0.7)" }}>par tranche de 90 consommations — elles s'accumulent d'un mois à l'autre.</p>
+                </div>
+                {/* Fan */}
+                <div className="rounded-2xl p-5 space-y-1" style={{ backgroundColor: "rgba(45,140,78,0.15)", border: "1px solid rgba(45,140,78,0.35)" }}>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "rgba(247,242,234,0.5)" }}>Mode Fan</p>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ backgroundColor: "var(--color-brand-green)", color: "#fff" }}>
+                      dès 30 recettes
+                    </span>
+                  </div>
+                  <p className="text-2xl font-bold" style={{ color: "var(--color-brand-amber)", fontFamily: "var(--font-display)" }}>1€/fan/mois</p>
+                  <p className="text-sm" style={{ color: "rgba(247,242,234,0.7)" }}>100 fans = 100€/mois garantis, indépendamment des consommations.</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── FAQ ── */}
-      <section id="faq" className="px-4 py-16">
-        <div className="max-w-2xl mx-auto space-y-8">
-          <h2 className="text-2xl font-bold text-foreground text-center">
-            Questions fréquentes
-          </h2>
-          <FAQAccordion items={prospectFAQ} showCategories expandFirst={false} />
-        </div>
-      </section>
+        {/* ── FAQ ── */}
+        <section id="faq" className="px-6 sm:px-12 py-20 sm:py-28" style={{ backgroundColor: "var(--color-brand-cream)" }}>
+          <div className="max-w-2xl mx-auto space-y-12">
+            <div className="text-center">
+              <h2
+                className="text-4xl sm:text-5xl font-bold"
+                style={{ fontFamily: "var(--font-display)", color: "var(--color-brand-dark)" }}
+              >
+                Questions fréquentes
+              </h2>
+            </div>
+            <FAQAccordion items={prospectFAQ} showCategories expandFirst={false} />
+          </div>
+        </section>
 
-      {/* ── CTA final ── */}
-      <section className="bg-primary px-4 py-16 text-center">
-        <div className="max-w-xl mx-auto space-y-5">
-          <h2 className="text-2xl font-bold text-primary-foreground">
-            Prêt à partager votre cuisine ?
-          </h2>
-          <p className="text-sm text-primary-foreground/80">
-            Inscription gratuite. Aucun engagement. Vos premières recettes en ligne en moins
-            d'une heure.
-          </p>
-          <Link
-            href="/auth/signup"
-            className="inline-flex items-center justify-center rounded-lg bg-white text-primary px-8 py-3 text-sm font-semibold hover:bg-white/90 transition-colors"
-          >
-            Créer mon compte créateur
-          </Link>
-        </div>
-      </section>
+        {/* ── CTA final ── */}
+        <section className="relative overflow-hidden flex items-center" style={{ height: "480px" }}>
+          <Image
+            src="/akeli/video-call-dinner.jpg"
+            fill
+            alt="Rejoindre Akeli"
+            className="object-cover object-center"
+          />
+          <div
+            className="absolute inset-0"
+            style={{ background: "linear-gradient(135deg, rgba(28,43,28,0.9) 0%, rgba(28,43,28,0.65) 100%)" }}
+          />
+          <div className="relative px-6 sm:px-12 w-full max-w-3xl mx-auto text-center">
+            <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: "var(--color-brand-amber)" }}>
+              Prêt à commencer ?
+            </p>
+            <h2
+              className="text-4xl sm:text-5xl font-bold text-white mb-6"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Partagez votre cuisine avec le monde.
+            </h2>
+            <p className="text-sm mb-8" style={{ color: "rgba(247,242,234,0.75)" }}>
+              Inscription gratuite. Aucun engagement. Vos premières recettes en ligne en moins d'une heure.
+            </p>
+            <Link
+              href="/auth/signup"
+              className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
+              style={{ backgroundColor: "var(--color-brand-amber)", color: "var(--color-brand-dark)" }}
+            >
+              Créer mon compte créateur
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+        </section>
 
-      {/* ── Footer links ── */}
-      <footer className="border-t border-border px-4 py-8">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
-            ← Retour à l'accueil
-          </Link>
-          <nav className="flex gap-6 text-sm text-muted-foreground">
-            <Link href="/legal/terms" className="hover:text-foreground">CGU</Link>
-            <Link href="/legal/privacy" className="hover:text-foreground">Confidentialité</Link>
-            <a href="mailto:creators@akeli.app" className="hover:text-foreground">Contact créateurs</a>
-          </nav>
-        </div>
-      </footer>
-    </main>
+        {/* ── Footer ── */}
+        <footer className="px-6 sm:px-12 py-10" style={{ backgroundColor: "var(--color-brand-dark)" }}>
+          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/akeli/logo.png" width={28} height={28} alt="Akeli" className="rounded-full opacity-90" />
+              <span className="text-base font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--color-brand-cream)" }}>
+                akeli
+              </span>
+            </Link>
+            <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+              <Link href="/" className="text-xs transition-colors hover:opacity-80" style={{ color: "rgba(247,242,234,0.5)" }}>
+                ← Retour à l'accueil
+              </Link>
+              <Link href="/legal/terms" className="text-xs transition-colors hover:opacity-80" style={{ color: "rgba(247,242,234,0.5)" }}>
+                CGU
+              </Link>
+              <Link href="/legal/privacy" className="text-xs transition-colors hover:opacity-80" style={{ color: "rgba(247,242,234,0.5)" }}>
+                Confidentialité
+              </Link>
+              <a href="mailto:creators@akeli.app" className="text-xs transition-colors hover:opacity-80" style={{ color: "rgba(247,242,234,0.5)" }}>
+                Contact créateurs
+              </a>
+            </nav>
+          </div>
+        </footer>
+
+      </main>
     </>
   );
 }
