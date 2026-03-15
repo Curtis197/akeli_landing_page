@@ -23,6 +23,7 @@ interface TopRecipe {
   cover_image_url: string | null;
   consumptions: number;
   revenue: number;
+  is_published?: boolean;
 }
 
 interface MonthlyRevenue {
@@ -59,20 +60,37 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!creator) return;
     setLoading(true);
-    supabase
-      .from("creator_dashboard_stats")
-      .select("*")
-      .eq("creator_id", creator.id)
-      .single()
-      .then(({ data }) => {
-        if (data) setStats({
-          ...EMPTY_STATS,
-          ...data,
-          top_recipes: data.top_recipes ?? [],
-          monthly_history: data.monthly_history ?? [],
-        });
-        setLoading(false);
-      }, () => setLoading(false));
+    Promise.all([
+      supabase
+        .from("creator_dashboard_stats")
+        .select("*")
+        .eq("creator_id", creator.id)
+        .single(),
+      supabase
+        .from("recipe")
+        .select("id, title, cover_image_url, is_published")
+        .eq("creator_id", creator.id)
+        .eq("is_published", true)
+        .order("updated_at", { ascending: false })
+        .limit(5),
+    ]).then(([statsRes, recipesRes]) => {
+      const topRecipes: TopRecipe[] = (recipesRes.data ?? []).map((r) => ({
+        id: r.id,
+        title: r.title,
+        cover_image_url: r.cover_image_url ?? null,
+        consumptions: 0,
+        revenue: 0,
+        is_published: r.is_published,
+      }));
+      if (statsRes.data) setStats({
+        ...EMPTY_STATS,
+        ...statsRes.data,
+        top_recipes: topRecipes,
+        monthly_history: [],
+      });
+      else setStats({ ...EMPTY_STATS, top_recipes: topRecipes });
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, [creator, supabase]);
 
   async function fetchAiInsight() {
@@ -257,11 +275,8 @@ function TopRecipes({
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">{recipe.title}</p>
-                <p className="text-xs text-muted-foreground">{recipe.consumptions} consommations</p>
+                <p className="text-xs text-muted-foreground">Publiée</p>
               </div>
-              <span className="text-sm font-semibold text-foreground shrink-0">
-                {recipe.revenue.toFixed(2)} €
-              </span>
             </li>
           ))}
         </ol>
