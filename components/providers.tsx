@@ -40,6 +40,19 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         console.log("[AuthProvider] fetching creator (event) for user:", session.user.id);
+
+        // Raw fetch test — bypass Supabase client to isolate network vs client issue
+        const rawUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/creator?user_id=eq.${session.user.id}&select=id`;
+        console.log("[AuthProvider] raw fetch test to:", rawUrl);
+        fetch(rawUrl, {
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        })
+          .then((r) => r.json().then((d) => console.log("[AuthProvider] raw fetch OK:", r.status, d)))
+          .catch((e) => console.error("[AuthProvider] raw fetch ERROR:", e));
+
         const timeout2 = setTimeout(() => console.error("[AuthProvider] creator fetch (event) TIMED OUT after 5s"), 5000);
         const { data: creator, error: creatorError } = await supabase
           .from("creator")
