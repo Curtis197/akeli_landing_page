@@ -60,6 +60,8 @@ export default function CreatorDetailPage() {
   const [existingConvId, setExistingConvId] = useState<string | null>(null);
   const [convClosed, setConvClosed] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDeleteConv, setConfirmDeleteConv] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -132,6 +134,21 @@ export default function CreatorDetailPage() {
       .eq("id", existingConvId);
     if (!error) setConvClosed(true);
     setClosing(false);
+  }
+
+  async function handleDeleteConversation() {
+    if (!existingConvId || deleting) return;
+    setDeleting(true);
+    const { error } = await supabase
+      .from("conversation")
+      .delete()
+      .eq("id", existingConvId);
+    if (!error) {
+      setExistingConvId(null);
+      setConvClosed(false);
+      setConfirmDeleteConv(false);
+    }
+    setDeleting(false);
   }
 
   // ─── Loading ──────────────────────────────────────────────────────────────
@@ -281,6 +298,15 @@ export default function CreatorDetailPage() {
                     {closing ? "Fermeture…" : "Terminer la conversation"}
                   </button>
                 )}
+                {existingConvId && (
+                  <button
+                    onClick={() => setConfirmDeleteConv(true)}
+                    disabled={deleting}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-destructive/60 text-destructive text-sm font-semibold hover:bg-destructive/10 transition-colors disabled:opacity-50"
+                  >
+                    Supprimer la conversation
+                  </button>
+                )}
               </>
             )}
             <Link
@@ -311,6 +337,36 @@ export default function CreatorDetailPage() {
           </div>
         )}
       </section>
+
+      {/* Delete conversation dialog */}
+      {confirmDeleteConv && (
+        <>
+          <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setConfirmDeleteConv(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-background border border-border rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
+              <h2 className="text-base font-semibold text-foreground">Supprimer la conversation ?</h2>
+              <p className="text-sm text-muted-foreground">
+                Tous les messages seront définitivement supprimés. Cette action est irréversible.
+              </p>
+              <div className="flex items-center gap-3 justify-end">
+                <button
+                  onClick={() => setConfirmDeleteConv(false)}
+                  className="px-4 py-2 rounded-lg border border-border text-sm text-foreground hover:bg-secondary transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleDeleteConversation}
+                  disabled={deleting}
+                  className="px-4 py-2 rounded-lg bg-destructive text-white text-sm font-medium hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                >
+                  {deleting ? "Suppression…" : "Supprimer"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

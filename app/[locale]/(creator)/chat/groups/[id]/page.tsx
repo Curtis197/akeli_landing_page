@@ -50,6 +50,8 @@ export default function GroupDetailPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   // ── Load data ──────────────────────────────────────────────────────────────
 
@@ -122,6 +124,25 @@ export default function GroupDetailPage() {
       router.push("/chat?tab=groups" as any);
     }
     setClosing(false);
+  }
+
+  async function deleteGroup() {
+    if (deleting) return;
+    setDeleting(true);
+    // Delete conversation (cascades to participants + messages via FK)
+    const { error } = await supabase
+      .from("conversation")
+      .delete()
+      .eq("id", conversationId);
+    if (!error) {
+      // Also delete the community_group record if linked
+      if (conversation?.community_group_id) {
+        await supabase.from("community_group").delete().eq("id", conversation.community_group_id);
+      }
+      router.push("/chat?tab=groups" as any);
+    }
+    setDeleting(false);
+    setConfirmDelete(false);
   }
 
   // ─── Loading ───────────────────────────────────────────────────────────────
@@ -260,6 +281,15 @@ export default function GroupDetailPage() {
             {closing ? "Fermeture…" : "Fermer le groupe"}
           </button>
         )}
+        {isAdmin && (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            disabled={deleting}
+            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-destructive/60 text-destructive text-sm font-semibold hover:bg-destructive/10 transition-colors disabled:opacity-50"
+          >
+            Supprimer le groupe
+          </button>
+        )}
       </div>
 
       {/* Members */}
@@ -274,6 +304,36 @@ export default function GroupDetailPage() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* Delete group confirmation */}
+      {confirmDelete && (
+        <>
+          <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setConfirmDelete(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-background border border-border rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
+              <h2 className="text-base font-semibold text-foreground">Supprimer le groupe ?</h2>
+              <p className="text-sm text-muted-foreground">
+                Tous les messages et membres seront définitivement supprimés. Cette action est irréversible.
+              </p>
+              <div className="flex items-center gap-3 justify-end">
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="px-4 py-2 rounded-lg border border-border text-sm text-foreground hover:bg-secondary transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={deleteGroup}
+                  disabled={deleting}
+                  className="px-4 py-2 rounded-lg bg-destructive text-white text-sm font-medium hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                >
+                  {deleting ? "Suppression…" : "Supprimer"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

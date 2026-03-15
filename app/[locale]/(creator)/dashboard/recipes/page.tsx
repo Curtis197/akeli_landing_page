@@ -38,8 +38,6 @@ export default function RecipesListPage() {
   const [search, setSearch] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [aiInsight, setAiInsight] = useState<string | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!creator) return;
@@ -94,18 +92,6 @@ export default function RecipesListPage() {
     } finally { setActionLoading(null); setConfirmDelete(null); }
   }
 
-  async function fetchAiInsight() {
-    if (!creator) return;
-    setAiLoading(true);
-    setAiInsight(null);
-    try {
-      const { data } = await supabase.functions.invoke("explain-recipe-performance", { body: { creator_id: creator.id } });
-      setAiInsight(data?.explanation ?? "Aucune analyse disponible.");
-    } catch {
-      setAiInsight("Impossible de charger l'analyse. Réessaie dans quelques instants.");
-    } finally { setAiLoading(false); }
-  }
-
   const displayed = recipes.filter((r) => {
     if (statusFilter === "published" && !r.is_published) return false;
     if (statusFilter === "draft" && r.is_published) return false;
@@ -154,7 +140,7 @@ export default function RecipesListPage() {
         </div>
       )}
 
-      {/* AI Insight + filters row */}
+      {/* Filters row */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex rounded-lg border border-border overflow-hidden">
           {(["all", "published", "draft"] as StatusFilter[]).map((s) => {
@@ -175,28 +161,7 @@ export default function RecipesListPage() {
           <option value="consumptions_this_month">Consommations ce mois</option>
           <option value="total_revenue">Revenus totaux</option>
         </select>
-        <button onClick={fetchAiInsight} disabled={aiLoading || recipes.length === 0}
-          className="ml-auto flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
-          style={{ background: "var(--color-brand-forest)", color: "#fff" }}>
-          {aiLoading
-            ? <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            : "✨"}
-          Analyser
-        </button>
       </div>
-
-      {/* AI Insight panel */}
-      {aiInsight && (
-        <div className="rounded-xl p-5 space-y-2" style={{ background: "var(--color-brand-cream)", border: "1px solid var(--color-brand-forest)" }}>
-          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-brand-forest)" }}>
-            ✨ Analyse IA
-          </p>
-          <p className="text-sm text-foreground leading-relaxed">{aiInsight}</p>
-          <button onClick={() => setAiInsight(null)} className="text-xs text-muted-foreground hover:text-foreground">
-            Fermer
-          </button>
-        </div>
-      )}
 
       {/* Recipe list */}
       {loading ? (
