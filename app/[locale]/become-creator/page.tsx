@@ -60,18 +60,6 @@ export default function BecomeCreatorPage() {
             className="flex flex-col justify-center px-6 sm:px-12 lg:px-16 xl:px-20 py-16 lg:py-0 order-2 lg:order-1"
             style={{ backgroundColor: "var(--color-brand-cream)" }}
           >
-            <div
-              className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold self-start mb-8"
-              style={{
-                borderColor: "var(--color-brand-green)",
-                color: "var(--color-brand-green)",
-                backgroundColor: "rgba(45,140,78,0.06)",
-              }}
-            >
-              <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: "var(--color-brand-amber)" }} />
-              Créateurs Akeli V1
-            </div>
-
             <h1
               className="font-bold leading-[1.05] mb-6 text-4xl sm:text-5xl lg:text-6xl xl:text-[4.5rem]"
               style={{ fontFamily: "var(--font-display)", color: "var(--color-brand-dark)" }}
