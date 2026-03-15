@@ -65,7 +65,12 @@ export default function DashboardPage() {
       .eq("creator_id", creator.id)
       .single()
       .then(({ data }) => {
-        if (data) setStats(data as DashboardStats);
+        if (data) setStats({
+          ...EMPTY_STATS,
+          ...data,
+          top_recipes: data.top_recipes ?? [],
+          monthly_history: data.monthly_history ?? [],
+        });
         setLoading(false);
       }, () => setLoading(false));
   }, [creator, supabase]);
