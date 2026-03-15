@@ -31,6 +31,8 @@ interface Step2Props {
 const EMPTY_INGREDIENT = (): Ingredient => ({
   id: crypto.randomUUID(),
   name: "",
+  title: "",
+  is_section_header: false,
   quantity: 1,
   unit: "g",
   is_optional: false,
@@ -65,8 +67,7 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
   const moveIngredient = (index: number, direction: "up" | "down") => {
     if (direction === "up" && index === 0) return;
     if (direction === "down" && index === ingredients.length - 1) return;
-    const newIndex = direction === "up" ? index - 1 : index + 1;
-    updateIngredients(arrayMove(ingredients, index, newIndex));
+    updateIngredients(arrayMove(ingredients, index, direction === "up" ? index - 1 : index + 1));
   };
 
   const removeIngredient = (id: string) => {
@@ -74,21 +75,27 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
   };
 
   const handleAddIngredient = () => {
-    if (!draft.name.trim()) return;
+    if (draft.is_section_header) {
+      if (!draft.title?.trim()) return;
+    } else {
+      if (!draft.name.trim()) return;
+    }
     const newList = [...ingredients, { ...draft, sort_order: ingredients.length }];
     updateIngredients(newList);
     setDraft(EMPTY_INGREDIENT());
     setAdding(false);
   };
 
-  const tooFew = ingredients.length < 3;
+  // Only non-section rows count toward the minimum
+  const realCount = ingredients.filter((i) => !i.is_section_header).length;
+  const tooFew = realCount < 3;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-foreground">Ingrédients</h2>
         <span className={`text-xs ${tooFew ? "text-destructive" : "text-muted-foreground"}`}>
-          {ingredients.length} / minimum 3
+          {realCount} / minimum 3
         </span>
       </div>
 
@@ -122,40 +129,33 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
             {ingredients.map((ing, index) => (
               <li
                 key={ing.id}
-                className="flex items-center gap-2 p-3 rounded-lg bg-secondary/50 border border-border"
+                className={`flex items-center gap-2 p-3 rounded-lg border ${
+                  ing.is_section_header
+                    ? "bg-primary/5 border-primary/20"
+                    : "bg-secondary/50 border-border"
+                }`}
               >
                 <div className="flex flex-col gap-0.5">
-                  <button
-                    type="button"
-                    onClick={() => moveIngredient(index, "up")}
-                    disabled={index === 0}
-                    className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveIngredient(index, "down")}
-                    disabled={index === ingredients.length - 1}
-                    className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
-                  >
-                    ▼
-                  </button>
+                  <button type="button" onClick={() => moveIngredient(index, "up")} disabled={index === 0}
+                    className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30">▲</button>
+                  <button type="button" onClick={() => moveIngredient(index, "down")} disabled={index === ingredients.length - 1}
+                    className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30">▼</button>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{ing.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {ing.quantity} {ing.unit}
-                    {ing.is_optional && " (optionnel)"}
-                  </p>
+                  {ing.is_section_header ? (
+                    <p className="text-sm font-semibold text-primary">{ing.title || "—"}</p>
+                  ) : (
+                    <>
+                      <p className="text-sm font-medium text-foreground truncate">{ing.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {ing.quantity} {ing.unit}
+                        {ing.is_optional && " (optionnel)"}
+                      </p>
+                    </>
+                  )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removeIngredient(ing.id)}
-                  className="p-1 text-muted-foreground hover:text-destructive transition-colors"
-                >
-                  ✕
-                </button>
+                <button type="button" onClick={() => removeIngredient(ing.id)}
+                  className="p-1 text-muted-foreground hover:text-destructive transition-colors">✕</button>
               </li>
             ))}
           </ul>
@@ -165,10 +165,31 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
       {/* Add form */}
       {adding ? (
         <div className="p-4 rounded-xl border border-border bg-secondary/30 space-y-3">
-          <h3 className="text-sm font-medium text-foreground">Ajouter un ingrédient</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-foreground">
+              {draft.is_section_header ? "Titre de section" : "Ajouter un ingrédient"}
+            </h3>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={draft.is_section_header}
+                onChange={(e) => setDraft((d) => ({ ...d, is_section_header: e.target.checked }))}
+                className="rounded border-input accent-primary"
+              />
+              <span className="text-xs text-muted-foreground">Section</span>
+            </label>
+          </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2">
+          {draft.is_section_header ? (
+            <input
+              type="text"
+              placeholder="Titre de la section (ex: Pour la sauce)"
+              value={draft.title ?? ""}
+              onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
+              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          ) : (
+            <div className="space-y-3">
               <input
                 type="text"
                 placeholder="Nom de l'ingrédient *"
@@ -176,48 +197,43 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
                 onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
                 className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="number"
+                  placeholder="Quantité"
+                  min={0.01}
+                  step={0.01}
+                  value={draft.quantity ?? ""}
+                  onChange={(e) => setDraft((d) => ({ ...d, quantity: parseFloat(e.target.value) || undefined }))}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <select
+                  value={draft.unit ?? "g"}
+                  onChange={(e) => setDraft((d) => ({ ...d, unit: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {UNITS.map((u) => (
+                    <option key={u} value={u}>{u}</option>
+                  ))}
+                </select>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={draft.is_optional}
+                  onChange={(e) => setDraft((d) => ({ ...d, is_optional: e.target.checked }))}
+                  className="rounded border-input accent-primary"
+                />
+                <span className="text-sm text-foreground">Ingrédient optionnel</span>
+              </label>
             </div>
-
-            <div>
-              <input
-                type="number"
-                placeholder="Quantité"
-                min={0.01}
-                step={0.01}
-                value={draft.quantity}
-                onChange={(e) => setDraft((d) => ({ ...d, quantity: parseFloat(e.target.value) || 0 }))}
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-
-            <div>
-              <select
-                value={draft.unit}
-                onChange={(e) => setDraft((d) => ({ ...d, unit: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                {UNITS.map((u) => (
-                  <option key={u} value={u}>{u}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={draft.is_optional}
-              onChange={(e) => setDraft((d) => ({ ...d, is_optional: e.target.checked }))}
-              className="rounded border-input accent-primary"
-            />
-            <span className="text-sm text-foreground">Ingrédient optionnel</span>
-          </label>
+          )}
 
           <div className="flex gap-2">
             <button
               type="button"
               onClick={handleAddIngredient}
-              disabled={!draft.name.trim()}
+              disabled={draft.is_section_header ? !draft.title?.trim() : !draft.name.trim()}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40"
             >
               Ajouter
@@ -241,9 +257,9 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
         </button>
       )}
 
-      {tooFew && ingredients.length > 0 && (
+      {tooFew && realCount > 0 && (
         <p className="text-xs text-destructive">
-          Minimum 3 ingrédients requis ({ingredients.length}/3)
+          Minimum 3 ingrédients requis ({realCount}/3)
         </p>
       )}
     </div>
@@ -268,23 +284,34 @@ function SortableIngredientRow({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  if (ingredient.is_section_header) {
+    return (
+      <li
+        ref={setNodeRef}
+        style={style}
+        className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20"
+      >
+        <button type="button" {...attributes} {...listeners}
+          className="cursor-grab active:cursor-grabbing text-primary/40 hover:text-primary p-1" aria-label="Réordonner">
+          ⠿
+        </button>
+        <span className="flex-1 text-sm font-semibold text-primary">{ingredient.title || "Section sans titre"}</span>
+        <button type="button" onClick={() => onRemove(ingredient.id)}
+          className="p-1 text-muted-foreground hover:text-destructive transition-colors">✕</button>
+      </li>
+    );
+  }
+
   return (
     <li
       ref={setNodeRef}
       style={style}
       className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border"
     >
-      {/* Drag handle */}
-      <button
-        type="button"
-        {...attributes}
-        {...listeners}
-        className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1"
-        aria-label="Réordonner"
-      >
+      <button type="button" {...attributes} {...listeners}
+        className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1" aria-label="Réordonner">
         ⠿
       </button>
-
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground">{ingredient.name}</p>
         <p className="text-xs text-muted-foreground">
@@ -292,14 +319,8 @@ function SortableIngredientRow({
           {ingredient.is_optional && " · optionnel"}
         </p>
       </div>
-
-      <button
-        type="button"
-        onClick={() => onRemove(ingredient.id)}
-        className="p-1 text-muted-foreground hover:text-destructive transition-colors"
-      >
-        ✕
-      </button>
+      <button type="button" onClick={() => onRemove(ingredient.id)}
+        className="p-1 text-muted-foreground hover:text-destructive transition-colors">✕</button>
     </li>
   );
 }

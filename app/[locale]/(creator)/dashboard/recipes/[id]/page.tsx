@@ -12,8 +12,10 @@ import { formatEuro } from "@/lib/utils/format";
 
 interface Ingredient {
   name: string;
-  quantity: number | null;
-  unit: string | null;
+  title?: string;
+  is_section_header?: boolean;
+  quantity?: number | null;
+  unit?: string | null;
   is_optional: boolean;
   sort_order: number;
 }
@@ -329,18 +331,24 @@ export default function RecipeDetailPage() {
           </h2>
           <ul className="divide-y divide-border rounded-xl border border-border overflow-hidden">
             {recipe.ingredients.map((ing, i) => {
-              const name = ing.name || "—";
+              if (ing.is_section_header) {
+                return (
+                  <li key={i} className="px-4 py-2 bg-primary/5 border-t border-b border-primary/15 first:border-t-0">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">{ing.title || "—"}</p>
+                  </li>
+                );
+              }
               return (
                 <li key={i} className="flex items-center justify-between px-4 py-2.5 bg-card text-sm">
-                  <span className={`text-foreground ${ing.is_optional ? "text-muted-foreground" : ""}`}>
-                    {name}
+                  <span className={ing.is_optional ? "text-muted-foreground" : "text-foreground"}>
+                    {ing.name || "—"}
                     {ing.is_optional && (
-                      <span className="ml-1.5 text-[10px] text-muted-foreground uppercase tracking-wide">(optionnel)</span>
+                      <span className="ml-1.5 text-[10px] uppercase tracking-wide">(optionnel)</span>
                     )}
                   </span>
-                  {(ing.quantity !== null || ing.unit) && (
+                  {(ing.quantity != null || ing.unit) && (
                     <span className="text-muted-foreground shrink-0 ml-4">
-                      {ing.quantity !== null ? ing.quantity : ""}{ing.unit ? ` ${ing.unit}` : ""}
+                      {ing.quantity != null ? ing.quantity : ""}{ing.unit ? ` ${ing.unit}` : ""}
                     </span>
                   )}
                 </li>

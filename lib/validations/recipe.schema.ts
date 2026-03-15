@@ -19,9 +19,11 @@ export const step2Schema = z.object({
       z.object({
         id: z.string(),
         ingredient_id: z.string().optional(),
-        name: z.string().min(1),
-        quantity: z.number().positive("Quantité invalide"),
-        unit: z.string().min(1, "Unité requise"),
+        name: z.string().default(""),
+        title: z.string().optional(),
+        is_section_header: z.boolean().default(false),
+        quantity: z.number().positive("Quantité invalide").optional(),
+        unit: z.string().optional(),
         is_optional: z.boolean().default(false),
         sort_order: z.number().int(),
       })
@@ -34,6 +36,7 @@ export const step3Schema = z.object({
     .array(
       z.object({
         id: z.string(),
+        title: z.string().optional(),
         content: z.string().min(10, "Étape trop courte (minimum 10 caractères)"),
         sort_order: z.number().int(),
       })
