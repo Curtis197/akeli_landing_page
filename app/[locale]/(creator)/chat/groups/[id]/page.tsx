@@ -129,20 +129,23 @@ export default function GroupDetailPage() {
   async function deleteGroup() {
     if (deleting) return;
     setDeleting(true);
-    // Delete conversation (cascades to participants + messages via FK)
-    const { error } = await supabase
-      .from("conversation")
-      .delete()
-      .eq("id", conversationId);
-    if (!error) {
-      // Also delete the community_group record if linked
+    try {
+      // Delete child records first in case FK lacks CASCADE
+      await supabase.from("message").delete().eq("conversation_id", conversationId);
+      await supabase.from("conversation_participant").delete().eq("conversation_id", conversationId);
+      const { error } = await supabase.from("conversation").delete().eq("id", conversationId);
+      if (error) throw error;
       if (conversation?.community_group_id) {
         await supabase.from("community_group").delete().eq("id", conversation.community_group_id);
       }
       router.push("/chat?tab=groups" as any);
+    } catch (err) {
+      console.error("Delete group failed:", err);
+      alert("La suppression a échoué. Veuillez réessayer.");
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
     }
-    setDeleting(false);
-    setConfirmDelete(false);
   }
 
   // ─── Loading ───────────────────────────────────────────────────────────────

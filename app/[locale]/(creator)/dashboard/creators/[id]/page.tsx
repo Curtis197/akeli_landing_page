@@ -139,16 +139,21 @@ export default function CreatorDetailPage() {
   async function handleDeleteConversation() {
     if (!existingConvId || deleting) return;
     setDeleting(true);
-    const { error } = await supabase
-      .from("conversation")
-      .delete()
-      .eq("id", existingConvId);
-    if (!error) {
+    try {
+      // Delete child records first in case FK lacks CASCADE
+      await supabase.from("message").delete().eq("conversation_id", existingConvId);
+      await supabase.from("conversation_participant").delete().eq("conversation_id", existingConvId);
+      const { error } = await supabase.from("conversation").delete().eq("id", existingConvId);
+      if (error) throw error;
       setExistingConvId(null);
       setConvClosed(false);
       setConfirmDeleteConv(false);
+    } catch (err) {
+      console.error("Delete conversation failed:", err);
+      alert("La suppression a échoué. Veuillez réessayer.");
+    } finally {
+      setDeleting(false);
     }
-    setDeleting(false);
   }
 
   // ─── Loading ──────────────────────────────────────────────────────────────
