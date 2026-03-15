@@ -18,17 +18,10 @@ export default function EditRecipePage() {
     if (!id) return;
 
     async function loadRecipe() {
+      // draft_data stores the complete wizard form state — use it as the primary source
       const { data, error: err } = await supabase
         .from("recipe")
-        .select(`
-          id, title, description, region, meal_types, difficulty,
-          prep_time_min, cook_time_min, servings,
-          cover_image_url, gallery_urls, is_pork_free,
-          recipe_ingredient ( id, ingredient_id, name_fr, quantity, unit, is_optional, sort_order ),
-          recipe_step ( id, content, sort_order ),
-          recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g, is_auto ),
-          recipe_tag ( tag_id )
-        `)
+        .select("id, title, description, region, difficulty, prep_time_min, cook_time_min, servings, cover_image_url, is_pork_free, draft_data")
         .eq("id", id)
         .single();
 
@@ -38,46 +31,29 @@ export default function EditRecipePage() {
         return;
       }
 
-      const macro = Array.isArray(data.recipe_macro)
-        ? data.recipe_macro[0]
-        : data.recipe_macro;
+      // If draft_data exists, it is the canonical form state
+      if (data.draft_data) {
+        setInitialData(data.draft_data as Partial<RecipeFormState>);
+        setLoading(false);
+        return;
+      }
 
+      // Fallback: reconstruct from direct columns (for recipes without draft_data)
       const mapped: Partial<RecipeFormState> = {
         title: data.title ?? "",
         description: (data as any).description ?? "",
         region: data.region ?? "",
-        meal_types: (data.meal_types as string[]) ?? [],
+        meal_types: [],
         difficulty: (data.difficulty as RecipeFormState["difficulty"]) ?? "",
         prep_time_min: data.prep_time_min ?? 30,
         cook_time_min: data.cook_time_min ?? 0,
         servings: data.servings ?? 4,
-        ingredients: ((data as any).recipe_ingredient ?? [])
-          .sort((a: any, b: any) => a.sort_order - b.sort_order)
-          .map((ing: any) => ({
-            id: ing.id,
-            ingredient_id: ing.ingredient_id,
-            name: ing.name_fr ?? "",
-            quantity: ing.quantity,
-            unit: ing.unit,
-            is_optional: ing.is_optional ?? false,
-            sort_order: ing.sort_order,
-          })),
-        steps: ((data as any).recipe_step ?? [])
-          .sort((a: any, b: any) => a.sort_order - b.sort_order)
-          .map((s: any) => ({
-            id: s.id,
-            content: s.content,
-            sort_order: s.sort_order,
-          })),
-        calories: macro?.calories ?? undefined,
-        protein_g: macro?.protein_g ?? undefined,
-        carbs_g: macro?.carbs_g ?? undefined,
-        fat_g: macro?.fat_g ?? undefined,
-        fiber_g: macro?.fiber_g ?? undefined,
-        macros_skipped: !macro,
+        ingredients: [],
+        steps: [],
+        macros_skipped: true,
         cover_image_url: data.cover_image_url ?? "",
-        gallery_urls: (data.gallery_urls as string[]) ?? [],
-        tags: ((data as any).recipe_tag ?? []).map((t: any) => t.tag_id),
+        gallery_urls: [],
+        tags: [],
         is_pork_free: data.is_pork_free ?? false,
       };
 
