@@ -24,7 +24,6 @@ interface Recipe {
   is_published: boolean;
   is_pork_free: boolean | null;
   tags: string[];
-  meal_types: string[] | null;
   calories: number | null;
   protein_g: number | null;
   carbs_g: number | null;
@@ -68,9 +67,9 @@ export default function RecipeDetailPage() {
         .select(
           "id, slug, title, description, cover_image_url, region, difficulty, " +
           "prep_time_min, cook_time_min, servings, is_published, is_pork_free, " +
-          "meal_types, created_at, updated_at, " +
+          "created_at, updated_at, " +
           "recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ), " +
-          "recipe_tag ( tag_id )"
+          "recipe_tag ( tag:tag_id ( name ) )"
         )
         .eq("id", id)
         .single();
@@ -85,7 +84,7 @@ export default function RecipeDetailPage() {
       const macro = Array.isArray(raw.recipe_macro) ? raw.recipe_macro[0] : raw.recipe_macro;
       setRecipe({
         ...raw,
-        tags: (raw.recipe_tag ?? []).map((t: { tag_id: string }) => t.tag_id),
+        tags: (raw.recipe_tag ?? []).map((t: { tag: { name: string } | null }) => t.tag?.name).filter(Boolean),
         calories: macro?.calories ?? null,
         protein_g: macro?.protein_g ?? null,
         carbs_g: macro?.carbs_g ?? null,
