@@ -27,10 +27,12 @@ export async function getConversations(
   type?: "private" | "creator_group" | "support"
 ): Promise<ConversationListItem[]> {
   console.log("[getConversations] userId:", userId, "type:", type ?? "all");
+  const t1 = setTimeout(() => console.error("[getConversations] conversation_participant query TIMED OUT"), 5000);
   const { data: participations, error: partError } = await supabase
     .from("conversation_participant")
     .select("conversation_id, last_read_at")
     .eq("user_id", userId);
+  clearTimeout(t1);
 
   console.log("[getConversations] participations:", participations?.length ?? 0, "error:", partError?.message);
   if (partError) throw partError;
