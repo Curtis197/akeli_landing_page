@@ -24,6 +24,7 @@ export default function Navbar() {
   const navLinks = [
     { href: "/creators", label: t("creators") },
     { href: "/recipes", label: t("recipes") },
+    { href: "/become-creator", label: t("signup") },
     { href: "/about", label: t("about") },
   ];
 
@@ -93,7 +94,7 @@ export default function Navbar() {
                   href="/auth/signup"
                   className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
                 >
-                  {t("signup")}
+                  {t("register")}
                 </Link>
               </>
             )}
@@ -162,7 +163,7 @@ export default function Navbar() {
                   onClick={() => setMenuOpen(false)}
                   className="block px-3 py-2 rounded-md text-sm font-semibold text-primary hover:bg-primary/5 transition-colors"
                 >
-                  {t("signup")}
+                  {t("register")}
                 </Link>
               </>
             )}
