@@ -144,7 +144,7 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
         await supabase.from("recipe_step").insert(
           data.steps.map((step, i) => ({
             recipe_id: id,
-            step_number: step.sort_order ?? i + 1,
+            step_number: (step.sort_order ?? i) + 1,
             title: step.title ?? null,
             content: step.content,
           }))

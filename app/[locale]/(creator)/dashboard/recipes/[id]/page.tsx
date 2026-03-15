@@ -409,10 +409,10 @@ export default function RecipeDetailPage() {
         <div>
           <h2 className="text-base font-semibold text-foreground mb-3">Préparation</h2>
           <ol className="space-y-4">
-            {recipe.steps.map((step) => (
+            {recipe.steps.map((step, i) => (
               <li key={step.step_number} className="flex gap-4">
                 <span className="shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center mt-0.5">
-                  {step.step_number}
+                  {i + 1}
                 </span>
                 <div className="flex-1 space-y-1.5">
                   {step.title && (
