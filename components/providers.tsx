@@ -5,28 +5,35 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+async function fetchCreator(userId: string, accessToken: string) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/creator?user_id=eq.${userId}&select=*&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    }
+  );
+  if (!res.ok) return null;
+  const rows = await res.json();
+  return rows?.[0] ?? null;
+}
+
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setCreator, setLoading } = useAuthStore();
   const supabase = createClient();
 
   useEffect(() => {
-    console.log("[AuthProvider] SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-    console.log("[AuthProvider] ANON_KEY set:", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-
     // Initial session check
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log("[AuthProvider] session user:", session?.user?.id ?? "null");
       setUser(session?.user ?? null);
       if (session?.user) {
-        console.log("[AuthProvider] fetching creator for user:", session.user.id);
-        const timeout = setTimeout(() => console.error("[AuthProvider] creator fetch TIMED OUT after 5s"), 5000);
-        const { data: creator, error: creatorError } = await supabase
-          .from("creator")
-          .select("*")
-          .eq("user_id", session.user.id)
-          .single();
-        clearTimeout(timeout);
-        console.log("[AuthProvider] creator fetch:", { id: creator?.id, error: creatorError?.message });
+        const creator = await fetchCreator(session.user.id, session.access_token);
         setCreator(creator);
       }
       setLoading(false);
@@ -36,31 +43,11 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("[AuthProvider] auth event:", event, "user:", session?.user?.id ?? "null");
       setUser(session?.user ?? null);
       if (session?.user) {
-        console.log("[AuthProvider] fetching creator (event) for user:", session.user.id);
-
-        // Raw fetch test — bypass Supabase client to isolate network vs client issue
-        const rawUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/creator?user_id=eq.${session.user.id}&select=id`;
-        console.log("[AuthProvider] raw fetch test to:", rawUrl);
-        fetch(rawUrl, {
-          headers: {
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        })
-          .then((r) => r.json().then((d) => console.log("[AuthProvider] raw fetch OK:", r.status, d)))
-          .catch((e) => console.error("[AuthProvider] raw fetch ERROR:", e));
-
-        const timeout2 = setTimeout(() => console.error("[AuthProvider] creator fetch (event) TIMED OUT after 5s"), 5000);
-        const { data: creator, error: creatorError } = await supabase
-          .from("creator")
-          .select("*")
-          .eq("user_id", session.user.id)
-          .single();
-        clearTimeout(timeout2);
-        console.log("[AuthProvider] creator (event):", { id: creator?.id, error: creatorError?.message });
+        // Use raw fetch to avoid deadlock: supabase.from() inside onAuthStateChange
+        // triggers an internal auth.getUser() call that deadlocks the auth event queue.
+        const creator = await fetchCreator(session.user.id, session.access_token);
         setCreator(creator);
       } else {
         setCreator(null);

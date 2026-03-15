@@ -50,14 +50,12 @@ export default function ConversationPage() {
 
   useEffect(() => {
     // Load conversation title
-    console.log("[ConversationPage] loading conversation:", conversationId, "user:", myUserId);
     supabase
       .from("conversation")
       .select("name, type")
       .eq("id", conversationId)
       .single()
-      .then(({ data, error }) => {
-        console.log("[ConversationPage] conversation fetch:", { data, error: error?.message });
+      .then(({ data }) => {
         setConversationTitle(data?.name ?? null);
         setConversationType((data as any)?.type ?? null);
       });

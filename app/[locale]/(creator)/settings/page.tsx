@@ -46,9 +46,7 @@ export default function SettingsPage() {
 
   // ── Déconnexion ──────────────────────────────────────────────────────────────
   async function handleLogout() {
-    console.log("[SettingsPage] handleLogout called");
-    const { error } = await supabase.auth.signOut();
-    console.log("[SettingsPage] signOut result:", error?.message ?? "ok");
+    await supabase.auth.signOut();
     reset();
     router.push("/auth/login");
     router.refresh();

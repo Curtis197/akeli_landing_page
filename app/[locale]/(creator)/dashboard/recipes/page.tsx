@@ -41,11 +41,10 @@ export default function RecipesListPage() {
   const [aiLoading, setAiLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
-    console.log("[RecipesListPage] fetchData called, creator:", creator?.id ?? "null");
     if (!creator) return;
     setLoading(true);
     try {
-      const [{ data, error }, perfData] = await Promise.all([
+      const [{ data }, perfData] = await Promise.all([
         supabase
           .from("recipe")
           .select("id, slug, title, cover_image_url, is_published, region, difficulty, created_at")
@@ -53,7 +52,6 @@ export default function RecipesListPage() {
           .order("created_at", { ascending: false }),
         getRecipePerformance(supabase, creator.id, perfSortBy),
       ]);
-      console.log("[RecipesListPage] recipe fetch:", { count: data?.length ?? 0, error: error?.message });
       if (data) setRecipes(data);
       const map = new Map<string, RecipePerformance>();
       for (const p of perfData) map.set(p.recipe_id, p);
