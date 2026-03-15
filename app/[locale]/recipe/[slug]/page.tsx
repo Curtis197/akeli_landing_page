@@ -29,7 +29,6 @@ interface RecipeDetail {
   fiber_g: number | null;
   tags: string[];
   is_pork_free: boolean;
-  meal_types: string[];
   creator_id: string;
   creator: {
     display_name: string | null;
@@ -73,9 +72,11 @@ export default function RecipeDetailPage() {
       .from("recipe")
       .select(`
         id, slug, title, description, cover_image_url, region, difficulty,
-        prep_time_min, cook_time_min, servings, calories, protein_g, carbs_g,
-        fat_g, fiber_g, tags, is_pork_free, meal_types, creator_id,
-        creator:creator_id(display_name, profile_image_url, heritage_region)
+        prep_time_min, cook_time_min, servings, is_pork_free, creator_id,
+        food_region:region ( name_fr ),
+        recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ),
+        recipe_tag ( tag ( name ) ),
+        creator:creator_id ( display_name, profile_image_url, heritage_region )
       `)
       .eq("slug", slug)
       .eq("is_published", true)
@@ -84,13 +85,20 @@ export default function RecipeDetailPage() {
         if (error || !data) {
           setNotFound(true);
         } else {
-          const c = Array.isArray(data.creator) ? data.creator[0] : data.creator;
+          const raw = data as any;
+          const macro = Array.isArray(raw.recipe_macro) ? raw.recipe_macro[0] : raw.recipe_macro;
+          const c = Array.isArray(raw.creator) ? raw.creator[0] : raw.creator;
           setRecipe({
-            ...data,
-            tags: data.tags ?? [],
-            meal_types: data.meal_types ?? [],
+            ...raw,
+            region: raw.food_region?.name_fr ?? raw.region,
+            tags: (raw.recipe_tag ?? []).map((t: any) => t.tag?.name).filter(Boolean),
+            calories: macro?.calories ?? null,
+            protein_g: macro?.protein_g ?? null,
+            carbs_g: macro?.carbs_g ?? null,
+            fat_g: macro?.fat_g ?? null,
+            fiber_g: macro?.fiber_g ?? null,
             creator: c ?? null,
-          } as RecipeDetail);
+          });
         }
         setLoading(false);
       });
