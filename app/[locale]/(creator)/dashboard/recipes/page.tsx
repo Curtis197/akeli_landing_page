@@ -222,39 +222,41 @@ function RecipeRow({ recipe, perf, actionLoading, onEdit, onDuplicate, onToggleP
 
   return (
     <li className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-secondary/30 transition-colors">
-      {recipe.cover_image_url
-        ? <img src={recipe.cover_image_url} alt={recipe.title} className="w-full sm:w-20 h-32 sm:h-14 rounded-lg object-cover shrink-0" />
-        : <div className="w-full sm:w-20 h-14 rounded-lg bg-secondary shrink-0 flex items-center justify-center text-2xl">🍽️</div>
-      }
-      <div className="flex-1 min-w-0 space-y-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Link href={("/dashboard/recipes/" + recipe.id) as any} className="text-sm font-semibold text-foreground truncate hover:text-primary transition-colors">{recipe.title}</Link>
-          <span className={"px-2 py-0.5 rounded-full text-[10px] font-medium " + (recipe.is_published ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700")}>
-            {recipe.is_published ? "Publiée" : "Brouillon"}
-          </span>
+      <Link href={("/dashboard/recipes/" + recipe.id) as any} className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1 min-w-0">
+        {recipe.cover_image_url
+          ? <img src={recipe.cover_image_url} alt={recipe.title} className="w-full sm:w-20 h-32 sm:h-14 rounded-lg object-cover shrink-0" />
+          : <div className="w-full sm:w-20 h-14 rounded-lg bg-secondary shrink-0 flex items-center justify-center text-2xl">🍽️</div>
+        }
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-semibold text-foreground truncate hover:text-primary transition-colors">{recipe.title}</span>
+            <span className={"px-2 py-0.5 rounded-full text-[10px] font-medium " + (recipe.is_published ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700")}>
+              {recipe.is_published ? "Publiée" : "Brouillon"}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            {recipe.difficulty && <span>{DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}</span>}
+            {perf && (
+              <>
+                <span>•</span>
+                <span>{perf.consumptions_this_month} consommation{perf.consumptions_this_month !== 1 ? "s" : ""} ce mois</span>
+                <span>•</span>
+                <span className="font-semibold" style={{ color: "var(--color-brand-amber)" }}>
+                  {formatEuro(perf.revenue_this_month)} ce mois
+                </span>
+                {trend !== 0 && (
+                  <>
+                    <span>•</span>
+                    <span className={trend > 0 ? "text-emerald-600 font-medium" : "text-red-500 font-medium"}>
+                      {trend > 0 ? "↑ +" : "↓ "}{trend}%
+                    </span>
+                  </>
+                )}
+              </>
+            )}
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-          {recipe.difficulty && <span>{DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}</span>}
-          {perf && (
-            <>
-              <span>•</span>
-              <span>{perf.consumptions_this_month} consommation{perf.consumptions_this_month !== 1 ? "s" : ""} ce mois</span>
-              <span>•</span>
-              <span className="font-semibold" style={{ color: "var(--color-brand-amber)" }}>
-                {formatEuro(perf.revenue_this_month)} ce mois
-              </span>
-              {trend !== 0 && (
-                <>
-                  <span>•</span>
-                  <span className={trend > 0 ? "text-emerald-600 font-medium" : "text-red-500 font-medium"}>
-                    {trend > 0 ? "↑ +" : "↓ "}{trend}%
-                  </span>
-                </>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+      </Link>
       <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
         <ActionBtn onClick={onEdit} disabled={actionLoading} label="Éditer" />
         <ActionBtn onClick={onDuplicate} disabled={actionLoading} label="Dupliquer" />

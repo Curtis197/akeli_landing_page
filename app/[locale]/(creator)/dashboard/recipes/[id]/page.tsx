@@ -87,8 +87,8 @@ export default function RecipeDetailPage() {
           "prep_time_min, cook_time_min, servings, is_published, is_pork_free, " +
           "created_at, updated_at, " +
           "recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ), " +
-          "recipe_tag ( tag:tag_id ( name ) ), " +
-          "recipe_ingredient ( sort_order, quantity, unit, is_optional, ingredient:ingredient_id ( name_fr, name ) ), " +
+          "recipe_tag ( tag ( name ) ), " +
+          "recipe_ingredient ( sort_order, quantity, unit, is_optional, ingredient ( name_fr, name ) ), " +
           "recipe_step ( step_number, title, content, image_url, timer_seconds )"
         )
         .eq("id", id)
