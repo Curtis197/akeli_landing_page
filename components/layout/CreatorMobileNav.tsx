@@ -26,7 +26,7 @@ export default function CreatorMobileNav({ items, logoutText }: { items: NavItem
   return (
     <div className="lg:hidden border-b border-border bg-background sticky top-0 z-40">
       <div className="flex items-center justify-between px-4 h-14">
-        <div className="text-lg font-bold text-primary">Akeli Creator</div>
+        <Link href="/" className="text-lg font-bold text-primary hover:opacity-80 transition-opacity">Akeli Creator</Link>
         <button
           className="p-2 -mr-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           onClick={() => setOpen(!open)}
