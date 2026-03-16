@@ -290,7 +290,7 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
                 <select value={draft.unit}
                   onChange={(e) => setDraft((d) => ({ ...d, unit: e.target.value }))}
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                  {UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
+                  {UNITS.map((u) => <option key={u.code} value={u.code}>{u.label}</option>)}
                 </select>
               </div>
               <label className="flex items-center gap-2 cursor-pointer">
@@ -388,7 +388,7 @@ function EditPanel({
             <select value={(item as any).unit ?? "g"}
               onChange={(e) => onChange({ unit: e.target.value } as any)}
               className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-              {UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
+              {UNITS.map((u) => <option key={u.code} value={u.code}>{u.label}</option>)}
             </select>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">

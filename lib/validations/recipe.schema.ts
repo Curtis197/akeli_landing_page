@@ -119,9 +119,23 @@ export const DIFFICULTY_OPTIONS = [
   { value: "hard", label: "Difficile" },
 ] as const;
 
-export const UNITS = [
-  "g", "kg", "ml", "L", "cl",
-  "cuillère à soupe", "cuillère à café",
-  "tasse", "pincée", "unité(s)", "tranche(s)",
-  "morceau(x)", "bouquet", "feuille(s)",
-] as const;
+// Unit codes must match the `measurement_unit` table's primary key (code column).
+// The label is the French display string shown in the UI.
+export const UNITS: { code: string; label: string }[] = [
+  { code: "g",       label: "g" },
+  { code: "kg",      label: "kg" },
+  { code: "ml",      label: "ml" },
+  { code: "l",       label: "L" },
+  { code: "tbsp",    label: "cuillère à soupe" },
+  { code: "tsp",     label: "cuillère à café" },
+  { code: "cup",     label: "tasse" },
+  { code: "pinch",   label: "pincée" },
+  { code: "unit",    label: "unité(s)" },
+  { code: "slice",   label: "tranche(s)" },
+  { code: "piece",   label: "morceau(x)" },
+  { code: "bunch",   label: "bouquet" },
+  { code: "clove",   label: "gousse" },
+  { code: "can",     label: "boîte" },
+  { code: "pot",     label: "pot" },
+  { code: "drizzle", label: "filet" },
+];
