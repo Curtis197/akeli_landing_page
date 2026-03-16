@@ -20,6 +20,17 @@ interface Ingredient {
   sort_order: number;
 }
 
+interface RawIngredientRow {
+  id: string;
+  sort_order: number;
+  is_section_header: boolean;
+  title: string | null;
+  quantity: number | null;
+  unit: string | null;
+  is_optional: boolean;
+  ingredient: { name_fr: string | null; name: string | null } | null;
+}
+
 interface Step {
   step_number: number;
   title: string | null;
@@ -93,7 +104,8 @@ export default function RecipeDetailPage() {
           "food_region:region ( name_fr ), " +
           "recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ), " +
           "recipe_tag ( tag ( name ) ), " +
-          "recipe_step ( step_number, title, content, image_url, timer_seconds )"
+          "recipe_step ( step_number, title, content, image_url, timer_seconds, is_section_header ), " +
+          "recipe_ingredient ( id, sort_order, is_section_header, title, quantity, unit, is_optional, ingredient ( name_fr, name ) )"
         )
         .eq("id", id)
         .single();
@@ -106,9 +118,28 @@ export default function RecipeDetailPage() {
 
       const raw = data as any;
       const macro = Array.isArray(raw.recipe_macro) ? raw.recipe_macro[0] : raw.recipe_macro;
-      // Ingredients are stored only in draft_data (recipe_ingredient table not yet used)
-      const draftIngredients: Ingredient[] = ((raw.draft_data as any)?.ingredients ?? [])
-        .sort((a: Ingredient, b: Ingredient) => a.sort_order - b.sort_order);
+
+      // Use recipe_ingredient table (new FK-based system); fall back to draft_data for old recipes
+      const dbIngredients: RawIngredientRow[] = raw.recipe_ingredient ?? [];
+      let ingredients: Ingredient[];
+      if (dbIngredients.length > 0) {
+        ingredients = [...dbIngredients]
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((row) => ({
+            name: row.ingredient?.name_fr ?? row.ingredient?.name ?? "",
+            title: row.title ?? undefined,
+            is_section_header: row.is_section_header,
+            quantity: row.quantity,
+            unit: row.unit,
+            is_optional: row.is_optional,
+            sort_order: row.sort_order,
+          }));
+      } else {
+        // Legacy: read from draft_data
+        ingredients = ((raw.draft_data as any)?.ingredients ?? [])
+          .sort((a: Ingredient, b: Ingredient) => a.sort_order - b.sort_order);
+      }
+
       setRecipe({
         ...raw,
         region: raw.food_region?.name_fr ?? raw.region,
@@ -118,7 +149,7 @@ export default function RecipeDetailPage() {
         carbs_g: macro?.carbs_g ?? null,
         fat_g: macro?.fat_g ?? null,
         fiber_g: macro?.fiber_g ?? null,
-        ingredients: draftIngredients,
+        ingredients,
         steps: [...(raw.recipe_step ?? [])].sort((a: Step, b: Step) => a.step_number - b.step_number),
       });
       setLoading(false);
