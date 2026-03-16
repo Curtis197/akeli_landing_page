@@ -6,6 +6,7 @@ import { useRouter, Link } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { getRecipePerformance, RecipePerformance } from "@/lib/queries/recipe-performance";
+import { UNIT_CODE_TO_LABEL, normalizeUnitCode } from "@/lib/validations/recipe.schema";
 import { formatEuro } from "@/lib/utils/format";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -130,14 +131,23 @@ export default function RecipeDetailPage() {
             title: row.title ?? undefined,
             is_section_header: row.is_section_header,
             quantity: row.quantity,
-            unit: row.unit,
+            unit: UNIT_CODE_TO_LABEL[row.unit ?? ""] ?? row.unit ?? null,
             is_optional: row.is_optional,
             sort_order: row.sort_order,
           }));
       } else {
-        // Legacy: read from draft_data
+        // Legacy: read from draft_data; map IngredientListItem → Ingredient
         ingredients = ((raw.draft_data as any)?.ingredients ?? [])
-          .sort((a: Ingredient, b: Ingredient) => a.sort_order - b.sort_order);
+          .sort((a: any, b: any) => a.sort_order - b.sort_order)
+          .map((item: any) => ({
+            name: item.ingredient?.name_fr ?? item.ingredient?.name ?? item.name ?? "",
+            title: item.title ?? undefined,
+            is_section_header: item.is_section_header ?? false,
+            quantity: item.quantity ?? null,
+            unit: UNIT_CODE_TO_LABEL[normalizeUnitCode(item.unit)] ?? item.unit ?? null,
+            is_optional: item.is_optional ?? false,
+            sort_order: item.sort_order ?? 0,
+          }));
       }
 
       setRecipe({

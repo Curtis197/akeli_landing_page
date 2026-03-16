@@ -139,3 +139,33 @@ export const UNITS: { code: string; label: string }[] = [
   { code: "pot",     label: "pot" },
   { code: "drizzle", label: "filet" },
 ];
+
+// Lookup: code → French label (for display in detail pages)
+export const UNIT_CODE_TO_LABEL: Record<string, string> = Object.fromEntries(
+  UNITS.map((u) => [u.code, u.label])
+);
+
+// Legacy French labels that were previously stored in draft_data → canonical code
+const LEGACY_LABEL_TO_CODE: Record<string, string> = {
+  "L":                 "l",
+  "cl":                "ml",
+  "cuillère à soupe":  "tbsp",
+  "cuillère à café":   "tsp",
+  "tasse":             "cup",
+  "pincée":            "pinch",
+  "unité(s)":          "unit",
+  "tranche(s)":        "slice",
+  "morceau(x)":        "piece",
+  "bouquet":           "bunch",
+  "feuille(s)":        "piece",
+};
+
+/**
+ * Converts any unit value (legacy French label or current code) to a valid
+ * measurement_unit code. Falls back to "unit" if unrecognised.
+ */
+export function normalizeUnitCode(unit: string | null | undefined): string {
+  if (!unit) return "unit";
+  if (UNIT_CODE_TO_LABEL[unit]) return unit;          // already a valid code
+  return LEGACY_LABEL_TO_CODE[unit] ?? "unit";
+}

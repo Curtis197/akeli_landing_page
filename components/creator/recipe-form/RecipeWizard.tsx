@@ -7,6 +7,7 @@ import { useAuthStore } from "@/lib/stores/authStore";
 import type {
   Step1Data, Step3Data, Step4Data, Step5Data, Step6Data, IngredientListItem,
 } from "@/lib/validations/recipe.schema";
+import { normalizeUnitCode } from "@/lib/validations/recipe.schema";
 import Step1Basic from "./Step1Basic";
 import Step2Ingredients from "./Step2Ingredients";
 import Step3Steps from "./Step3Steps";
@@ -161,7 +162,7 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
               title: null,
               ingredient_id: item.ingredient.id,
               quantity: item.quantity,
-              unit: item.unit,
+              unit: normalizeUnitCode(item.unit),
               is_optional: item.is_optional,
               sort_order: index,
             };

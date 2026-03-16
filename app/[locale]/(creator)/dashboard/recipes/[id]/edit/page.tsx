@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import RecipeWizard from "@/components/creator/recipe-form/RecipeWizard";
 import type { RecipeFormState } from "@/components/creator/recipe-form/RecipeWizard";
+import { normalizeUnitCode } from "@/lib/validations/recipe.schema";
 
 export default function EditRecipePage() {
   const { id } = useParams<{ id: string }>();
@@ -31,9 +32,20 @@ export default function EditRecipePage() {
         return;
       }
 
-      // If draft_data exists, it is the canonical form state
+      // If draft_data exists, it is the canonical form state.
+      // Normalize legacy French unit labels to measurement_unit codes so the
+      // dropdown pre-selects the right option and saves pass the FK constraint.
       if (data.draft_data) {
-        setInitialData(data.draft_data as Partial<RecipeFormState>);
+        const dd = data.draft_data as Partial<RecipeFormState>;
+        const normalized: Partial<RecipeFormState> = {
+          ...dd,
+          ingredients: (dd.ingredients ?? []).map((item) =>
+            item.is_section_header
+              ? item
+              : { ...item, unit: normalizeUnitCode((item as any).unit) }
+          ),
+        };
+        setInitialData(normalized);
         setLoading(false);
         return;
       }
