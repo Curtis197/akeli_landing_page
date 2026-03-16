@@ -5,7 +5,7 @@ import { useRouter } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 import type {
-  Step1Data, Step2Data, Step3Data, Step4Data, Step5Data, Step6Data,
+  Step1Data, Step3Data, Step4Data, Step5Data, Step6Data, IngredientListItem,
 } from "@/lib/validations/recipe.schema";
 import Step1Basic from "./Step1Basic";
 import Step2Ingredients from "./Step2Ingredients";
@@ -27,7 +27,7 @@ export interface RecipeFormState {
   cook_time_min: number;
   servings: number;
   // Step 2
-  ingredients: Step2Data["ingredients"];
+  ingredients: IngredientListItem[];
   // Step 3
   steps: Step3Data["steps"];
   // Step 4
@@ -138,6 +138,37 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
         );
       }
 
+      // Sync ingredients to recipe_ingredient table
+      if (id && data.ingredients.length > 0) {
+        await supabase.from("recipe_ingredient").delete().eq("recipe_id", id);
+        await supabase.from("recipe_ingredient").insert(
+          data.ingredients.map((item, index) => {
+            if (item.is_section_header) {
+              return {
+                recipe_id: id,
+                is_section_header: true,
+                title: item.title,
+                ingredient_id: null,
+                quantity: null,
+                unit: null,
+                is_optional: false,
+                sort_order: index,
+              };
+            }
+            return {
+              recipe_id: id,
+              is_section_header: false,
+              title: null,
+              ingredient_id: item.ingredient.id,
+              quantity: item.quantity,
+              unit: item.unit,
+              is_optional: item.is_optional,
+              sort_order: index,
+            };
+          })
+        );
+      }
+
       // Sync steps to recipe_step table
       if (id && data.steps.length > 0) {
         await supabase.from("recipe_step").delete().eq("recipe_id", id);
@@ -213,7 +244,6 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
             fiber_g: formState.fiber_g ?? null,
           }, { onConflict: "recipe_id" });
         }
-        // Ingredients: catalog linking not yet implemented in form
       }
 
       await supabase.from("recipe").update({ is_published: publish }).eq("id", id);

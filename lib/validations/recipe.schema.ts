@@ -13,22 +13,48 @@ export const step1Schema = z.object({
   servings: z.number().int().min(1, "Minimum 1 portion").max(50, "Maximum 50 portions"),
 });
 
+// ─── Ingredient list item (discriminated union) ───────────────────────────────
+
+export const ingredientSectionHeaderSchema = z.object({
+  id:               z.string(),
+  type:             z.literal("section_header"),
+  title:            z.string().min(1, "Le titre de section ne peut pas être vide").max(80),
+  sort_order:       z.number().int(),
+  is_section_header: z.literal(true),
+});
+
+export const ingredientItemSchema = z.object({
+  id:   z.string(),
+  type: z.literal("ingredient"),
+  ingredient: z.object({
+    id:       z.string().uuid(),
+    name:     z.string(),
+    category: z.string().nullable(),
+    status:   z.enum(["validated", "pending"]),
+  }),
+  quantity:          z.number().positive("La quantité doit être positive"),
+  unit:              z.string().min(1, "Unité requise"),
+  is_optional:       z.boolean().default(false),
+  sort_order:        z.number().int(),
+  is_section_header: z.literal(false),
+});
+
+export const ingredientListItemSchema = z.discriminatedUnion("type", [
+  ingredientSectionHeaderSchema,
+  ingredientItemSchema,
+]);
+
+export type IngredientSectionHeader = z.infer<typeof ingredientSectionHeaderSchema>;
+export type IngredientItem = z.infer<typeof ingredientItemSchema>;
+export type IngredientListItem = z.infer<typeof ingredientListItemSchema>;
+
 export const step2Schema = z.object({
   ingredients: z
-    .array(
-      z.object({
-        id: z.string(),
-        ingredient_id: z.string().optional(),
-        name: z.string().default(""),
-        title: z.string().optional(),
-        is_section_header: z.boolean().default(false),
-        quantity: z.number().positive("Quantité invalide").optional(),
-        unit: z.string().optional(),
-        is_optional: z.boolean().default(false),
-        sort_order: z.number().int(),
-      })
-    )
-    .min(3, "Minimum 3 ingrédients"),
+    .array(ingredientListItemSchema)
+    .refine(
+      (items) => items.filter((i) => i.type === "ingredient").length >= 3,
+      { message: "Minimum 3 ingrédients requis (hors titres de section)" }
+    ),
 });
 
 export const step3Schema = z.object({
