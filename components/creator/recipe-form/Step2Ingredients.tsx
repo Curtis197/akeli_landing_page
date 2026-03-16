@@ -222,7 +222,7 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
                     <p className="text-sm font-semibold text-primary">{ing.title || "—"}</p>
                   ) : (
                     <>
-                      <p className="text-sm font-medium text-foreground truncate">{ing.ingredient.name}</p>
+                      <p className="text-sm font-medium text-foreground truncate">{ing.ingredient?.name ?? "—"}</p>
                       <p className="text-xs text-muted-foreground">
                         {ing.quantity} {ing.unit}{ing.is_optional && " · optionnel"}
                       </p>
@@ -463,10 +463,10 @@ function SortableRow({
         ⠿
       </button>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground truncate">{item.ingredient.name}</p>
+        <p className="text-sm font-medium text-foreground truncate">{item.ingredient?.name ?? "—"}</p>
         <p className="text-xs text-muted-foreground">
           {item.quantity} {item.unit}{item.is_optional && " · optionnel"}
-          {item.ingredient.status === "pending" && (
+          {item.ingredient?.status === "pending" && (
             <span className="ml-1 text-amber-600">⏳</span>
           )}
         </p>

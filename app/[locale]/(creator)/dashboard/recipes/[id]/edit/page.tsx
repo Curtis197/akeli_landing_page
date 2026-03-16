@@ -33,7 +33,15 @@ export default function EditRecipePage() {
 
       // If draft_data exists, it is the canonical form state
       if (data.draft_data) {
-        setInitialData(data.draft_data as Partial<RecipeFormState>);
+        const draft = data.draft_data as Partial<RecipeFormState>;
+        // Sanitize ingredients: drop items saved in old free-text format (no ingredient.id/name)
+        if (draft.ingredients) {
+          draft.ingredients = draft.ingredients.filter((item) => {
+            if (item.is_section_header) return true;
+            return item.ingredient && typeof (item.ingredient as any).name === "string";
+          });
+        }
+        setInitialData(draft);
         setLoading(false);
         return;
       }
