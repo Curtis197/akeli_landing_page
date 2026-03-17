@@ -92,9 +92,9 @@ export default function EditRecipePage() {
           .order("sort_order", { ascending: true }),
         supabase
           .from("recipe_step")
-          .select("id, step_number, content, title, is_section_header")
+          .select("id, step_number, sort_order, content, title, is_section_header")
           .eq("recipe_id", id)
-          .order("step_number", { ascending: true }),
+          .order("sort_order", { ascending: true }),
       ]);
       console.log("[EditRecipe] recipe_ingredient rows:", riRows, "error:", riErr);
       console.log("[EditRecipe] recipe_step rows:", stepRows, "error:", stepErr);

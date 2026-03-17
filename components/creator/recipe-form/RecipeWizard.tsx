@@ -181,7 +181,7 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
       // Sync steps to recipe_step table
       if (id && data.steps.length > 0) {
         let sectionStepCounter = 0;
-        const stepRows = data.steps.map((step) => {
+        const stepRows = data.steps.map((step, globalIndex) => {
           if (step.is_section_header) {
             sectionStepCounter = 0;
             return {
@@ -189,7 +189,8 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
               is_section_header: true,
               title: step.title,
               content: null,
-              step_number: 0,
+              step_number: 0,   // section headers have no display number
+              sort_order: globalIndex,
             };
           }
           sectionStepCounter++;
@@ -198,7 +199,8 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
             is_section_header: false,
             title: (step as any).title ?? null,
             content: (step as any).content,
-            step_number: sectionStepCounter,
+            step_number: sectionStepCounter, // resets per section
+            sort_order: globalIndex,          // global position for ordering
           };
         });
         console.log("[RecipeWizard] syncing recipe_step", { recipe_id: id, count: stepRows.length, rows: stepRows });
