@@ -251,11 +251,14 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
       if (publish) {
         // Write related tables before publishing
         // Tags: replace all
-        await supabase.from("recipe_tag").delete().eq("recipe_id", id);
-        if (formState.tags.length > 0) {
-          await supabase.from("recipe_tag").insert(
-            formState.tags.map((tag_id) => ({ recipe_id: id, tag_id }))
-          );
+        const tagRows = formState.tags.map((tag_id) => ({ recipe_id: id, tag_id }));
+        console.log("[RecipeWizard] syncing recipe_tag", { recipe_id: id, count: tagRows.length, rows: tagRows });
+        const { error: tagDeleteError } = await supabase.from("recipe_tag").delete().eq("recipe_id", id);
+        if (tagDeleteError) console.error("[RecipeWizard] recipe_tag delete error", tagDeleteError);
+        if (tagRows.length > 0) {
+          const { error: tagInsertError } = await supabase.from("recipe_tag").insert(tagRows);
+          if (tagInsertError) console.error("[RecipeWizard] recipe_tag insert error", tagInsertError);
+          else console.log("[RecipeWizard] recipe_tag sync ok");
         }
         // Macros
         if (!formState.macros_skipped && formState.calories) {
