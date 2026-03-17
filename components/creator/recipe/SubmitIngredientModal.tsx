@@ -16,7 +16,6 @@ const CATEGORY_OPTIONS = [
 interface SubmitIngredientModalProps {
   open: boolean;
   initialName: string;
-  creatorUserId: string;
   onClose: () => void;
   onSubmitted: (ingredient: { id: string; name: string }) => void;
 }
@@ -24,7 +23,6 @@ interface SubmitIngredientModalProps {
 export function SubmitIngredientModal({
   open,
   initialName,
-  creatorUserId,
   onClose,
   onSubmitted,
 }: SubmitIngredientModalProps) {
@@ -48,7 +46,16 @@ export function SubmitIngredientModal({
     const supabase = createClient();
 
     try {
+      // Explicitly get session so we can pass Authorization header reliably
+      // (supabase.functions.invoke with @supabase/ssr browser client may not
+      // attach the token automatically in all cases)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Session expirée, veuillez vous reconnecter");
+      }
+
       const { data, error: fnErr } = await supabase.functions.invoke("submit-ingredient", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
         body: {
           name:     name.trim(),
           name_fr:  nameFr.trim() || name.trim(),
@@ -58,7 +65,14 @@ export function SubmitIngredientModal({
         },
       });
 
-      if (fnErr) throw new Error(fnErr.message);
+      if (fnErr) {
+        let detail = fnErr.message;
+        try {
+          const body = await (fnErr as any).context?.json?.();
+          if (body?.error) detail = body.error;
+        } catch { /* ignore parse errors */ }
+        throw new Error(detail);
+      }
       if (data?.error) throw new Error(data.error);
 
       onSubmitted({ id: data.id, name: data.name });

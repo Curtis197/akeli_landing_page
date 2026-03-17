@@ -66,14 +66,16 @@ Deno.serve(async (req: Request) => {
     }
 
     // 1. Insert the ingredient (status: pending — will be validated by admin)
+    // category is intentionally omitted here: it's a FK to ingredient_category.code
+    // and the admin will set the correct code when validating the submission.
+    // The creator's hint is stored in ingredient_submission.category_hint.
     const { data: ingredient, error: ingErr } = await adminClient
       .from("ingredient")
       .insert({
-        name:     name.trim(),
-        name_fr:  name_fr?.trim() || name.trim(),
-        name_en:  name_en?.trim() || null,
-        category: category || null,
-        status:   "pending",
+        name:    name.trim(),
+        name_fr: name_fr?.trim() || name.trim(),
+        name_en: name_en?.trim() || null,
+        status:  "pending",
       })
       .select("id, name, name_fr")
       .single();

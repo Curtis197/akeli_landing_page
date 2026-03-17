@@ -333,7 +333,6 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
       <SubmitIngredientModal
         open={modalOpen}
         initialName={notFoundQuery}
-        creatorUserId={userId}
         onClose={() => setModalOpen(false)}
         onSubmitted={handleSubmitted}
       />
