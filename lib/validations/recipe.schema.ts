@@ -167,3 +167,8 @@ export const UNIT_TO_CODE: Record<string, string> = {
   "bouquet":            "bunch",
   "feuille(s)":         "leaf",
 };
+
+/** Reverse map: measurement_unit.code → UNITS display label */
+export const CODE_TO_UNIT: Record<string, string> = Object.fromEntries(
+  Object.entries(UNIT_TO_CODE).map(([label, code]) => [code, label])
+);

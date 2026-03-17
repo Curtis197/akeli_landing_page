@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import RecipeWizard from "@/components/creator/recipe-form/RecipeWizard";
 import type { RecipeFormState } from "@/components/creator/recipe-form/RecipeWizard";
+import { CODE_TO_UNIT } from "@/lib/validations/recipe.schema";
 
 export default function EditRecipePage() {
   const { id } = useParams<{ id: string }>();
@@ -121,17 +122,17 @@ export default function EditRecipePage() {
             status: (ing?.status ?? "validated") as "validated" | "pending",
           },
           quantity: row.quantity ?? 0,
-          unit: row.unit ?? "g",
+          unit: CODE_TO_UNIT[row.unit] ?? row.unit ?? "g",
           is_optional: row.is_optional ?? false,
           sort_order: row.sort_order ?? 0,
         };
       });
 
-      const steps = (stepRows ?? []).map((row: any, i: number) => {
+      const steps = (stepRows ?? []).map((row: any) => {
         if (row.is_section_header) {
-          return { id: row.id, type: "section_header" as const, is_section_header: true as const, title: row.title ?? "", sort_order: i };
+          return { id: row.id, type: "section_header" as const, is_section_header: true as const, title: row.title ?? "", sort_order: row.sort_order ?? 0 };
         }
-        return { id: row.id, type: "step" as const, is_section_header: false as const, content: row.content ?? "", title: row.title ?? null, sort_order: i };
+        return { id: row.id, type: "step" as const, is_section_header: false as const, content: row.content ?? "", title: row.title ?? null, sort_order: row.sort_order ?? 0 };
       });
 
       const mapped: Partial<RecipeFormState> = {
