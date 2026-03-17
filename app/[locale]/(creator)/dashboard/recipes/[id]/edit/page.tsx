@@ -46,7 +46,55 @@ export default function EditRecipePage() {
         return;
       }
 
-      // Fallback: reconstruct from direct columns (for recipes without draft_data)
+      // Fallback: reconstruct from direct columns + related tables
+      const [{ data: riRows }, { data: stepRows }] = await Promise.all([
+        supabase
+          .from("recipe_ingredient")
+          .select("id, ingredient_id, quantity, unit, is_optional, is_section_header, title, sort_order, ingredient(id, name, name_fr, name_en, status)")
+          .eq("recipe_id", id)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("recipe_step")
+          .select("id, step_number, content, title, is_section_header")
+          .eq("recipe_id", id)
+          .order("step_number", { ascending: true }),
+      ]);
+
+      const ingredients = (riRows ?? []).map((row: any) => {
+        if (row.is_section_header) {
+          return {
+            id: row.id,
+            type: "section_header" as const,
+            is_section_header: true as const,
+            title: row.title ?? "",
+            sort_order: row.sort_order ?? 0,
+          };
+        }
+        const ing = row.ingredient;
+        return {
+          id: row.id,
+          type: "ingredient" as const,
+          is_section_header: false as const,
+          ingredient: {
+            id: ing?.id ?? row.ingredient_id,
+            name: ing?.name_fr ?? ing?.name ?? ing?.name_en ?? "Ingrédient",
+            category: null,
+            status: (ing?.status ?? "validated") as "validated" | "pending",
+          },
+          quantity: row.quantity ?? 0,
+          unit: row.unit ?? "g",
+          is_optional: row.is_optional ?? false,
+          sort_order: row.sort_order ?? 0,
+        };
+      });
+
+      const steps = (stepRows ?? []).map((row: any, i: number) => {
+        if (row.is_section_header) {
+          return { id: row.id, type: "section_header" as const, is_section_header: true as const, title: row.title ?? "", sort_order: i };
+        }
+        return { id: row.id, type: "step" as const, is_section_header: false as const, content: row.content ?? "", title: row.title ?? null, sort_order: i };
+      });
+
       const mapped: Partial<RecipeFormState> = {
         title: data.title ?? "",
         description: (data as any).description ?? "",
@@ -56,8 +104,8 @@ export default function EditRecipePage() {
         prep_time_min: data.prep_time_min ?? 30,
         cook_time_min: data.cook_time_min ?? 0,
         servings: data.servings ?? 4,
-        ingredients: [],
-        steps: [],
+        ingredients,
+        steps,
         macros_skipped: true,
         cover_image_url: data.cover_image_url ?? "",
         gallery_urls: [],
