@@ -20,24 +20,28 @@ export default function Step6Tags({
   isPublishing,
 }: Step6Props) {
   const supabase = createClient();
-  const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [availableTags, setAvailableTags] = useState<{ id: string; label: string }[]>([]);
 
   useEffect(() => {
     supabase
-      .from("tags")
-      .select("name")
-      .order("name")
-      .then(({ data }) => {
-        if (data) setAvailableTags(data.map((t: { name: string }) => t.name));
+      .from("tag")
+      .select("id, name_fr, name")
+      .order("name_fr")
+      .then(({ data, error }) => {
+        if (error) console.error("[Step6Tags] tag fetch error", error);
+        if (data) setAvailableTags(data.map((t: { id: string; name_fr: string; name: string }) => ({
+          id: t.id,
+          label: t.name_fr ?? t.name,
+        })));
       });
   }, [supabase]);
 
-  const toggleTag = (tag: string) => {
+  const toggleTag = (id: string) => {
     const current = data.tags;
-    if (current.includes(tag)) {
-      onChange({ tags: current.filter((t) => t !== tag) });
+    if (current.includes(id)) {
+      onChange({ tags: current.filter((t) => t !== id) });
     } else if (current.length < 8) {
-      onChange({ tags: [...current, tag] });
+      onChange({ tags: [...current, id] });
     }
   };
 
@@ -66,14 +70,14 @@ export default function Step6Tags({
 
         {availableTags.length > 0 ? (
           <div className="flex flex-wrap gap-2">
-            {availableTags.map((tag) => {
-              const selected = data.tags.includes(tag);
+            {availableTags.map(({ id, label }) => {
+              const selected = data.tags.includes(id);
               const disabled = !selected && data.tags.length >= 8;
               return (
                 <button
-                  key={tag}
+                  key={id}
                   type="button"
-                  onClick={() => toggleTag(tag)}
+                  onClick={() => toggleTag(id)}
                   disabled={disabled}
                   className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
                     selected
@@ -83,7 +87,7 @@ export default function Step6Tags({
                       : "border-border text-foreground hover:bg-secondary"
                   }`}
                 >
-                  {tag}
+                  {label}
                 </button>
               );
             })}
@@ -155,11 +159,14 @@ export default function Step6Tags({
           </div>
           {data.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 pt-1">
-              {data.tags.map((tag) => (
-                <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
-                  #{tag}
-                </span>
-              ))}
+              {data.tags.map((tagId) => {
+                const label = availableTags.find((t) => t.id === tagId)?.label ?? tagId;
+                return (
+                  <span key={tagId} className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                    #{label}
+                  </span>
+                );
+              })}
             </div>
           )}
         </div>
