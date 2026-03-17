@@ -140,7 +140,11 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
 
       // Sync ingredients to recipe_ingredient table
       if (id && data.ingredients.length > 0) {
-        const ingredientRows = data.ingredients.map((item, index) => {
+        const skipped = data.ingredients.filter((item) => !item.is_section_header && !(item as any).ingredient?.id);
+        if (skipped.length > 0) {
+          console.warn("[RecipeWizard] skipping ingredients with no valid ingredient_id:", skipped);
+        }
+        const ingredientRows = data.ingredients.filter((item) => item.is_section_header || !!(item as any).ingredient?.id).map((item, index) => {
           if (item.is_section_header) {
             return {
               recipe_id: id,

@@ -47,12 +47,16 @@ export default function EditRecipePage() {
               // Already in new format
               if (item.ingredient && typeof item.ingredient.name === "string") return item;
               // Old format: name/unit/quantity at root level
+              // NOTE: item.id is a local crypto.randomUUID(), NOT an ingredient table FK.
+              // Only use ingredient_id if it exists; otherwise skip via null so wizard filters it out.
+              const resolvedIngredientId = item.ingredient_id ?? null;
+              console.log("[EditRecipe] migrating old-format ingredient:", { item_id: item.id, ingredient_id: item.ingredient_id, name: item.name, resolvedIngredientId });
               return {
                 id: item.id,
                 type: "ingredient" as const,
                 is_section_header: false as const,
                 ingredient: {
-                  id: item.ingredient_id ?? item.id,
+                  id: resolvedIngredientId,
                   name: item.name ?? "Ingrédient",
                   category: null,
                   status: "validated" as const,
