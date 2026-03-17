@@ -142,6 +142,9 @@ export default function RecipeDetailPage() {
           .sort((a: Ingredient, b: Ingredient) => a.sort_order - b.sort_order);
       }
 
+      const dbSteps = raw.recipe_step ?? [];
+      console.log("[RecipeDetail] recipe_step rows:", dbSteps.length, dbSteps);
+
       setRecipe({
         ...raw,
         region: raw.food_region?.name_fr ?? raw.region,
@@ -152,7 +155,7 @@ export default function RecipeDetailPage() {
         fat_g: macro?.fat_g ?? null,
         fiber_g: macro?.fiber_g ?? null,
         ingredients,
-        steps: [...(raw.recipe_step ?? [])].sort((a: Step, b: Step) => a.step_number - b.step_number),
+        steps: [...dbSteps].sort((a: Step, b: Step) => a.step_number - b.step_number),
       });
       setLoading(false);
     }
