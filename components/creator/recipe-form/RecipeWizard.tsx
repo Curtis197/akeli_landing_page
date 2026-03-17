@@ -180,22 +180,25 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
 
       // Sync steps to recipe_step table
       if (id && data.steps.length > 0) {
-        const stepRows = data.steps.map((step, i) => {
+        let sectionStepCounter = 0;
+        const stepRows = data.steps.map((step) => {
           if (step.is_section_header) {
+            sectionStepCounter = 0;
             return {
               recipe_id: id,
               is_section_header: true,
               title: step.title,
               content: null,
-              step_number: i + 1,
+              step_number: 0,
             };
           }
+          sectionStepCounter++;
           return {
             recipe_id: id,
             is_section_header: false,
             title: (step as any).title ?? null,
             content: (step as any).content,
-            step_number: i + 1,
+            step_number: sectionStepCounter,
           };
         });
         console.log("[RecipeWizard] syncing recipe_step", { recipe_id: id, count: stepRows.length, rows: stepRows });

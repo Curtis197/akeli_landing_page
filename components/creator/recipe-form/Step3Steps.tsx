@@ -113,7 +113,7 @@ export default function Step3Steps({ data, onChange }: Step3Props) {
   const realStepCount = steps.filter((s) => !s.is_section_header).length;
   const tooFew = realStepCount < 2;
 
-  // Sequential step number (ignoring section headers)
+  // Step counter resets at each section header
   let stepCounter = 0;
 
   return (
@@ -138,7 +138,8 @@ export default function Step3Steps({ data, onChange }: Step3Props) {
               <SortableContext items={steps.map((s) => s.id)} strategy={verticalListSortingStrategy}>
                 <ol className="space-y-3">
                   {steps.map((step) => {
-                    if (!step.is_section_header) stepCounter++;
+                    if (step.is_section_header) stepCounter = 0;
+                    else stepCounter++;
                     return (
                       <SortableStepRow
                         key={step.id}
@@ -160,7 +161,8 @@ export default function Step3Steps({ data, onChange }: Step3Props) {
             {(() => {
               let mobileCounter = 0;
               return steps.map((step, index) => {
-                if (!step.is_section_header) mobileCounter++;
+                if (step.is_section_header) mobileCounter = 0;
+                else mobileCounter++;
                 return (
                   <li key={step.id} className={`rounded-xl border p-3 space-y-2 ${
                     step.is_section_header
