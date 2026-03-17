@@ -37,14 +37,33 @@ export default function EditRecipePage() {
       if (data.draft_data) {
         const draft = data.draft_data as Partial<RecipeFormState>;
         console.log("[EditRecipe] draft_data ingredients (raw):", draft.ingredients);
-        // Sanitize ingredients: drop items saved in old free-text format (no ingredient.id/name)
+        // Migrate ingredients: old format stored name/unit/quantity directly on the item.
+        // New format wraps them under ingredient: { id, name, category, status }.
         if (draft.ingredients) {
-          const before = draft.ingredients.length;
-          draft.ingredients = draft.ingredients.filter((item) => {
-            if (item.is_section_header) return true;
-            return item.ingredient && typeof (item.ingredient as any).name === "string";
-          });
-          console.log("[EditRecipe] draft_data ingredients after filter:", draft.ingredients.length, "/ was:", before);
+          draft.ingredients = draft.ingredients
+            .filter((item) => item.is_section_header || !!(item as any).ingredient || !!(item as any).name)
+            .map((item: any) => {
+              if (item.is_section_header) return item;
+              // Already in new format
+              if (item.ingredient && typeof item.ingredient.name === "string") return item;
+              // Old format: name/unit/quantity at root level
+              return {
+                id: item.id,
+                type: "ingredient" as const,
+                is_section_header: false as const,
+                ingredient: {
+                  id: item.ingredient_id ?? item.id,
+                  name: item.name ?? "Ingrédient",
+                  category: null,
+                  status: "validated" as const,
+                },
+                quantity: item.quantity ?? 0,
+                unit: item.unit ?? "g",
+                is_optional: item.is_optional ?? false,
+                sort_order: item.sort_order ?? 0,
+              };
+            });
+          console.log("[EditRecipe] draft_data ingredients after migration:", draft.ingredients.length);
         }
         setInitialData(draft);
         setLoading(false);
