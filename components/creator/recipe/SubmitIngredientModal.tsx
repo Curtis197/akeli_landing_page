@@ -48,32 +48,20 @@ export function SubmitIngredientModal({
     const supabase = createClient();
 
     try {
-      const { data: ingredient, error: ingErr } = await supabase
-        .from("ingredient")
-        .insert({
+      const { data, error: fnErr } = await supabase.functions.invoke("submit-ingredient", {
+        body: {
           name:     name.trim(),
           name_fr:  nameFr.trim() || name.trim(),
-          name_en:  nameEn.trim() || null,
-          category: category || null,
-          status:   "pending",
-        })
-        .select("id, name, name_fr")
-        .single();
-
-      if (ingErr) throw new Error(ingErr.message);
-
-      await supabase.from("ingredient_submission").insert({
-        submitted_by:  creatorUserId,
-        name:          name.trim(),
-        name_fr:       nameFr.trim() || null,
-        name_en:       nameEn.trim() || null,
-        category_hint: category || null,
-        notes:         notes.trim() || null,
-        ingredient_id: ingredient.id,
-        status:        "pending",
+          name_en:  nameEn.trim() || undefined,
+          category: category || undefined,
+          notes:    notes.trim() || undefined,
+        },
       });
 
-      onSubmitted({ id: ingredient.id, name: ingredient.name_fr ?? ingredient.name });
+      if (fnErr) throw new Error(fnErr.message);
+      if (data?.error) throw new Error(data.error);
+
+      onSubmitted({ id: data.id, name: data.name });
     } catch (err: any) {
       setError(err.message ?? "Erreur lors de la soumission");
     } finally {

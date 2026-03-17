@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useLocale } from "next-intl";
 import { useIngredientSearch, type IngredientOption } from "@/hooks/use-ingredient-search";
 
 interface IngredientComboboxProps {
@@ -18,12 +19,13 @@ export function IngredientCombobox({
   onNotFound,
   placeholder = "Rechercher un ingrédient...",
 }: IngredientComboboxProps) {
+  const locale = useLocale();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-  const { results, loading } = useIngredientSearch(query, creatorUserId);
+  const { results, loading } = useIngredientSearch(query, creatorUserId, locale);
 
   // Total items = results + optionally the "submit" row at the end
   const hasSubmitRow = !loading && results.length === 0 && query.length >= 2;

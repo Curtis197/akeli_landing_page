@@ -7,11 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 export interface IngredientOption {
   id: string;
   name: string; // name_fr → name → name_en
-  category: string | null;
+  category: string | null; // localized label from ingredient_category
   status: "validated" | "pending";
 }
 
-export function useIngredientSearch(query: string, creatorUserId: string) {
+export function useIngredientSearch(query: string, creatorUserId: string, locale = "fr") {
   const [results, setResults] = useState<IngredientOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [debouncedQuery] = useDebounce(query, 300);
@@ -46,7 +46,7 @@ export function useIngredientSearch(query: string, creatorUserId: string) {
 
         const { data, error } = await supabase
           .from("ingredient")
-          .select("id, name, name_fr, name_en, category, status")
+          .select("id, name, name_fr, name_en, status, ingredient_category(name_fr, name_en)")
           .or(filterExpr)
           .or(
             `name_fr.ilike.%${debouncedQuery}%,name_en.ilike.%${debouncedQuery}%,name.ilike.%${debouncedQuery}%`
@@ -58,12 +58,18 @@ export function useIngredientSearch(query: string, creatorUserId: string) {
         if (error) { setResults([]); return; }
 
         setResults(
-          (data ?? []).map((ing: any) => ({
-            id: ing.id,
-            name: ing.name_fr ?? ing.name ?? ing.name_en ?? "Ingrédient",
-            category: ing.category ?? null,
-            status: ing.status as "validated" | "pending",
-          }))
+          (data ?? []).map((ing: any) => {
+            const cat = ing.ingredient_category;
+            const categoryLabel = cat
+              ? (locale === "fr" ? cat.name_fr : cat.name_en) ?? cat.name_fr ?? null
+              : null;
+            return {
+              id: ing.id,
+              name: ing.name_fr ?? ing.name ?? ing.name_en ?? "Ingrédient",
+              category: categoryLabel,
+              status: ing.status as "validated" | "pending",
+            };
+          })
         );
       } finally {
         if (!cancelled) setLoading(false);
