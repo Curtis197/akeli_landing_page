@@ -164,11 +164,10 @@ export default function Step3Steps({ data, onChange }: Step3Props) {
                 if (step.is_section_header) mobileCounter = 0;
                 else mobileCounter++;
                 return (
-                  <li key={step.id} className={`rounded-xl border p-3 space-y-2 ${
-                    step.is_section_header
-                      ? "bg-primary/5 border-primary/20"
-                      : "bg-secondary/30 border-border"
-                  }`}>
+                  <li key={step.id} className={step.is_section_header
+                    ? "py-1 space-y-1"
+                    : "rounded-xl border p-3 space-y-2 bg-secondary/30 border-border"
+                  }>
                     <div className="flex items-center gap-2">
                       <div className="flex flex-col gap-0.5">
                         <button type="button" onClick={() => moveStep(index, "up")} disabled={index === 0}
@@ -176,9 +175,7 @@ export default function Step3Steps({ data, onChange }: Step3Props) {
                         <button type="button" onClick={() => moveStep(index, "down")} disabled={index === steps.length - 1}
                           className="p-0.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-30">▼</button>
                       </div>
-                      {step.is_section_header ? (
-                        <span className="text-primary/50 text-xs select-none">▸</span>
-                      ) : (
+                      {!step.is_section_header && (
                         <span className="text-sm font-bold text-primary min-w-[24px]">{mobileCounter}.</span>
                       )}
                       <button type="button" onClick={() => removeStep(step.id)}
@@ -189,7 +186,7 @@ export default function Step3Steps({ data, onChange }: Step3Props) {
                         type="text"
                         value={step.title}
                         onChange={(e) => updateSectionTitle(step.id, e.target.value)}
-                        className="w-full bg-transparent border-b border-dashed border-primary/30 text-sm font-semibold text-foreground focus:outline-none focus:border-primary py-0.5"
+                        className="w-full bg-transparent border-b border-dashed border-green-500/40 text-base font-semibold text-green-600 dark:text-green-400 focus:outline-none focus:border-green-500 py-0.5"
                       />
                     ) : (
                       <>

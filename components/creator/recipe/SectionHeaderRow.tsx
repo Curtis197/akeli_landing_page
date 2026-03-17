@@ -16,17 +16,17 @@ export function SectionHeaderRow({
   dragHandle,
 }: SectionHeaderRowProps) {
   return (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
+    <div className="flex items-center gap-2 px-1 py-2">
       {dragHandle}
-      <span className="text-primary/50 text-xs select-none">▸</span>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="flex-1 bg-transparent border-b border-dashed border-primary/30
-                   text-sm font-semibold text-foreground placeholder:text-muted-foreground
-                   focus:outline-none focus:border-primary py-0.5"
+        className="flex-1 bg-transparent border-b border-dashed border-green-500/40
+                   text-base font-semibold text-green-600 dark:text-green-400
+                   placeholder:text-green-500/40
+                   focus:outline-none focus:border-green-500 py-0.5"
       />
       <button
         type="button"

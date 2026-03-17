@@ -447,35 +447,50 @@ export default function RecipeDetailPage() {
         <div>
           <h2 className="text-base font-semibold text-foreground mb-3">Préparation</h2>
           <ol className="space-y-4">
-            {recipe.steps.map((step, i) => (
-              <li key={step.step_number} className="flex gap-4">
-                <span className="shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center mt-0.5">
-                  {i + 1}
-                </span>
-                <div className="flex-1 space-y-1.5">
-                  {step.title && (
-                    <p className="text-sm font-semibold text-foreground">{step.title}</p>
-                  )}
-                  {step.content && (
-                    <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
-                  )}
-                  {step.timer_seconds && step.timer_seconds > 0 && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
-                      ⏱ {step.timer_seconds >= 60
-                        ? `${Math.floor(step.timer_seconds / 60)} min${step.timer_seconds % 60 > 0 ? ` ${step.timer_seconds % 60} s` : ""}`
-                        : `${step.timer_seconds} s`}
+            {(() => {
+              let stepNum = 0;
+              return recipe.steps.map((step) => {
+                if (step.is_section_header) {
+                  return (
+                    <li key={`section-${step.sort_order}`} className="pt-2 first:pt-0">
+                      <p className="text-base font-semibold text-green-600 dark:text-green-400">
+                        {step.title}
+                      </p>
+                    </li>
+                  );
+                }
+                stepNum++;
+                return (
+                  <li key={step.step_number} className="flex gap-4">
+                    <span className="shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center mt-0.5">
+                      {stepNum}
                     </span>
-                  )}
-                  {step.image_url && (
-                    <img
-                      src={step.image_url}
-                      alt={step.title ?? `Étape ${step.step_number}`}
-                      className="mt-2 w-full max-w-sm rounded-xl object-cover"
-                    />
-                  )}
-                </div>
-              </li>
-            ))}
+                    <div className="flex-1 space-y-1.5">
+                      {step.title && (
+                        <p className="text-sm font-semibold text-foreground">{step.title}</p>
+                      )}
+                      {step.content && (
+                        <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
+                      )}
+                      {step.timer_seconds && step.timer_seconds > 0 && (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                          ⏱ {step.timer_seconds >= 60
+                            ? `${Math.floor(step.timer_seconds / 60)} min${step.timer_seconds % 60 > 0 ? ` ${step.timer_seconds % 60} s` : ""}`
+                            : `${step.timer_seconds} s`}
+                        </span>
+                      )}
+                      {step.image_url && (
+                        <img
+                          src={step.image_url}
+                          alt={step.title ?? `Étape ${stepNum}`}
+                          className="mt-2 w-full max-w-sm rounded-xl object-cover"
+                        />
+                      )}
+                    </div>
+                  </li>
+                );
+              });
+            })()}
           </ol>
         </div>
       )}
