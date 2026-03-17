@@ -44,8 +44,16 @@ export default function EditRecipePage() {
             .filter((item) => item.is_section_header || !!(item as any).ingredient || !!(item as any).name)
             .map((item: any) => {
               if (item.is_section_header) return item;
-              // Already in new format
-              if (item.ingredient && typeof item.ingredient.name === "string") return item;
+              // Already in new format — but check for the "list-uuid-as-ingredient-id" corruption:
+              // when ingredient.id === item.id, the old migration wrote the list item's local UUID
+              // as the ingredient FK (not a real ingredient table ID). Null it out so the sync skips it.
+              if (item.ingredient && typeof item.ingredient.name === "string") {
+                if (item.ingredient.id && item.ingredient.id === item.id) {
+                  console.warn("[EditRecipe] ingredient.id === item.id (corrupted FK), nulling:", item);
+                  return { ...item, ingredient: { ...item.ingredient, id: null } };
+                }
+                return item;
+              }
               // Old format: name/unit/quantity at root level
               // NOTE: item.id is a local crypto.randomUUID(), NOT an ingredient table FK.
               // Only use ingredient_id if it exists; otherwise skip via null so wizard filters it out.
