@@ -18,6 +18,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { SectionHeaderRow } from "@/components/creator/recipe/SectionHeaderRow";
 import type { RecipeFormState } from "./RecipeWizard";
 
 type Step = RecipeFormState["steps"][number];
@@ -27,10 +28,14 @@ interface Step3Props {
   onChange: (patch: Partial<RecipeFormState>) => void;
 }
 
+type AddMode = "step" | "section";
+
 export default function Step3Steps({ data, onChange }: Step3Props) {
   const [adding, setAdding] = useState(false);
+  const [addMode, setAddMode] = useState<AddMode>("step");
   const [draftTitle, setDraftTitle] = useState("");
   const [draftContent, setDraftContent] = useState("");
+  const [draftSectionTitle, setDraftSectionTitle] = useState("");
   const dndId = useId();
 
   const steps = data.steps;
@@ -64,31 +69,59 @@ export default function Step3Steps({ data, onChange }: Step3Props) {
   };
 
   const updateStep = (id: string, patch: Partial<Step>) => {
-    updateSteps(steps.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+    updateSteps(steps.map((s) => (s.id === id ? { ...s, ...patch } as Step : s)));
   };
 
-  const handleAddStep = () => {
-    if (draftContent.trim().length < 10) return;
-    const newStep: Step = {
-      id: crypto.randomUUID(),
-      title: draftTitle.trim() || undefined,
-      content: draftContent.trim(),
-      sort_order: steps.length,
-    };
-    updateSteps([...steps, newStep]);
-    setDraftTitle("");
-    setDraftContent("");
+  const updateSectionTitle = (id: string, title: string) => {
+    updateSteps(steps.map((s) => s.id === id ? { ...s, title } : s));
+  };
+
+  const handleAdd = () => {
+    if (addMode === "section") {
+      if (!draftSectionTitle.trim()) return;
+      updateSteps([
+        ...steps,
+        {
+          id: crypto.randomUUID(),
+          type: "section_header" as const,
+          title: draftSectionTitle.trim(),
+          sort_order: steps.length,
+          is_section_header: true as const,
+        },
+      ]);
+      setDraftSectionTitle("");
+    } else {
+      if (draftContent.trim().length < 5) return;
+      updateSteps([
+        ...steps,
+        {
+          id: crypto.randomUUID(),
+          type: "step" as const,
+          title: draftTitle.trim() || undefined,
+          content: draftContent.trim(),
+          sort_order: steps.length,
+          is_section_header: false as const,
+        },
+      ]);
+      setDraftTitle("");
+      setDraftContent("");
+    }
     setAdding(false);
   };
 
-  const tooFew = steps.length < 3;
+  // Only count real steps (not section headers)
+  const realStepCount = steps.filter((s) => !s.is_section_header).length;
+  const tooFew = realStepCount < 2;
+
+  // Sequential step number (ignoring section headers)
+  let stepCounter = 0;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-foreground">Étapes de préparation</h2>
         <span className={`text-xs ${tooFew ? "text-destructive" : "text-muted-foreground"}`}>
-          {steps.length} / minimum 3
+          {realStepCount} / minimum 2
         </span>
       </div>
 
@@ -104,15 +137,19 @@ export default function Step3Steps({ data, onChange }: Step3Props) {
             >
               <SortableContext items={steps.map((s) => s.id)} strategy={verticalListSortingStrategy}>
                 <ol className="space-y-3">
-                  {steps.map((step, index) => (
-                    <SortableStepRow
-                      key={step.id}
-                      step={step}
-                      stepNumber={index + 1}
-                      onRemove={removeStep}
-                      onUpdate={updateStep}
-                    />
-                  ))}
+                  {steps.map((step) => {
+                    if (!step.is_section_header) stepCounter++;
+                    return (
+                      <SortableStepRow
+                        key={step.id}
+                        step={step}
+                        stepNumber={stepCounter}
+                        onRemove={removeStep}
+                        onUpdate={updateStep}
+                        onTitleChange={updateSectionTitle}
+                      />
+                    );
+                  })}
                 </ol>
               </SortableContext>
             </DndContext>
@@ -120,34 +157,59 @@ export default function Step3Steps({ data, onChange }: Step3Props) {
 
           {/* Mobile list */}
           <ol className="sm:hidden space-y-3">
-            {steps.map((step, index) => (
-              <li key={step.id} className="rounded-xl border border-border bg-secondary/30 p-3 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-col gap-0.5">
-                    <button type="button" onClick={() => moveStep(index, "up")} disabled={index === 0}
-                      className="p-0.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-30">▲</button>
-                    <button type="button" onClick={() => moveStep(index, "down")} disabled={index === steps.length - 1}
-                      className="p-0.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-30">▼</button>
-                  </div>
-                  <span className="text-sm font-bold text-primary min-w-[24px]">{index + 1}.</span>
-                  <button type="button" onClick={() => removeStep(step.id)}
-                    className="ml-auto p-1 text-muted-foreground hover:text-destructive transition-colors">✕</button>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Titre de l'étape (optionnel)"
-                  value={step.title ?? ""}
-                  onChange={(e) => updateStep(step.id, { title: e.target.value || undefined })}
-                  className="w-full px-2 py-1.5 text-sm font-medium bg-background border border-input rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <textarea
-                  value={step.content}
-                  onChange={(e) => updateStep(step.id, { content: e.target.value })}
-                  rows={3}
-                  className="w-full px-2 py-1 text-sm bg-background border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                />
-              </li>
-            ))}
+            {(() => {
+              let mobileCounter = 0;
+              return steps.map((step, index) => {
+                if (!step.is_section_header) mobileCounter++;
+                return (
+                  <li key={step.id} className={`rounded-xl border p-3 space-y-2 ${
+                    step.is_section_header
+                      ? "bg-primary/5 border-primary/20"
+                      : "bg-secondary/30 border-border"
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <div className="flex flex-col gap-0.5">
+                        <button type="button" onClick={() => moveStep(index, "up")} disabled={index === 0}
+                          className="p-0.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-30">▲</button>
+                        <button type="button" onClick={() => moveStep(index, "down")} disabled={index === steps.length - 1}
+                          className="p-0.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-30">▼</button>
+                      </div>
+                      {step.is_section_header ? (
+                        <span className="text-primary/50 text-xs select-none">▸</span>
+                      ) : (
+                        <span className="text-sm font-bold text-primary min-w-[24px]">{mobileCounter}.</span>
+                      )}
+                      <button type="button" onClick={() => removeStep(step.id)}
+                        className="ml-auto p-1 text-muted-foreground hover:text-destructive transition-colors">✕</button>
+                    </div>
+                    {step.is_section_header ? (
+                      <input
+                        type="text"
+                        value={step.title}
+                        onChange={(e) => updateSectionTitle(step.id, e.target.value)}
+                        className="w-full bg-transparent border-b border-dashed border-primary/30 text-sm font-semibold text-foreground focus:outline-none focus:border-primary py-0.5"
+                      />
+                    ) : (
+                      <>
+                        <input
+                          type="text"
+                          placeholder="Titre de l'étape (optionnel)"
+                          value={(step as any).title ?? ""}
+                          onChange={(e) => updateStep(step.id, { title: e.target.value || undefined } as any)}
+                          className="w-full px-2 py-1.5 text-sm font-medium bg-background border border-input rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                        <textarea
+                          value={(step as any).content}
+                          onChange={(e) => updateStep(step.id, { content: e.target.value } as any)}
+                          rows={3}
+                          className="w-full px-2 py-1 text-sm bg-background border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                        />
+                      </>
+                    )}
+                  </li>
+                );
+              });
+            })()}
           </ol>
         </>
       )}
@@ -155,30 +217,55 @@ export default function Step3Steps({ data, onChange }: Step3Props) {
       {/* Add form */}
       {adding ? (
         <div className="p-4 rounded-xl border border-border bg-secondary/30 space-y-3">
-          <h3 className="text-sm font-medium text-foreground">Étape {steps.length + 1}</h3>
-          <input
-            type="text"
-            placeholder="Titre de l'étape (optionnel)"
-            value={draftTitle}
-            onChange={(e) => setDraftTitle(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <textarea
-            value={draftContent}
-            onChange={(e) => setDraftContent(e.target.value)}
-            rows={4}
-            placeholder="Décris cette étape de préparation (minimum 10 caractères)..."
-            className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-          />
-          {draftContent.length > 0 && draftContent.length < 10 && (
-            <p className="text-xs text-destructive">Minimum 10 caractères ({draftContent.length}/10)</p>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-foreground">
+              {addMode === "section" ? "Titre de section" : `Étape ${realStepCount + 1}`}
+            </h3>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={addMode === "section"}
+                onChange={(e) => setAddMode(e.target.checked ? "section" : "step")}
+                className="rounded border-input accent-primary" />
+              <span className="text-xs text-muted-foreground">Section</span>
+            </label>
+          </div>
+
+          {addMode === "section" ? (
+            <input
+              type="text"
+              placeholder="Titre de la section (ex: Préparation)"
+              value={draftSectionTitle}
+              onChange={(e) => setDraftSectionTitle(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          ) : (
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="Titre de l'étape (optionnel)"
+                value={draftTitle}
+                onChange={(e) => setDraftTitle(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <textarea
+                value={draftContent}
+                onChange={(e) => setDraftContent(e.target.value)}
+                rows={4}
+                placeholder="Décris cette étape de préparation (minimum 5 caractères)..."
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              />
+              {draftContent.length > 0 && draftContent.length < 5 && (
+                <p className="text-xs text-destructive">Minimum 5 caractères ({draftContent.length}/5)</p>
+              )}
+            </div>
           )}
+
           <div className="flex gap-2">
-            <button type="button" onClick={handleAddStep} disabled={draftContent.trim().length < 10}
+            <button type="button" onClick={handleAdd}
+              disabled={addMode === "section" ? !draftSectionTitle.trim() : draftContent.trim().length < 5}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40">
               Ajouter
             </button>
-            <button type="button" onClick={() => { setAdding(false); setDraftTitle(""); setDraftContent(""); }}
+            <button type="button" onClick={() => { setAdding(false); setDraftTitle(""); setDraftContent(""); setDraftSectionTitle(""); }}
               className="px-4 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors">
               Annuler
             </button>
@@ -191,8 +278,8 @@ export default function Step3Steps({ data, onChange }: Step3Props) {
         </button>
       )}
 
-      {tooFew && steps.length > 0 && (
-        <p className="text-xs text-destructive">Minimum 3 étapes requises ({steps.length}/3)</p>
+      {tooFew && realStepCount > 0 && (
+        <p className="text-xs text-destructive">Minimum 2 étapes requises ({realStepCount}/2)</p>
       )}
     </div>
   );
@@ -205,11 +292,13 @@ function SortableStepRow({
   stepNumber,
   onRemove,
   onUpdate,
+  onTitleChange,
 }: {
   step: Step;
   stepNumber: number;
   onRemove: (id: string) => void;
   onUpdate: (id: string, patch: Partial<Step>) => void;
+  onTitleChange: (id: string, title: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: step.id });
@@ -219,6 +308,25 @@ function SortableStepRow({
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
+
+  if (step.is_section_header) {
+    return (
+      <li ref={setNodeRef} style={style}>
+        <SectionHeaderRow
+          value={step.title}
+          onChange={(val) => onTitleChange(step.id, val)}
+          onRemove={() => onRemove(step.id)}
+          placeholder="Titre de section (ex: Préparation)"
+          dragHandle={
+            <button type="button" {...attributes} {...listeners}
+              className="cursor-grab active:cursor-grabbing text-primary/40 hover:text-primary p-1" aria-label="Réordonner">
+              ⠿
+            </button>
+          }
+        />
+      </li>
+    );
+  }
 
   return (
     <li ref={setNodeRef} style={style}
@@ -232,13 +340,13 @@ function SortableStepRow({
         <input
           type="text"
           placeholder="Titre de l'étape (optionnel)"
-          value={step.title ?? ""}
-          onChange={(e) => onUpdate(step.id, { title: e.target.value || undefined })}
+          value={(step as any).title ?? ""}
+          onChange={(e) => onUpdate(step.id, { title: e.target.value || undefined } as any)}
           className="w-full px-2 py-1.5 text-sm font-medium bg-background border border-input rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
         <textarea
-          value={step.content}
-          onChange={(e) => onUpdate(step.id, { content: e.target.value })}
+          value={(step as any).content}
+          onChange={(e) => onUpdate(step.id, { content: e.target.value } as any)}
           rows={3}
           className="w-full px-2 py-1 text-sm bg-background border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
         />

@@ -57,17 +57,41 @@ export const step2Schema = z.object({
     ),
 });
 
+// ─── Step list item (discriminated union) ─────────────────────────────────────
+
+export const stepSectionHeaderSchema = z.object({
+  id:               z.string(),
+  type:             z.literal("section_header"),
+  title:            z.string().min(1, "Le titre de section ne peut pas être vide").max(80),
+  sort_order:       z.number().int(),
+  is_section_header: z.literal(true),
+});
+
+export const stepItemSchema = z.object({
+  id:               z.string(),
+  type:             z.literal("step"),
+  title:            z.string().max(80).nullable().optional(),
+  content:          z.string().min(5, "Étape trop courte").max(2000),
+  sort_order:       z.number().int(),
+  is_section_header: z.literal(false),
+});
+
+export const stepListItemSchema = z.discriminatedUnion("type", [
+  stepSectionHeaderSchema,
+  stepItemSchema,
+]);
+
+export type StepSectionHeader = z.infer<typeof stepSectionHeaderSchema>;
+export type StepItem = z.infer<typeof stepItemSchema>;
+export type StepListItem = z.infer<typeof stepListItemSchema>;
+
 export const step3Schema = z.object({
   steps: z
-    .array(
-      z.object({
-        id: z.string(),
-        title: z.string().optional(),
-        content: z.string().min(10, "Étape trop courte (minimum 10 caractères)"),
-        sort_order: z.number().int(),
-      })
-    )
-    .min(3, "Minimum 3 étapes"),
+    .array(stepListItemSchema)
+    .refine(
+      (items) => items.filter((i) => i.type === "step").length >= 2,
+      { message: "Minimum 2 étapes requises (hors titres de section)" }
+    ),
 });
 
 export const step4Schema = z.object({

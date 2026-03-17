@@ -173,12 +173,24 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
       if (id && data.steps.length > 0) {
         await supabase.from("recipe_step").delete().eq("recipe_id", id);
         await supabase.from("recipe_step").insert(
-          data.steps.map((step, i) => ({
-            recipe_id: id,
-            step_number: (step.sort_order ?? i) + 1,
-            title: step.title ?? null,
-            content: step.content,
-          }))
+          data.steps.map((step, i) => {
+            if (step.is_section_header) {
+              return {
+                recipe_id: id,
+                is_section_header: true,
+                title: step.title,
+                content: null,
+                step_number: i + 1,
+              };
+            }
+            return {
+              recipe_id: id,
+              is_section_header: false,
+              title: (step as any).title ?? null,
+              content: (step as any).content,
+              step_number: i + 1,
+            };
+          })
         );
       }
 

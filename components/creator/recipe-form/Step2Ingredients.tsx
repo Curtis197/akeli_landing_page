@@ -102,6 +102,10 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
     if (editingId === id) { setEditingId(null); setEditItem(null); }
   };
 
+  const updateSectionTitle = (id: string, title: string) => {
+    updateIngredients(ingredients.map((i) => i.id === id ? { ...i, title } : i));
+  };
+
   // ── Add ingredient ────────────────────────────────────────────────────────
 
   const handleAdd = () => {
@@ -196,6 +200,7 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
                       item={ing}
                       onRemove={removeItem}
                       onEdit={startEdit}
+                      onTitleChange={updateSectionTitle}
                       userId={userId}
                       onNotFound={handleNotFound}
                     />
@@ -420,12 +425,14 @@ function SortableRow({
   item,
   onRemove,
   onEdit,
+  onTitleChange,
   userId,
   onNotFound,
 }: {
   item: IngredientItem;
   onRemove: (id: string) => void;
   onEdit: (item: IngredientItem) => void;
+  onTitleChange: (id: string, title: string) => void;
   userId: string;
   onNotFound: (q: string) => void;
 }) {
@@ -439,7 +446,7 @@ function SortableRow({
       <li ref={setNodeRef} style={style}>
         <SectionHeaderRow
           value={item.title}
-          onChange={() => onEdit(item)}
+          onChange={(val) => onTitleChange(item.id, val)}
           onRemove={() => onRemove(item.id)}
           dragHandle={
             <button type="button" {...attributes} {...listeners}
@@ -448,9 +455,6 @@ function SortableRow({
             </button>
           }
         />
-        {/* Section title is edited via onEdit panel — clicking the text invokes edit */}
-        <button type="button" onClick={() => onEdit(item)}
-          className="sr-only">Modifier</button>
       </li>
     );
   }
