@@ -26,34 +26,28 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // Auth: extract user from JWT
+    // Service role client — used for both auth verification and DB writes
+    const adminClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // Auth: extract and verify JWT using admin client
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    const jwt = authHeader?.replace("Bearer ", "");
+    if (!jwt) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    // User client — to verify the JWT and get the user id
-    const userClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-    const { data: { user }, error: authErr } = await userClient.auth.getUser();
+    const { data: { user }, error: authErr } = await adminClient.auth.getUser(jwt);
     if (authErr || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    // Service role client — to bypass RLS for ingredient insert
-    const adminClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
 
     const body = await req.json();
     const { name, name_fr, name_en, category, notes } = body;
