@@ -97,7 +97,8 @@ export async function getConversations(
 export async function getCreators(
   supabase: Supabase,
   search: string,
-  sort: "name" | "fan_count" = "name"
+  sort: "name" | "fan_count" = "name",
+  excludeUserId?: string
 ): Promise<CreatorSearchItem[]> {
   const safeSearch = search.replace(/%/g, "\%").replace(/_/g, "\_");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -105,6 +106,9 @@ export async function getCreators(
     .from("creator")
     .select("id, display_name, username, profile_image_url, fan_count, user_id")
     .limit(50);
+  if (excludeUserId) {
+    query = query.neq("user_id", excludeUserId);
+  }
   if (search.trim().length > 0) {
     query = query.or("display_name.ilike.%" + safeSearch + "%,username.ilike.%" + safeSearch + "%");
   }
@@ -151,26 +155,19 @@ export async function getExistingDirectConversation(
 }
 
 export async function createDirectConversation(
-  supabase: Supabase,
-  currentUserId: string,
+  _supabase: Supabase,
+  _currentUserId: string,
   targetUserId: string
 ): Promise<string> {
-  const { data: conv, error: convError } = await supabase
-    .from("conversation")
-    .insert({ type: "private", created_by: currentUserId })
-    .select("id")
-    .single();
-  if (convError) throw convError;
-  const id = conv.id;
-  const { error: part1Error } = await supabase
-    .from("conversation_participant")
-    .insert({ conversation_id: id, user_id: currentUserId });
-  if (part1Error) throw part1Error;
-  const { error: part2Error } = await supabase
-    .from("conversation_participant")
-    .insert({ conversation_id: id, user_id: targetUserId });
-  if (part2Error) throw part2Error;
-  return id;
+  const res = await fetch("/api/conversations/create-direct", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ target_user_id: targetUserId }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error ?? `HTTP ${res.status}`);
+  if (!data?.conversation_id) throw new Error("No conversation_id returned");
+  return data.conversation_id as string;
 }
 
 export async function createGroup(

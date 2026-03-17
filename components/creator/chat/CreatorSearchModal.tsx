@@ -32,7 +32,7 @@ export default function CreatorSearchModal({
 
   const { data: creators = [], isLoading } = useQuery({
     queryKey: ["creators", search, sort],
-    queryFn: () => getCreators(supabase, search, sort),
+    queryFn: () => getCreators(supabase, search, sort, currentUserId),
     enabled: open,
   });
 
