@@ -29,6 +29,7 @@ interface RawIngredientRow {
   unit: string | null;
   is_optional: boolean;
   ingredient: { name_fr: string | null; name: string | null } | null;
+  measurement_unit: { name_fr: string | null } | null;
 }
 
 interface Step {
@@ -105,7 +106,7 @@ export default function RecipeDetailPage() {
           "recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ), " +
           "recipe_tag ( tag ( name ) ), " +
           "recipe_step ( step_number, title, content, image_url, timer_seconds, is_section_header ), " +
-          "recipe_ingredient ( id, sort_order, is_section_header, title, quantity, unit, is_optional, ingredient ( name_fr, name ) )"
+          "recipe_ingredient ( id, sort_order, is_section_header, title, quantity, unit, is_optional, ingredient ( name_fr, name ), measurement_unit!unit ( name_fr ) )"
         )
         .eq("id", id)
         .single();
@@ -130,7 +131,7 @@ export default function RecipeDetailPage() {
             title: row.title ?? undefined,
             is_section_header: row.is_section_header,
             quantity: row.quantity,
-            unit: row.unit,
+            unit: row.measurement_unit?.name_fr ?? row.unit,
             is_optional: row.is_optional,
             sort_order: row.sort_order,
           }));
