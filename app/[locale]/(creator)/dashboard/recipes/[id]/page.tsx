@@ -34,10 +34,12 @@ interface RawIngredientRow {
 
 interface Step {
   step_number: number;
+  sort_order: number;
   title: string | null;
   content: string | null;
   image_url: string | null;
   timer_seconds: number | null;
+  is_section_header: boolean;
 }
 
 interface Recipe {
@@ -105,7 +107,7 @@ export default function RecipeDetailPage() {
           "food_region:region ( name_fr ), " +
           "recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ), " +
           "recipe_tag ( tag ( name ) ), " +
-          "recipe_step ( step_number, title, content, image_url, timer_seconds, is_section_header ), " +
+          "recipe_step ( step_number, sort_order, title, content, image_url, timer_seconds, is_section_header ), " +
           "recipe_ingredient ( id, sort_order, is_section_header, title, quantity, unit, is_optional, ingredient ( name_fr, name ), measurement_unit!unit ( name_fr ) )"
         )
         .eq("id", id)
@@ -155,7 +157,7 @@ export default function RecipeDetailPage() {
         fat_g: macro?.fat_g ?? null,
         fiber_g: macro?.fiber_g ?? null,
         ingredients,
-        steps: [...dbSteps].sort((a: Step, b: Step) => a.step_number - b.step_number),
+        steps: [...dbSteps].sort((a: Step, b: Step) => a.sort_order - b.sort_order),
       });
       setLoading(false);
     }
