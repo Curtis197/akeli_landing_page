@@ -140,58 +140,64 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
 
       // Sync ingredients to recipe_ingredient table
       if (id && data.ingredients.length > 0) {
-        await supabase.from("recipe_ingredient").delete().eq("recipe_id", id);
-        await supabase.from("recipe_ingredient").insert(
-          data.ingredients.map((item, index) => {
-            if (item.is_section_header) {
-              return {
-                recipe_id: id,
-                is_section_header: true,
-                title: item.title,
-                ingredient_id: null,
-                quantity: null,
-                unit: null,
-                is_optional: false,
-                sort_order: index,
-              };
-            }
+        const ingredientRows = data.ingredients.map((item, index) => {
+          if (item.is_section_header) {
             return {
               recipe_id: id,
-              is_section_header: false,
-              title: null,
-              ingredient_id: item.ingredient.id,
-              quantity: item.quantity,
-              unit: item.unit,
-              is_optional: item.is_optional,
+              is_section_header: true,
+              title: item.title,
+              ingredient_id: null,
+              quantity: null,
+              unit: null,
+              is_optional: false,
               sort_order: index,
             };
-          })
-        );
+          }
+          return {
+            recipe_id: id,
+            is_section_header: false,
+            title: null,
+            ingredient_id: item.ingredient.id,
+            quantity: item.quantity,
+            unit: item.unit,
+            is_optional: item.is_optional,
+            sort_order: index,
+          };
+        });
+        console.log("[RecipeWizard] syncing recipe_ingredient", { recipe_id: id, count: ingredientRows.length, rows: ingredientRows });
+        const { error: ingDeleteError } = await supabase.from("recipe_ingredient").delete().eq("recipe_id", id);
+        if (ingDeleteError) console.error("[RecipeWizard] recipe_ingredient delete error", ingDeleteError);
+        const { error: ingInsertError } = await supabase.from("recipe_ingredient").insert(ingredientRows);
+        if (ingInsertError) console.error("[RecipeWizard] recipe_ingredient insert error", ingInsertError);
+        else console.log("[RecipeWizard] recipe_ingredient sync ok");
       }
 
       // Sync steps to recipe_step table
       if (id && data.steps.length > 0) {
-        await supabase.from("recipe_step").delete().eq("recipe_id", id);
-        await supabase.from("recipe_step").insert(
-          data.steps.map((step, i) => {
-            if (step.is_section_header) {
-              return {
-                recipe_id: id,
-                is_section_header: true,
-                title: step.title,
-                content: null,
-                step_number: i + 1,
-              };
-            }
+        const stepRows = data.steps.map((step, i) => {
+          if (step.is_section_header) {
             return {
               recipe_id: id,
-              is_section_header: false,
-              title: (step as any).title ?? null,
-              content: (step as any).content,
+              is_section_header: true,
+              title: step.title,
+              content: null,
               step_number: i + 1,
             };
-          })
-        );
+          }
+          return {
+            recipe_id: id,
+            is_section_header: false,
+            title: (step as any).title ?? null,
+            content: (step as any).content,
+            step_number: i + 1,
+          };
+        });
+        console.log("[RecipeWizard] syncing recipe_step", { recipe_id: id, count: stepRows.length, rows: stepRows });
+        const { error: stepDeleteError } = await supabase.from("recipe_step").delete().eq("recipe_id", id);
+        if (stepDeleteError) console.error("[RecipeWizard] recipe_step delete error", stepDeleteError);
+        const { error: stepInsertError } = await supabase.from("recipe_step").insert(stepRows);
+        if (stepInsertError) console.error("[RecipeWizard] recipe_step insert error", stepInsertError);
+        else console.log("[RecipeWizard] recipe_step sync ok");
       }
 
       setLastSaved(new Date());
