@@ -122,6 +122,7 @@ export default function RecipeDetailPage() {
 
       // Use recipe_ingredient table (new FK-based system); fall back to draft_data for old recipes
       const dbIngredients: RawIngredientRow[] = raw.recipe_ingredient ?? [];
+      console.log("[RecipeDetail] recipe_ingredient rows:", dbIngredients.length, dbIngredients);
       let ingredients: Ingredient[];
       if (dbIngredients.length > 0) {
         ingredients = [...dbIngredients]
