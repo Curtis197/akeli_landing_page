@@ -31,15 +31,20 @@ export default function EditRecipePage() {
         return;
       }
 
+      console.log("[EditRecipe] recipe row:", { id: data.id, has_draft_data: !!data.draft_data });
+
       // If draft_data exists, it is the canonical form state
       if (data.draft_data) {
         const draft = data.draft_data as Partial<RecipeFormState>;
+        console.log("[EditRecipe] draft_data ingredients (raw):", draft.ingredients);
         // Sanitize ingredients: drop items saved in old free-text format (no ingredient.id/name)
         if (draft.ingredients) {
+          const before = draft.ingredients.length;
           draft.ingredients = draft.ingredients.filter((item) => {
             if (item.is_section_header) return true;
             return item.ingredient && typeof (item.ingredient as any).name === "string";
           });
+          console.log("[EditRecipe] draft_data ingredients after filter:", draft.ingredients.length, "/ was:", before);
         }
         setInitialData(draft);
         setLoading(false);
@@ -47,7 +52,8 @@ export default function EditRecipePage() {
       }
 
       // Fallback: reconstruct from direct columns + related tables
-      const [{ data: riRows }, { data: stepRows }] = await Promise.all([
+      console.log("[EditRecipe] no draft_data — fetching recipe_ingredient + recipe_step");
+      const [{ data: riRows, error: riErr }, { data: stepRows, error: stepErr }] = await Promise.all([
         supabase
           .from("recipe_ingredient")
           .select("id, ingredient_id, quantity, unit, is_optional, is_section_header, title, sort_order, ingredient(id, name, name_fr, name_en, status)")
@@ -59,6 +65,8 @@ export default function EditRecipePage() {
           .eq("recipe_id", id)
           .order("step_number", { ascending: true }),
       ]);
+      console.log("[EditRecipe] recipe_ingredient rows:", riRows, "error:", riErr);
+      console.log("[EditRecipe] recipe_step rows:", stepRows, "error:", stepErr);
 
       const ingredients = (riRows ?? []).map((row: any) => {
         if (row.is_section_header) {
