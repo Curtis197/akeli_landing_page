@@ -7,6 +7,7 @@ import { useAuthStore } from "@/lib/stores/authStore";
 import type {
   Step1Data, Step3Data, Step4Data, Step5Data, Step6Data, IngredientListItem,
 } from "@/lib/validations/recipe.schema";
+import { UNIT_TO_CODE } from "@/lib/validations/recipe.schema";
 import Step1Basic from "./Step1Basic";
 import Step2Ingredients from "./Step2Ingredients";
 import Step3Steps from "./Step3Steps";
@@ -157,13 +158,14 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
               sort_order: index,
             };
           }
+          const unitCode = UNIT_TO_CODE[item.unit] ?? item.unit;
           return {
             recipe_id: id,
             is_section_header: false,
             title: null,
             ingredient_id: item.ingredient.id,
             quantity: item.quantity,
-            unit: item.unit,
+            unit: unitCode,
             is_optional: item.is_optional,
             sort_order: index,
           };

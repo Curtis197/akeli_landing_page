@@ -149,3 +149,21 @@ export const UNITS = [
   "tasse", "pincée", "unité(s)", "tranche(s)",
   "morceau(x)", "bouquet", "feuille(s)",
 ] as const;
+
+/** Maps UNITS display labels → measurement_unit.code (FK in recipe_ingredient) */
+export const UNIT_TO_CODE: Record<string, string> = {
+  "g":                  "g",
+  "kg":                 "kg",
+  "ml":                 "ml",
+  "L":                  "l",
+  "cl":                 "cl",
+  "cuillère à soupe":   "tbsp",
+  "cuillère à café":    "tsp",
+  "tasse":              "cup",
+  "pincée":             "pinch",
+  "unité(s)":           "unit",
+  "tranche(s)":         "slice",
+  "morceau(x)":         "piece",
+  "bouquet":            "bunch",
+  "feuille(s)":         "leaf",
+};
