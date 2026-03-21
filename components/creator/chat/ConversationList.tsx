@@ -16,7 +16,7 @@ export function ConversationList({ conversations }: ConversationListProps) {
       {conversations.map((conv) => (
         <li key={conv.id}>
           <Link
-            href={"/chat/" + conv.id}
+            href={"/chat/" + conv.id + (conv.name ? "?name=" + encodeURIComponent(conv.name) : "")}
             className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:bg-secondary/30 transition-colors"
           >
             {/* Avatar */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useRouter, Link } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
@@ -19,6 +19,7 @@ interface Message {
 
 export default function ConversationPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const conversationId = String(params.id);
   const supabase = createClient();
@@ -28,7 +29,9 @@ export default function ConversationPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [conversationTitle, setConversationTitle] = useState<string | null>(null);
+  const [conversationTitle, setConversationTitle] = useState<string | null>(
+    searchParams.get("name") ? decodeURIComponent(searchParams.get("name")!) : null
+  );
   const [conversationType, setConversationType] = useState<string | null>(null);
   const [otherCreatorId, setOtherCreatorId] = useState<string | null>(null);
   const [isClosed, setIsClosed] = useState(false);
