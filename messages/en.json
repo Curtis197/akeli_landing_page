@@ -161,16 +161,11 @@
     "revenueLastMonth": "Fan revenue last month",
     "vsPrevMonth": "vs previous month",
     "chart": "Fan revenue — last 6 months",
-    "paymentHistory": "Payment history",
-    "noPayments": "No payments recorded yet.",
-    "period": "Period",
-    "amount": "Amount",
+    "fanList": "Fan list",
+    "noFans": "No fans yet.",
+    "fanName": "Fan",
+    "subscribedAt": "Subscribed on",
     "status": "Status",
-    "payout": {
-      "paid": "Paid",
-      "pending": "Pending",
-      "failed": "Failed"
-    },
     "benefits": {
       "0": "Monthly subscription for your fans from €3/month",
       "1": "Recurring and predictable revenue",

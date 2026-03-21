@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
+import { useQuery } from "@tanstack/react-query";
 
 export default function SettingsPage() {
   const router = useRouter();
   const supabase = createClient();
-  const { reset } = useAuthStore();
+  const { reset, creator } = useAuthStore();
 
   // ── Changement de mot de passe ───────────────────────────────────────────────
   const [currentPassword, setCurrentPassword] = useState("");
@@ -42,6 +43,69 @@ export default function SettingsPage() {
       setConfirmPassword("");
     }
     setPasswordLoading(false);
+  }
+
+  // ── Stripe Connect ────────────────────────────────────────────────────────────
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [stripeError, setStripeError] = useState<string | null>(null);
+
+  const { data: stripeStatus, refetch: refetchStripe } = useQuery({
+    queryKey: ["stripe-status", creator?.id],
+    queryFn: async () => {
+      if (!creator?.id) return null;
+      const { data, error } = await supabase
+        .from("creator_balance")
+        .select("available_balance, pending_balance, last_payout_at")
+        .eq("creator_id", creator.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!creator?.id,
+  });
+
+  async function handleStripeConnect() {
+    setStripeLoading(true);
+    setStripeError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-connect-onboarding", {
+        body: { creator_id: creator?.id },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("Pas d'URL de connexion reçue.");
+      }
+    } catch (err: unknown) {
+      setStripeError(
+        err instanceof Error ? err.message : "Impossible d'initier la connexion Stripe."
+      );
+    } finally {
+      setStripeLoading(false);
+    }
+  }
+
+  async function handleStripeDashboard() {
+    setStripeLoading(true);
+    setStripeError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-dashboard-link", {
+        body: { creator_id: creator?.id },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank", "noopener,noreferrer");
+      } else {
+        throw new Error("Pas d'URL de tableau de bord reçue.");
+      }
+    } catch (err: unknown) {
+      setStripeError(
+        err instanceof Error ? err.message : "Impossible d'accéder au tableau de bord Stripe."
+      );
+    } finally {
+      setStripeLoading(false);
+    }
   }
 
   // ── Déconnexion ──────────────────────────────────────────────────────────────
@@ -129,6 +193,77 @@ export default function SettingsPage() {
             </button>
           </div>
         </form>
+      </section>
+
+      {/* ── Stripe ── */}
+      <section className="rounded-xl border border-border bg-card p-6 space-y-5">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-[#635BFF]/10 flex items-center justify-center shrink-0">
+            <svg className="w-5 h-5 text-[#635BFF]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/>
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-foreground">Paramètres Stripe</h2>
+            <p className="text-xs text-muted-foreground">Compte de paiement pour tes revenus</p>
+          </div>
+        </div>
+
+        {/* Balance info */}
+        {stripeStatus && (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-0.5">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Solde disponible</p>
+              <p className="text-lg font-bold text-foreground">
+                {(stripeStatus.available_balance ?? 0).toFixed(2)} €
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-0.5">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">En attente</p>
+              <p className="text-lg font-bold text-foreground">
+                {(stripeStatus.pending_balance ?? 0).toFixed(2)} €
+              </p>
+            </div>
+          </div>
+        )}
+        {stripeStatus?.last_payout_at && (
+          <p className="text-xs text-muted-foreground">
+            Dernier versement :{" "}
+            {new Date(stripeStatus.last_payout_at).toLocaleDateString("fr-FR", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
+        )}
+
+        {stripeError && (
+          <p className="text-sm text-destructive font-medium">{stripeError}</p>
+        )}
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={handleStripeConnect}
+            disabled={stripeLoading}
+            className="px-5 py-2 rounded-lg bg-[#635BFF] text-white text-sm font-medium hover:bg-[#635BFF]/90 transition-colors disabled:opacity-50"
+          >
+            {stripeLoading ? "Chargement…" : "Connecter / Modifier Stripe"}
+          </button>
+          <button
+            type="button"
+            onClick={handleStripeDashboard}
+            disabled={stripeLoading}
+            className="px-5 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-50"
+          >
+            Tableau de bord Stripe
+          </button>
+        </div>
+
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Tes revenus sont versés automatiquement chaque mois via Stripe Express.
+          Connecte ton compte bancaire pour recevoir tes paiements.
+        </p>
       </section>
 
       {/* ── Session ── */}

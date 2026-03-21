@@ -74,6 +74,40 @@ export async function getConversations(
     }
   }
 
+  // For private conversations, look up the other participant's creator display_name
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const privateConvIds = (conversations as any[])
+    .filter((c) => c.type === "private")
+    .map((c) => c.id as string);
+
+  const privateNameMap = new Map<string, string>();
+  if (privateConvIds.length > 0) {
+    const { data: otherParts } = await supabase
+      .from("conversation_participant")
+      .select("conversation_id, user_id")
+      .in("conversation_id", privateConvIds)
+      .neq("user_id", userId);
+
+    if (otherParts && otherParts.length > 0) {
+      const otherUserIds = otherParts.map((p) => p.user_id).filter(Boolean) as string[];
+      const { data: creators } = await supabase
+        .from("creator")
+        .select("user_id, display_name")
+        .in("user_id", otherUserIds);
+
+      const creatorByUserId = new Map<string, string>();
+      for (const c of creators ?? []) {
+        if (c.user_id) creatorByUserId.set(c.user_id, c.display_name);
+      }
+
+      for (const part of otherParts) {
+        if (!part.user_id) continue;
+        const name = creatorByUserId.get(part.user_id);
+        if (name) privateNameMap.set(part.conversation_id, name);
+      }
+    }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (conversations as any[]).map((conv) => {
     const lastReadAt = lastReadMap.get(conv.id) ?? null;
@@ -81,7 +115,9 @@ export async function getConversations(
     const unread = lastReadAt === null || lastReadAt < updatedAt;
     const item: ConversationListItem = {
       id: conv.id,
-      name: conv.name ?? null,
+      name: conv.type === "private"
+        ? (privateNameMap.get(conv.id) ?? conv.name ?? null)
+        : (conv.name ?? null),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       type: (conv.type as any) ?? "private",
       updated_at: updatedAt,

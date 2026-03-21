@@ -161,16 +161,11 @@
     "revenueLastMonth": "Revenus fans mois précédent",
     "vsPrevMonth": "vs mois précédent",
     "chart": "Revenus fans — 6 derniers mois",
-    "paymentHistory": "Historique des paiements",
-    "noPayments": "Aucun paiement enregistré pour le moment.",
-    "period": "Période",
-    "amount": "Montant",
+    "fanList": "Liste des fans",
+    "noFans": "Aucun fan pour le moment.",
+    "fanName": "Fan",
+    "subscribedAt": "Abonné le",
     "status": "Statut",
-    "payout": {
-      "paid": "Payé",
-      "pending": "En attente",
-      "failed": "Échoué"
-    },
     "benefits": {
       "0": "Abonnement mensuel pour tes fans à partir de 3 €/mois",
       "1": "Revenus récurrents et prévisibles",

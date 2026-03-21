@@ -21,13 +21,17 @@ interface MonthlyRevenue {
   consumption_revenue: number;
 }
 
-interface PayoutRow {
+interface FanRow {
   id: string;
-  stripe_payout_id: string | null;
-  total_earnings: number;
-  period_start: string;
-  period_end: string;
-  status: string;
+  user_id: string | null;
+  subscribed_at: string | null;
+  status: string | null;
+  user_profile: {
+    first_name: string | null;
+    last_name: string | null;
+    username: string | null;
+    avatar_url: string | null;
+  } | null;
 }
 
 const FAN_MODE_THRESHOLD = 30;
@@ -45,7 +49,7 @@ export default function FanModePage() {
   const pct = Math.min(Math.round((recipeCount / FAN_MODE_THRESHOLD) * 100), 100);
 
   const [stats, setStats] = useState<FanStats | null>(null);
-  const [payouts, setPayouts] = useState<PayoutRow[]>([]);
+  const [fans, setFans] = useState<FanRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -60,14 +64,13 @@ export default function FanModePage() {
         .eq("creator_id", creator.id)
         .single(),
       supabase
-        .from("creator_payout")
-        .select("id, stripe_payout_id, total_earnings, period_start, period_end, status")
+        .from("fan_subscription")
+        .select("id, user_id, subscribed_at, status, user_profile:user_id(first_name, last_name, username, avatar_url)")
         .eq("creator_id", creator.id)
-        .order("period_start", { ascending: false })
-        .limit(12),
-    ]).then(([statsRes, payoutsRes]) => {
+        .order("subscribed_at", { ascending: false }),
+    ]).then(([statsRes, fansRes]) => {
       if (statsRes.data) setStats(statsRes.data as FanStats);
-      if (payoutsRes.data) setPayouts(payoutsRes.data as PayoutRow[]);
+      if (fansRes.data) setFans(fansRes.data as unknown as FanRow[]);
       setLoading(false);
     });
   }, [creator, isUnlocked, supabase]);
@@ -76,7 +79,7 @@ export default function FanModePage() {
     return <LockedState recipeCount={recipeCount} remaining={remaining} pct={pct} t={t} />;
   }
 
-  return <UnlockedState stats={stats} payouts={payouts} loading={loading} t={t} />;
+  return <UnlockedState stats={stats} fans={fans} loading={loading} t={t} />;
 }
 
 // ─── LockedState ──────────────────────────────────────────────────────────────
@@ -156,12 +159,12 @@ function LockedState({
 
 function UnlockedState({
   stats,
-  payouts,
+  fans,
   loading,
   t,
 }: {
   stats: FanStats | null;
-  payouts: PayoutRow[];
+  fans: FanRow[];
   loading: boolean;
   t: ReturnType<typeof useTranslations>;
 }) {
@@ -205,12 +208,16 @@ function UnlockedState({
         <FanRevenueChart history={stats.monthly_history} />
       )}
 
-      {/* Payouts */}
+      {/* Fan list */}
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-foreground">{t("paymentHistory")}</h2>
-        {!loading && payouts.length === 0 ? (
+        <h2 className="text-base font-semibold text-foreground">{t("fanList")}</h2>
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : fans.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-8 text-center">
-            <p className="text-sm text-muted-foreground">{t("noPayments")}</p>
+            <p className="text-sm text-muted-foreground">{t("noFans")}</p>
           </div>
         ) : (
           <div className="rounded-xl border border-border overflow-hidden">
@@ -218,10 +225,10 @@ function UnlockedState({
               <thead>
                 <tr className="border-b border-border bg-secondary/50">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    {t("period")}
+                    {t("fanName")}
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    {t("amount")}
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    {t("subscribedAt")}
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     {t("status")}
@@ -229,19 +236,43 @@ function UnlockedState({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {payouts.map((p) => (
-                  <tr key={p.id} className="hover:bg-secondary/30 transition-colors">
-                    <td className="px-4 py-3 text-foreground">
-                      {formatPeriod(p.period_start, p.period_end)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-medium text-foreground">
-                      {p.total_earnings.toFixed(2)} €
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <PayoutBadge status={p.status} />
-                    </td>
-                  </tr>
-                ))}
+                {fans.map((fan) => {
+                  const profile = fan.user_profile;
+                  const name = profile
+                    ? [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
+                      profile.username ||
+                      fan.user_id?.slice(0, 8) ?? "—"
+                    : fan.user_id?.slice(0, 8) ?? "—";
+                  const avatar = profile?.avatar_url;
+                  return (
+                    <tr key={fan.id} className="hover:bg-secondary/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-sm shrink-0 overflow-hidden">
+                            {avatar ? (
+                              <img src={avatar} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <span>👤</span>
+                            )}
+                          </div>
+                          <span className="font-medium text-foreground">{name}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {fan.subscribed_at
+                          ? new Date(fan.subscribed_at).toLocaleDateString("fr-FR", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <FanStatusBadge status={fan.status ?? ""} />
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -300,26 +331,25 @@ function FanRevenueChart({ history }: { history: MonthlyRevenue[] }) {
   );
 }
 
-// ─── PayoutBadge ──────────────────────────────────────────────────────────────
+// ─── FanStatusBadge ───────────────────────────────────────────────────────────
 
-function PayoutBadge({ status }: { status: string }) {
-  const t = useTranslations("fanMode");
+function FanStatusBadge({ status }: { status: string }) {
   const configs: Record<string, { label: string; className: string }> = {
-    paid: {
-      label: t("payout.paid"),
+    active: {
+      label: "Actif",
       className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
     },
-    pending: {
-      label: t("payout.pending"),
-      className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    cancelled: {
+      label: "Annulé",
+      className: "bg-secondary text-muted-foreground",
     },
-    failed: {
-      label: t("payout.failed"),
+    past_due: {
+      label: "Impayé",
       className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
     },
   };
   const cfg = configs[status] ?? {
-    label: status,
+    label: status || "—",
     className: "bg-secondary text-muted-foreground",
   };
   return (
@@ -327,12 +357,4 @@ function PayoutBadge({ status }: { status: string }) {
       {cfg.label}
     </span>
   );
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function formatPeriod(start: string, end: string): string {
-  const fmt = (d: string) =>
-    new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
-  return `${fmt(start)} → ${fmt(end)}`;
 }
