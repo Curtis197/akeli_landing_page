@@ -62,7 +62,7 @@ export default function ConversationPage() {
       .single()
       .then(async ({ data }) => {
         const convType = (data as any)?.type ?? null;
-        setConversationTitle(data?.name ?? null);
+        if (data?.name) setConversationTitle(data.name);
         setConversationType(convType);
         setIsClosed(!!(data as any)?.closed_at);
 
