@@ -63,16 +63,22 @@ export default function ConversationPage() {
         setConversationType(convType);
         setIsClosed(!!(data as any)?.closed_at);
 
-        // For private conversations, find the other participant's name and creator profile
+        // For private conversations, find the other participant via conversation_request
+        // (RLS hides other people's conversation_participant rows)
         if (convType === "private" && myUserId) {
-          const { data: participants, error: partErr } = await supabase
-            .from("conversation_participant")
-            .select("user_id")
-            .eq("conversation_id", conversationId);
+          const { data: request, error: requestErr } = await supabase
+            .from("conversation_request")
+            .select("requester_id, recipient_id")
+            .eq("conversation_id", conversationId)
+            .maybeSingle();
 
-          console.log("[chat:detail] participants:", participants, "error:", partErr);
+          console.log("[chat:detail] conversation_request:", request, "error:", requestErr);
 
-          const otherId = participants?.find((p) => p.user_id !== myUserId)?.user_id;
+          const otherId =
+            request?.requester_id === myUserId
+              ? request?.recipient_id
+              : request?.requester_id;
+
           console.log("[chat:detail] myUserId:", myUserId, "otherId:", otherId);
 
           if (otherId) {
@@ -88,7 +94,7 @@ export default function ConversationPage() {
               console.log("[chat:detail] using creator display_name:", creator.display_name);
               setConversationTitle(creator.display_name);
             } else {
-              // Fallback to user_profile
+              // Fallback to user_profile (fan from mobile app)
               const { data: profile, error: profileErr } = await supabase
                 .from("user_profile")
                 .select("first_name, last_name, username")

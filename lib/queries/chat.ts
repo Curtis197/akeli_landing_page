@@ -84,19 +84,29 @@ export async function getConversations(
   if (privateConvIds.length > 0) {
     console.log("[chat:getConversations] private conv ids:", privateConvIds);
 
-    const { data: otherParts, error: otherPartsError } = await supabase
-      .from("conversation_participant")
-      .select("conversation_id, user_id")
-      .in("conversation_id", privateConvIds)
-      .neq("user_id", userId);
+    // RLS only exposes your own conversation_participant row, so we use
+    // conversation_request which stores both requester_id and recipient_id.
+    const { data: requests, error: requestsError } = await supabase
+      .from("conversation_request")
+      .select("conversation_id, requester_id, recipient_id")
+      .in("conversation_id", privateConvIds);
 
-    console.log("[chat:getConversations] other participants:", otherParts, "error:", otherPartsError);
+    console.log("[chat:getConversations] conversation_request rows:", requests, "error:", requestsError);
 
-    if (otherParts && otherParts.length > 0) {
-      const otherUserIds = otherParts.map((p) => p.user_id).filter(Boolean) as string[];
-      console.log("[chat:getConversations] other user ids:", otherUserIds);
+    if (requests && requests.length > 0) {
+      // The "other" user is whichever side is not the current user
+      const otherPairs: { convId: string; otherUserId: string }[] = [];
+      for (const r of requests) {
+        if (!r.conversation_id) continue;
+        const other = r.requester_id === userId ? r.recipient_id : r.requester_id;
+        if (other) otherPairs.push({ convId: r.conversation_id, otherUserId: other });
+      }
 
-      // First try the creator table
+      console.log("[chat:getConversations] other user pairs:", otherPairs);
+
+      const otherUserIds = [...new Set(otherPairs.map((p) => p.otherUserId))];
+
+      // First try creator table
       const { data: creators, error: creatorsError } = await supabase
         .from("creator")
         .select("user_id, display_name")
@@ -109,9 +119,9 @@ export async function getConversations(
         if (c.user_id) nameByUserId.set(c.user_id, c.display_name);
       }
 
-      // Fallback: look up user_profile for anyone not found in creator
+      // Fallback to user_profile for non-creators (fans from mobile app)
       const missingIds = otherUserIds.filter((id) => !nameByUserId.has(id));
-      console.log("[chat:getConversations] missing from creator (will try user_profile):", missingIds);
+      console.log("[chat:getConversations] missing from creator (trying user_profile):", missingIds);
 
       if (missingIds.length > 0) {
         const { data: profiles, error: profilesError } = await supabase
@@ -126,11 +136,10 @@ export async function getConversations(
         }
       }
 
-      for (const part of otherParts) {
-        if (!part.user_id) continue;
-        const name = nameByUserId.get(part.user_id);
-        console.log(`[chat:getConversations] conv ${part.conversation_id} → user ${part.user_id} → name: ${name ?? "(not found)"}`);
-        if (name) privateNameMap.set(part.conversation_id, name);
+      for (const { convId, otherUserId } of otherPairs) {
+        const name = nameByUserId.get(otherUserId);
+        console.log(`[chat:getConversations] conv ${convId} → user ${otherUserId} → name: ${name ?? "(not found)"}`);
+        if (name) privateNameMap.set(convId, name);
       }
     }
   }
