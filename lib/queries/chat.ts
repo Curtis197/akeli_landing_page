@@ -90,19 +90,35 @@ export async function getConversations(
 
     if (otherParts && otherParts.length > 0) {
       const otherUserIds = otherParts.map((p) => p.user_id).filter(Boolean) as string[];
+
+      // First try the creator table
       const { data: creators } = await supabase
         .from("creator")
         .select("user_id, display_name")
         .in("user_id", otherUserIds);
 
-      const creatorByUserId = new Map<string, string>();
+      const nameByUserId = new Map<string, string>();
       for (const c of creators ?? []) {
-        if (c.user_id) creatorByUserId.set(c.user_id, c.display_name);
+        if (c.user_id) nameByUserId.set(c.user_id, c.display_name);
+      }
+
+      // Fallback: look up user_profile for anyone not found in creator
+      const missingIds = otherUserIds.filter((id) => !nameByUserId.has(id));
+      if (missingIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("user_profile")
+          .select("id, first_name, last_name, username")
+          .in("id", missingIds);
+        for (const p of profiles ?? []) {
+          const name =
+            [p.first_name, p.last_name].filter(Boolean).join(" ") || p.username;
+          if (name) nameByUserId.set(p.id, name);
+        }
       }
 
       for (const part of otherParts) {
         if (!part.user_id) continue;
-        const name = creatorByUserId.get(part.user_id);
+        const name = nameByUserId.get(part.user_id);
         if (name) privateNameMap.set(part.conversation_id, name);
       }
     }

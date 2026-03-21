@@ -63,7 +63,7 @@ export default function ConversationPage() {
         setConversationType(convType);
         setIsClosed(!!(data as any)?.closed_at);
 
-        // For private conversations, find the other participant's creator profile
+        // For private conversations, find the other participant's name and creator profile
         if (convType === "private" && myUserId) {
           const { data: participants } = await supabase
             .from("conversation_participant")
@@ -72,12 +72,29 @@ export default function ConversationPage() {
 
           const otherId = participants?.find((p) => p.user_id !== myUserId)?.user_id;
           if (otherId) {
+            // Try creator first
             const { data: creator } = await supabase
               .from("creator")
-              .select("id")
+              .select("id, display_name")
               .eq("user_id", otherId)
-              .single();
+              .maybeSingle();
             setOtherCreatorId(creator?.id ?? null);
+            if (creator?.display_name) {
+              setConversationTitle(creator.display_name);
+            } else {
+              // Fallback to user_profile
+              const { data: profile } = await supabase
+                .from("user_profile")
+                .select("first_name, last_name, username")
+                .eq("id", otherId)
+                .maybeSingle();
+              if (profile) {
+                const name =
+                  [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
+                  profile.username;
+                if (name) setConversationTitle(name);
+              }
+            }
           }
         }
       });
