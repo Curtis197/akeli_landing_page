@@ -63,52 +63,33 @@ export default function ConversationPage() {
         setConversationType(convType);
         setIsClosed(!!(data as any)?.closed_at);
 
-        // For private conversations, find the other participant via conversation_request
-        // (RLS hides other people's conversation_participant rows)
+        // For private conversations, fetch the other participant via API route
+        // (RLS on conversation_participant only exposes the caller's own row)
         if (convType === "private" && myUserId) {
-          const { data: request, error: requestErr } = await supabase
-            .from("conversation_request")
-            .select("requester_id, recipient_id")
-            .eq("conversation_id", conversationId)
-            .maybeSingle();
-
-          console.log("[chat:detail] conversation_request:", request, "error:", requestErr);
-
-          const otherId =
-            request?.requester_id === myUserId
-              ? request?.recipient_id
-              : request?.requester_id;
-
-          console.log("[chat:detail] myUserId:", myUserId, "otherId:", otherId);
-
-          if (otherId) {
-            // Try creator first
-            const { data: creator, error: creatorErr } = await supabase
-              .from("creator")
-              .select("id, display_name")
-              .eq("user_id", otherId)
-              .maybeSingle();
-            console.log("[chat:detail] creator lookup:", creator, "error:", creatorErr);
-            setOtherCreatorId(creator?.id ?? null);
-            if (creator?.display_name) {
-              console.log("[chat:detail] using creator display_name:", creator.display_name);
-              setConversationTitle(creator.display_name);
-            } else {
-              // Fallback to user_profile (fan from mobile app)
-              const { data: profile, error: profileErr } = await supabase
-                .from("user_profile")
-                .select("first_name, last_name, username")
-                .eq("id", otherId)
-                .maybeSingle();
-              console.log("[chat:detail] user_profile fallback:", profile, "error:", profileErr);
-              if (profile) {
-                const name =
-                  [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
-                  profile.username;
-                console.log("[chat:detail] using user_profile name:", name);
-                if (name) setConversationTitle(name);
-              }
+          try {
+            const res = await fetch("/api/conversations/other-participant", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ conversation_ids: [conversationId] }),
+            });
+            const data = await res.json() as Record<string, { user_id: string; name: string }>;
+            console.log("[chat:detail] other-participant API response:", data);
+            const info = data[conversationId];
+            if (info?.name) {
+              console.log("[chat:detail] setting title to:", info.name);
+              setConversationTitle(info.name);
             }
+            if (info?.user_id) {
+              // Look up the creator id so we can link to their profile
+              const { data: creator } = await supabase
+                .from("creator")
+                .select("id")
+                .eq("user_id", info.user_id)
+                .maybeSingle();
+              setOtherCreatorId(creator?.id ?? null);
+            }
+          } catch (e) {
+            console.error("[chat:detail] other-participant fetch failed:", e);
           }
         }
       });
