@@ -241,8 +241,8 @@ function UnlockedState({
                   const name = profile
                     ? [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
                       profile.username ||
-                      fan.user_id?.slice(0, 8) ?? "—"
-                    : fan.user_id?.slice(0, 8) ?? "—";
+                      (fan.user_id?.slice(0, 8) ?? "—")
+                    : (fan.user_id?.slice(0, 8) ?? "—");
                   const avatar = profile?.avatar_url;
                   return (
                     <tr key={fan.id} className="hover:bg-secondary/30 transition-colors">
