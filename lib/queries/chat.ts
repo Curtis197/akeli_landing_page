@@ -82,20 +82,27 @@ export async function getConversations(
 
   const privateNameMap = new Map<string, string>();
   if (privateConvIds.length > 0) {
-    const { data: otherParts } = await supabase
+    console.log("[chat:getConversations] private conv ids:", privateConvIds);
+
+    const { data: otherParts, error: otherPartsError } = await supabase
       .from("conversation_participant")
       .select("conversation_id, user_id")
       .in("conversation_id", privateConvIds)
       .neq("user_id", userId);
 
+    console.log("[chat:getConversations] other participants:", otherParts, "error:", otherPartsError);
+
     if (otherParts && otherParts.length > 0) {
       const otherUserIds = otherParts.map((p) => p.user_id).filter(Boolean) as string[];
+      console.log("[chat:getConversations] other user ids:", otherUserIds);
 
       // First try the creator table
-      const { data: creators } = await supabase
+      const { data: creators, error: creatorsError } = await supabase
         .from("creator")
         .select("user_id, display_name")
         .in("user_id", otherUserIds);
+
+      console.log("[chat:getConversations] creators found:", creators, "error:", creatorsError);
 
       const nameByUserId = new Map<string, string>();
       for (const c of creators ?? []) {
@@ -104,11 +111,14 @@ export async function getConversations(
 
       // Fallback: look up user_profile for anyone not found in creator
       const missingIds = otherUserIds.filter((id) => !nameByUserId.has(id));
+      console.log("[chat:getConversations] missing from creator (will try user_profile):", missingIds);
+
       if (missingIds.length > 0) {
-        const { data: profiles } = await supabase
+        const { data: profiles, error: profilesError } = await supabase
           .from("user_profile")
           .select("id, first_name, last_name, username")
           .in("id", missingIds);
+        console.log("[chat:getConversations] user_profile fallback:", profiles, "error:", profilesError);
         for (const p of profiles ?? []) {
           const name =
             [p.first_name, p.last_name].filter(Boolean).join(" ") || p.username;
@@ -119,10 +129,12 @@ export async function getConversations(
       for (const part of otherParts) {
         if (!part.user_id) continue;
         const name = nameByUserId.get(part.user_id);
+        console.log(`[chat:getConversations] conv ${part.conversation_id} → user ${part.user_id} → name: ${name ?? "(not found)"}`);
         if (name) privateNameMap.set(part.conversation_id, name);
       }
     }
   }
+  console.log("[chat:getConversations] final privateNameMap:", Object.fromEntries(privateNameMap));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (conversations as any[]).map((conv) => {

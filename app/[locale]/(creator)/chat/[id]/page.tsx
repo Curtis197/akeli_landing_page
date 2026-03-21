@@ -65,33 +65,41 @@ export default function ConversationPage() {
 
         // For private conversations, find the other participant's name and creator profile
         if (convType === "private" && myUserId) {
-          const { data: participants } = await supabase
+          const { data: participants, error: partErr } = await supabase
             .from("conversation_participant")
             .select("user_id")
             .eq("conversation_id", conversationId);
 
+          console.log("[chat:detail] participants:", participants, "error:", partErr);
+
           const otherId = participants?.find((p) => p.user_id !== myUserId)?.user_id;
+          console.log("[chat:detail] myUserId:", myUserId, "otherId:", otherId);
+
           if (otherId) {
             // Try creator first
-            const { data: creator } = await supabase
+            const { data: creator, error: creatorErr } = await supabase
               .from("creator")
               .select("id, display_name")
               .eq("user_id", otherId)
               .maybeSingle();
+            console.log("[chat:detail] creator lookup:", creator, "error:", creatorErr);
             setOtherCreatorId(creator?.id ?? null);
             if (creator?.display_name) {
+              console.log("[chat:detail] using creator display_name:", creator.display_name);
               setConversationTitle(creator.display_name);
             } else {
               // Fallback to user_profile
-              const { data: profile } = await supabase
+              const { data: profile, error: profileErr } = await supabase
                 .from("user_profile")
                 .select("first_name, last_name, username")
                 .eq("id", otherId)
                 .maybeSingle();
+              console.log("[chat:detail] user_profile fallback:", profile, "error:", profileErr);
               if (profile) {
                 const name =
                   [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
                   profile.username;
+                console.log("[chat:detail] using user_profile name:", name);
                 if (name) setConversationTitle(name);
               }
             }
