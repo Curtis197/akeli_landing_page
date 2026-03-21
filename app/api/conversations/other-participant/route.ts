@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({}, { status: 200 });
   }
 
-  let admin: ReturnType<typeof getSupabaseAdmin>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let admin: any;
   try {
     admin = getSupabaseAdmin();
   } catch (e) {
@@ -51,7 +52,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to verify participation" }, { status: 500 });
   }
 
-  const allowedIds = new Set((myParts ?? []).map((p: { conversation_id: string }) => p.conversation_id));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allowedIds = new Set((myParts ?? []).map((p: any) => p.conversation_id as string));
   const safeIds = conversation_ids.filter((id) => allowedIds.has(id));
 
   if (safeIds.length === 0) {
@@ -72,13 +74,16 @@ export async function POST(request: NextRequest) {
 
   console.log("[api/other-participant] other participants found:", otherParts);
 
-  if (!otherParts || otherParts.length === 0) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const otherPartsArr = (otherParts ?? []) as any[];
+
+  if (otherPartsArr.length === 0) {
     return NextResponse.json({});
   }
 
   const otherUserIds = [
-    ...new Set(otherParts.map((p: { user_id: string }) => p.user_id).filter(Boolean)),
-  ] as string[];
+    ...new Set(otherPartsArr.map((p) => p.user_id as string).filter(Boolean)),
+  ];
 
   // Look up names: creator table first, then user_profile as fallback
   const { data: creators } = await admin
@@ -89,8 +94,9 @@ export async function POST(request: NextRequest) {
   console.log("[api/other-participant] creators:", creators);
 
   const nameByUserId = new Map<string, string>();
-  for (const c of creators ?? []) {
-    if (c.user_id) nameByUserId.set(c.user_id, c.display_name);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const c of (creators ?? []) as any[]) {
+    if (c.user_id) nameByUserId.set(c.user_id as string, c.display_name as string);
   }
 
   const missingIds = otherUserIds.filter((id) => !nameByUserId.has(id));
@@ -102,19 +108,21 @@ export async function POST(request: NextRequest) {
 
     console.log("[api/other-participant] user_profile fallback:", profiles);
 
-    for (const p of profiles ?? []) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const p of (profiles ?? []) as any[]) {
       const name =
-        [p.first_name, p.last_name].filter(Boolean).join(" ") || p.username;
-      if (name) nameByUserId.set(p.id, name);
+        ([p.first_name, p.last_name] as (string | null)[]).filter(Boolean).join(" ") ||
+        (p.username as string | null);
+      if (name) nameByUserId.set(p.id as string, name);
     }
   }
 
   // Build result map: conversation_id → { user_id, name }
   const result: Record<string, { user_id: string; name: string }> = {};
-  for (const part of otherParts) {
-    const name = nameByUserId.get(part.user_id);
+  for (const part of otherPartsArr) {
+    const name = nameByUserId.get(part.user_id as string);
     if (name) {
-      result[part.conversation_id] = { user_id: part.user_id, name };
+      result[part.conversation_id as string] = { user_id: part.user_id as string, name };
     }
   }
 
