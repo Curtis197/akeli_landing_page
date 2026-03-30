@@ -38,7 +38,9 @@ export default function Navbar() {
   }, []);
 
   const switchLocale = (code: string) => {
-    router.replace(pathname, { locale: code });
+    const raw = window.location.pathname;
+    const stripped = raw.replace(/^\/(fr|en|ar)(\/|$)/, "/");
+    router.replace(stripped || "/", { locale: code });
     setLangOpen(false);
     setMenuOpen(false);
   };

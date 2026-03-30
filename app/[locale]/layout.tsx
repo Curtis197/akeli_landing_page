@@ -50,7 +50,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} className={`${playfair.variable} ${dmSans.variable} ${locale === "ar" ? notoArabic.variable : ""}`} suppressHydrationWarning>
       <body className="antialiased">
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>{children}</Providers>
         </NextIntlClientProvider>
       </body>
