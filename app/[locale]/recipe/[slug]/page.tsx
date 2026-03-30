@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { Link } from "@/lib/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 import { useRecipeSession } from "@/hooks/use-recipe-session";
@@ -29,6 +29,8 @@ interface RecipeDetail {
   fiber_g: number | null;
   tags: string[];
   is_pork_free: boolean;
+  language: string | null;
+  is_auto_translation: boolean | null;
   creator_id: string;
   creator: {
     display_name: string | null;
@@ -43,8 +45,6 @@ const DIFFICULTY_LABELS: Record<string, string> = {
   hard: "Difficile",
 };
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 // ─── Session Tracker (invisible) ─────────────────────────────────────────────
 
 function RecipeSessionTracker({ recipeId, source }: { recipeId: string; source: TrackingSource }) {
@@ -57,6 +57,7 @@ function RecipeSessionTracker({ recipeId, source }: { recipeId: string; source: 
 export default function RecipeDetailPage() {
   const t = useTranslations("recipe");
   const tCreators = useTranslations("creators");
+  const locale = useLocale();
   const params = useParams();
   const searchParams = useSearchParams();
   const slug = String(params.slug);
@@ -68,41 +69,61 @@ export default function RecipeDetailPage() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    supabase
-      .from("recipe")
-      .select(`
-        id, slug, title, description, cover_image_url, region, difficulty,
-        prep_time_min, cook_time_min, servings, is_pork_free, creator_id,
-        food_region:region ( name_fr ),
-        recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ),
-        recipe_tag ( tag ( name ) ),
-        creator:creator_id ( display_name, profile_image_url, heritage_region )
-      `)
-      .eq("slug", slug)
-      .eq("is_published", true)
-      .single()
-      .then(({ data, error }) => {
-        if (error || !data) {
-          setNotFound(true);
-        } else {
-          const raw = data as any;
-          const macro = Array.isArray(raw.recipe_macro) ? raw.recipe_macro[0] : raw.recipe_macro;
-          const c = Array.isArray(raw.creator) ? raw.creator[0] : raw.creator;
-          setRecipe({
-            ...raw,
-            region: raw.food_region?.name_fr ?? raw.region,
-            tags: (raw.recipe_tag ?? []).map((t: any) => t.tag?.name).filter(Boolean),
-            calories: macro?.calories ?? null,
-            protein_g: macro?.protein_g ?? null,
-            carbs_g: macro?.carbs_g ?? null,
-            fat_g: macro?.fat_g ?? null,
-            fiber_g: macro?.fiber_g ?? null,
-            creator: c ?? null,
-          });
-        }
+    async function load() {
+      const { data: raw, error } = await supabase
+        .from("recipe")
+        .select(`
+          id, slug, title, description, cover_image_url, region, difficulty,
+          prep_time_min, cook_time_min, servings, is_pork_free, creator_id, language,
+          food_region:region ( name_fr, name_en, name_ar ),
+          recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ),
+          recipe_tag ( tag ( name ) ),
+          creator:creator_id ( display_name, profile_image_url, heritage_region )
+        `)
+        .eq("slug", slug)
+        .eq("is_published", true)
+        .single() as any;
+
+      if (error || !raw) {
+        setNotFound(true);
         setLoading(false);
+        return;
+      }
+
+      // Fetch translation for the current locale. Returns null if the recipe's
+      // source language IS the current locale (no translation row needed).
+      const { data: translation } = await supabase
+        .from("recipe_translation")
+        .select("title, description, is_auto")
+        .eq("recipe_id", raw.id)
+        .eq("locale", locale)
+        .maybeSingle();
+
+      const nameKey = `name_${locale}` as "name_fr" | "name_en" | "name_ar";
+      const fr = raw.food_region as any;
+      const macro = Array.isArray(raw.recipe_macro) ? raw.recipe_macro[0] : raw.recipe_macro;
+      const c = Array.isArray(raw.creator) ? raw.creator[0] : raw.creator;
+
+      setRecipe({
+        ...raw,
+        title: translation?.title ?? raw.title,
+        description: translation?.description ?? raw.description,
+        region: fr?.[nameKey] ?? fr?.name_fr ?? raw.region,
+        language: raw.language ?? null,
+        is_auto_translation: translation ? (translation.is_auto ?? null) : null,
+        tags: (raw.recipe_tag ?? []).map((t: any) => t.tag?.name).filter(Boolean),
+        calories: macro?.calories ?? null,
+        protein_g: macro?.protein_g ?? null,
+        carbs_g: macro?.carbs_g ?? null,
+        fat_g: macro?.fat_g ?? null,
+        fiber_g: macro?.fiber_g ?? null,
+        creator: c ?? null,
       });
-  }, [slug, supabase]);
+      setLoading(false);
+    }
+
+    load();
+  }, [slug, supabase, locale]);
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -158,6 +179,11 @@ export default function RecipeDetailPage() {
     recipe.carbs_g != null ||
     recipe.fat_g != null;
 
+  // Show auto-translation badge when the content is AI-translated
+  // (i.e. current locale ≠ source language AND translation row is auto-generated)
+  const showAutoTranslationBadge =
+    recipe.is_auto_translation === true && locale !== recipe.language;
+
   return (
     <>
       <Navbar />
@@ -180,11 +206,18 @@ export default function RecipeDetailPage() {
         <div className="space-y-4">
           <div className="flex items-start gap-3 flex-wrap">
             <h1 className="text-3xl font-bold text-foreground flex-1">{recipe.title}</h1>
-            {recipe.is_pork_free && (
-              <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">
-                {t("porkFree")}
-              </span>
-            )}
+            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+              {recipe.is_pork_free && (
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">
+                  {t("porkFree")}
+                </span>
+              )}
+              {showAutoTranslationBadge && (
+                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-muted-foreground border border-border" title="Machine-translated">
+                  🤖 Auto
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Creator link */}

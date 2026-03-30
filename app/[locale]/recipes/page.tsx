@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Link } from "@/lib/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 import { useRecipeImpression } from "@/hooks/use-recipe-impression";
@@ -37,6 +37,7 @@ export default function RecipesPage() {
   const t = useTranslations("recipes");
   const tCommon = useTranslations("common");
   const tLanding = useTranslations("landing");
+  const locale = useLocale();
   const supabase = createClient();
 
   const [recipes, setRecipes] = useState<RecipeCard[]>([]);
@@ -47,40 +48,62 @@ export default function RecipesPage() {
   const [sort, setSort] = useState<SortOption>("newest");
 
   useEffect(() => {
-    supabase
-      .from("recipe")
-      .select(`
-        id, slug, title, cover_image_url, region, difficulty,
-        prep_time_min, cook_time_min, creator_id,
-        food_region:region ( name_fr ),
-        creator:creator_id ( display_name, profile_image_url )
-      `)
-      .eq("is_published", true)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        if (data) {
-          setRecipes(
-            data.map((r: any) => {
-              const c = Array.isArray(r.creator) ? r.creator[0] : r.creator;
-              return {
-                id: r.id,
-                slug: r.slug,
-                title: r.title,
-                cover_image_url: r.cover_image_url,
-                region: r.food_region?.name_fr ?? r.region,
-                difficulty: r.difficulty,
-                prep_time_min: r.prep_time_min,
-                cook_time_min: r.cook_time_min,
-                creator_id: r.creator_id,
-                creator_name: c?.display_name ?? null,
-                creator_profil_url: c?.profile_image_url ?? null,
-              };
-            })
-          );
-        }
+    async function load() {
+      const { data } = await supabase
+        .from("recipe")
+        .select(`
+          id, slug, title, cover_image_url, region, difficulty,
+          prep_time_min, cook_time_min, creator_id,
+          food_region:region ( name_fr, name_en, name_ar ),
+          creator:creator_id ( display_name, profile_image_url )
+        `)
+        .eq("is_published", true)
+        .order("created_at", { ascending: false });
+
+      if (!data) {
         setLoading(false);
-      });
-  }, [supabase]);
+        return;
+      }
+
+      // Batch-fetch translations for the current locale (skipped when locale is
+      // the source language, but COALESCE handles mixed-source lists correctly).
+      const ids = data.map((r: any) => r.id);
+      const { data: translations } = await supabase
+        .from("recipe_translation")
+        .select("recipe_id, title")
+        .in("recipe_id", ids)
+        .eq("locale", locale);
+
+      const translationMap: Record<string, string> = Object.fromEntries(
+        (translations ?? []).map((t: any) => [t.recipe_id, t.title])
+      );
+
+      const nameKey = `name_${locale}` as "name_fr" | "name_en" | "name_ar";
+
+      setRecipes(
+        data.map((r: any) => {
+          const c = Array.isArray(r.creator) ? r.creator[0] : r.creator;
+          const fr = r.food_region;
+          return {
+            id: r.id,
+            slug: r.slug,
+            title: translationMap[r.id] ?? r.title,
+            cover_image_url: r.cover_image_url,
+            region: fr?.[nameKey] ?? fr?.name_fr ?? r.region,
+            difficulty: r.difficulty,
+            prep_time_min: r.prep_time_min,
+            cook_time_min: r.cook_time_min,
+            creator_id: r.creator_id,
+            creator_name: c?.display_name ?? null,
+            creator_profil_url: c?.profile_image_url ?? null,
+          };
+        })
+      );
+      setLoading(false);
+    }
+
+    load();
+  }, [supabase, locale]);
 
   // ── Derived ──────────────────────────────────────────────────────────────────
 
@@ -95,10 +118,7 @@ export default function RecipesPage() {
       if (difficultyFilter && r.difficulty !== difficultyFilter) return false;
       return true;
     })
-    .sort((a, b) => {
-      // For now, newest = default order from DB; popular could use a future metric
-      return 0;
-    });
+    .sort(() => 0);
 
   // ─────────────────────────────────────────────────────────────────────────
 

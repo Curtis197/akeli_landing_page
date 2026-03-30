@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-const LOCALES = ["fr", "en"] as const;
+const LOCALES = ["fr", "en", "ar"] as const;
 const DEFAULT_LOCALE = "fr";
 
 const CREATOR_PATHS = [
@@ -34,7 +34,7 @@ export function proxy(request: NextRequest) {
   }
 
   // Strip locale prefix to get the actual path
-  const pathWithoutLocale = pathname.replace(/^\/(fr|en)/, "") || "/";
+  const pathWithoutLocale = pathname.replace(/^\/(fr|en|ar)/, "") || "/";
 
   // Auth guard: redirect unauthenticated users away from creator routes
   const isCreatorRoute = CREATOR_PATHS.some((p) =>
@@ -42,7 +42,7 @@ export function proxy(request: NextRequest) {
   );
   if (!hasSupabaseSession(request) && isCreatorRoute) {
     const url = request.nextUrl.clone();
-    const locale = pathname.startsWith("/en") ? "en" : DEFAULT_LOCALE;
+    const locale = pathname.startsWith("/en") ? "en" : pathname.startsWith("/ar") ? "ar" : DEFAULT_LOCALE;
     url.pathname = `/${locale}/auth/login`;
     url.searchParams.set("redirect", pathname);
     return NextResponse.redirect(url);

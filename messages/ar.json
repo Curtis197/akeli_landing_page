@@ -1,0 +1,279 @@
+{
+  "nav": {
+    "creators": "المبدعون",
+    "recipes": "الوصفات",
+    "about": "من نحن",
+    "login": "تسجيل الدخول",
+    "signup": "كن مبدعاً",
+    "register": "إنشاء حساب",
+    "dashboard": "لوحتي",
+    "myRecipes": "وصفاتي",
+    "profile": "ملفي الشخصي",
+    "chat": "الرسائل",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج",
+    "fanMode": "وضع المعجبين",
+    "payments": "المدفوعات"
+  },
+  "landing": {
+    "hero": {
+      "title": "تناول طعامك كما أنت.",
+      "subtitle": "وصفات يصنعها مبدعون من ثقافتك، مُكيَّفة لحياتك اليوم.",
+      "ctaDownload": "تحميل التطبيق",
+      "ctaCreator": "كن مبدعاً"
+    },
+    "howItWorks": {
+      "title": "كيف يعمل",
+      "step1": {
+        "title": "اكتشف المبدعين",
+        "description": "مبدعون من ثقافتك يشاركون وصفاتهم."
+      },
+      "step2": {
+        "title": "اطبخ مع التطبيق",
+        "description": "اطلع على الوصفات الكاملة في التطبيق."
+      },
+      "step3": {
+        "title": "شارك وجباتك",
+        "description": "ابنِ روتينك المطبخي مع مجتمعك."
+      }
+    },
+    "pricing": {
+      "title": "اشتراك بسيط",
+      "price": "3€ / الشهر",
+      "description": "الوصول إلى جميع وصفات المنصة."
+    },
+    "faqTitle": "الأسئلة الشائعة",
+    "footer": {
+      "about": "من نحن",
+      "becomeCreator": "كن مبدعاً",
+      "terms": "الشروط والأحكام",
+      "privacy": "سياسة الخصوصية",
+      "legal": "الإشعارات القانونية"
+    }
+  },
+  "creators": {
+    "pageTitle": "مبدعو أكيلي",
+    "subtitle": "اكتشف المبدعين الطهويين من الشتات الأفريقي.",
+    "searchPlaceholder": "ابحث عن مبدع…",
+    "allRegions": "كل المناطق",
+    "allSpecialties": "كل التخصصات",
+    "notFound": "لم يُعثر على مبدعين",
+    "notFoundCreator": "المبدع غير موجود",
+    "noRecipes": "لا توجد وصفات منشورة حتى الآن.",
+    "defaultName": "مبدع أكيلي",
+    "backToCatalog": "→ العودة إلى الكتالوج",
+    "recipesBy": "وصفات",
+    "ctaTitle": "اطلع على الوصفات الكاملة في تطبيق أكيلي",
+    "ctaSubtitle": "مكونات مفصلة وخطوات تفصيلية والمزيد في التطبيق.",
+    "filters": {
+      "region": "المنطقة",
+      "specialty": "التخصص",
+      "all": "الكل"
+    },
+    "stats": {
+      "recipes": "{count, plural, one {وصفة} other {وصفات}}",
+      "recipesPublished": "{count, plural, one {وصفة منشورة} other {وصفات منشورة}}",
+      "consumers": "مستخدمون"
+    },
+    "fanBadge": "وضع المعجبين",
+    "viewProfile": "عرض الملف الشخصي"
+  },
+  "recipes": {
+    "pageTitle": "كتالوج الوصفات",
+    "subtitle": "استكشف وصفات مبدعي الشتات الأفريقي. اطلع على الوصفات الكاملة في تطبيق أكيلي.",
+    "searchPlaceholder": "ابحث عن وصفة…",
+    "allRegions": "كل المناطق",
+    "allDifficulties": "كل المستويات",
+    "notFound": "لم يُعثر على وصفات",
+    "ctaTitle": "اطلع على الوصفات الكاملة",
+    "ctaSubtitle": "مكونات مفصلة وخطوات في تطبيق أكيلي — 3€ / الشهر.",
+    "count": "{count, plural, one {وصفة} other {وصفات}}",
+    "difficulty": {
+      "easy": "سهل",
+      "medium": "متوسط",
+      "hard": "صعب"
+    }
+  },
+  "recipe": {
+    "by": "بواسطة",
+    "time": "الوقت",
+    "difficulty": "الصعوبة",
+    "calories": "السعرات الحرارية",
+    "portions": "الحصص",
+    "tags": "الوسوم",
+    "appOnly": "هذه الوصفة متاحة فقط في تطبيق أكيلي",
+    "downloadApp": "تحميل تطبيق أكيلي",
+    "mainIngredients": "المكونات الرئيسية",
+    "moreIngredients": "و{{count}} مكونات أخرى",
+    "notFound": "الوصفة غير موجودة",
+    "backToCatalog": "→ العودة إلى الكتالوج",
+    "porkFree": "خالٍ من لحم الخنزير",
+    "nutritionTitle": "القيم الغذائية",
+    "proteins": "بروتينات",
+    "carbs": "كربوهيدرات",
+    "fats": "دهون",
+    "appOnlyTitle": "الوصفة متاحة في تطبيق أكيلي",
+    "appOnlySubtitle": "اطلع على المكونات الكاملة وخطوات التحضير المفصلة في التطبيق — 3€ / الشهر فقط.",
+    "platforms": "متاح على iOS وAndroid",
+    "viewAllFrom": "عرض كل أطباق"
+  },
+  "auth": {
+    "login": {
+      "title": "دخول المبدع",
+      "subtitle": "ادخل إلى مساحتك على أكيلي.",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "بريدك@الإلكتروني.com",
+      "password": "كلمة المرور",
+      "submit": "تسجيل الدخول",
+      "loading": "جارٍ الدخول…",
+      "error": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+      "noAccount": "لست مبدعاً بعد؟",
+      "signup": "انضم إلى أكيلي"
+    },
+    "signup": {
+      "title": "كن مبدعاً على أكيلي",
+      "subtitle": "شارك وصفاتك وانضم إلى المجتمع.",
+      "name": "الاسم الكامل",
+      "namePlaceholder": "اسمك أو لقبك",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "بريدك@الإلكتروني.com",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "8 أحرف على الأقل",
+      "submit": "إنشاء حسابي",
+      "loading": "جارٍ إنشاء الحساب…",
+      "hasAccount": "لديك حساب بالفعل؟",
+      "login": "تسجيل الدخول",
+      "checkEmail": "تحقق من بريدك الإلكتروني",
+      "checkEmailHint": "تم إرسال رابط تأكيد إلى {email}. انقر عليه لتفعيل حسابك.",
+      "backToLogin": "العودة إلى تسجيل الدخول"
+    }
+  },
+  "fanMode": {
+    "lockedTitle": "فعّل وضع المعجبين",
+    "lockedDescription": "يتيح لك وضع المعجبين تفعيل اشتراك شهري لأكثر معجبيك ولاءً. احصل على دخل متكرر بنشر {count} وصفة على الأقل.",
+    "progress": "التقدم",
+    "recipesPublished": "وصفات منشورة",
+    "remaining": "{count, plural, one {وصفة متبقية} other {وصفات متبقية}} قبل الفتح.",
+    "createRecipe": "+ إنشاء وصفة",
+    "active": "نشط ⭐",
+    "activeFans": "المعجبون النشطون",
+    "revenueThisMonth": "إيرادات المعجبين هذا الشهر",
+    "revenueLastMonth": "إيرادات المعجبين الشهر الماضي",
+    "vsPrevMonth": "مقارنةً بالشهر السابق",
+    "chart": "إيرادات المعجبين — آخر 6 أشهر",
+    "fanList": "قائمة المعجبين",
+    "noFans": "لا يوجد معجبون بعد.",
+    "fanName": "معجب",
+    "subscribedAt": "اشترك في",
+    "status": "الحالة",
+    "benefits": {
+      "0": "اشتراك شهري للمعجبين بدءاً من 3€ / الشهر",
+      "1": "دخل متكرر وقابل للتوقع",
+      "2": "شارة «وضع المعجبين» على ملفك الشخصي",
+      "3": "الوصول إلى إحصائيات متقدمة للمعجبين"
+    }
+  },
+  "chat": {
+    "title": "الرسائل",
+    "noConversations": "لا توجد محادثات",
+    "noConversationsHint": "يمكن لمعجبيك التواصل معك من خلال التطبيق.",
+    "yesterday": "أمس",
+    "loading": "جارٍ التحميل...",
+    "error": "حدث خطأ",
+    "newConversation": "محادثة جديدة",
+    "startDirect": "بدء محادثة",
+    "createGroup": "إنشاء مجموعة",
+    "tabs": {
+      "all": "الكل",
+      "groups": "المجموعات",
+      "direct": "مباشر"
+    },
+    "groups": {
+      "search": "ابحث عن مجموعة...",
+      "filterAll": "الكل",
+      "filterPublic": "عام",
+      "filterPrivate": "خاص",
+      "sortActivity": "النشاط",
+      "sortName": "الاسم",
+      "empty": "لا توجد مجموعات",
+      "groupName": "اسم المجموعة",
+      "visibility": "الظهور",
+      "public": "عام",
+      "private": "خاص",
+      "create": "إنشاء",
+      "createError": "تعذّر إنشاء المجموعة، حاول مجدداً."
+    },
+    "direct": {
+      "search": "ابحث عن مبدع...",
+      "sortName": "الاسم",
+      "sortFollowers": "المتابعون",
+      "empty": "لا توجد محادثات مباشرة",
+      "emptyHint": "ابدأ محادثة مع مبدع آخر.",
+      "startConversation": "بدء"
+    }
+  },
+  "dashboard": {
+    "title": "لوحتي",
+    "revenue": "الإيرادات",
+    "consumers": "المستخدمون",
+    "recipes": "الوصفات المنشورة",
+    "thisMonth": "هذا الشهر",
+    "topRecipes": "أفضل الوصفات",
+    "aiInsights": "اشرح لي إحصائياتي",
+    "fanMode": {
+      "title": "وضع المعجبين",
+      "fans": "المعجبون",
+      "revenue": "إيرادات وضع المعجبين",
+      "unlockAt": "متاح من 30 وصفة منشورة",
+      "progress": "{{count}}/30 وصفة"
+    }
+  },
+  "recipe_form": {
+    "new": "وصفة جديدة",
+    "edit": "تعديل الوصفة",
+    "steps": {
+      "basic": "المعلومات الأساسية",
+      "ingredients": "المكونات",
+      "steps": "الخطوات",
+      "nutrition": "التغذية",
+      "images": "الصور",
+      "publish": "الوسوم والنشر"
+    },
+    "fields": {
+      "title": "العنوان",
+      "description": "الوصف",
+      "region": "المنطقة الطهوية",
+      "type": "نوع الوجبة",
+      "difficulty": "الصعوبة",
+      "prepTime": "وقت التحضير",
+      "cookTime": "وقت الطهي",
+      "portions": "عدد الحصص",
+      "hours": "ساعات",
+      "minutes": "دقائق"
+    },
+    "actions": {
+      "saveDraft": "حفظ المسودة",
+      "publish": "نشر",
+      "next": "التالي",
+      "previous": "السابق"
+    },
+    "autoSave": "حفظ تلقائي..."
+  },
+  "common": {
+    "loading": "جارٍ التحميل...",
+    "error": "حدث خطأ",
+    "retry": "إعادة المحاولة",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "publish": "نشر",
+    "unpublish": "إلغاء النشر",
+    "draft": "مسودة",
+    "published": "منشور",
+    "search": "بحث...",
+    "reset": "✕ إعادة تعيين",
+    "tryOtherFilters": "جرّب فلاتر أخرى.",
+    "defaultCreator": "مبدع أكيلي"
+  }
+}
