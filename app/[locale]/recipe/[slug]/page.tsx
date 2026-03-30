@@ -39,11 +39,6 @@ interface RecipeDetail {
   } | null;
 }
 
-const DIFFICULTY_LABELS: Record<string, string> = {
-  easy: "Facile",
-  medium: "Moyen",
-  hard: "Difficile",
-};
 
 // ─── Session Tracker (invisible) ─────────────────────────────────────────────
 
@@ -57,6 +52,7 @@ function RecipeSessionTracker({ recipeId, source }: { recipeId: string; source: 
 export default function RecipeDetailPage() {
   const t = useTranslations("recipe");
   const tCreators = useTranslations("creators");
+  const tRecipes = useTranslations("recipes");
   const locale = useLocale();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -247,10 +243,10 @@ export default function RecipeDetailPage() {
           {/* Meta chips */}
           <div className="flex flex-wrap gap-2">
             {recipe.difficulty && (
-              <MetaChip icon="📊" label={DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty} />
+              <MetaChip icon="📊" label={recipe.difficulty ? tRecipes(`difficulty.${recipe.difficulty}` as any) : recipe.difficulty ?? ""} />
             )}
             {timeLabel && <MetaChip icon="⏱" label={timeLabel} />}
-            {recipe.servings && <MetaChip icon="👥" label={`${recipe.servings} portion${recipe.servings > 1 ? "s" : ""}`} />}
+            {recipe.servings && <MetaChip icon="👥" label={t("servings", { count: recipe.servings })} />}
             {recipe.region && <MetaChip icon="🌍" label={recipe.region} />}
           </div>
 

@@ -31,12 +31,6 @@ interface RecipeTeaser {
   is_published: boolean;
 }
 
-const DIFFICULTY_LABELS: Record<string, string> = {
-  easy: "Facile",
-  medium: "Moyen",
-  hard: "Difficile",
-};
-
 const FAN_MODE_THRESHOLD = 30;
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -44,6 +38,7 @@ const FAN_MODE_THRESHOLD = 30;
 export default function CreatorProfilePage() {
   const t = useTranslations("creators");
   const tLanding = useTranslations("landing");
+  const tRecipes = useTranslations("recipes");
   const params = useParams();
   const creatorId = String(params.username); // username = creator ID
   const supabase = createClient();
@@ -259,7 +254,7 @@ function RecipeCard({ recipe }: { recipe: RecipeTeaser }) {
         <div className="flex items-center gap-2 flex-wrap">
           {recipe.difficulty && (
             <span className="text-[10px] text-muted-foreground">
-              {DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}
+              {recipe.difficulty ? tRecipes(`difficulty.${recipe.difficulty}` as any) : recipe.difficulty}
             </span>
           )}
           {recipe.difficulty && timeLabel && (

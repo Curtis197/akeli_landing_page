@@ -25,12 +25,6 @@ interface RecipeCard {
 
 type SortOption = "newest" | "popular";
 
-const DIFFICULTY_LABELS: Record<string, string> = {
-  easy: "Facile",
-  medium: "Moyen",
-  hard: "Difficile",
-};
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function RecipesPage() {
@@ -219,6 +213,7 @@ export default function RecipesPage() {
 
 function RecipeCardComponent({ recipe }: { recipe: RecipeCard }) {
   const tCommon = useTranslations("common");
+  const tRecipes = useTranslations("recipes");
   const cardRef = useRef<HTMLAnchorElement>(null);
   useRecipeImpression(cardRef as React.RefObject<HTMLElement>, {
     recipeId: recipe.id,
@@ -268,7 +263,7 @@ function RecipeCardComponent({ recipe }: { recipe: RecipeCard }) {
         <div className="flex items-center gap-1.5 flex-wrap">
           {recipe.difficulty && (
             <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-secondary text-muted-foreground">
-              {DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}
+              {recipe.difficulty ? tRecipes(`difficulty.${recipe.difficulty}` as any) : recipe.difficulty}
             </span>
           )}
           {timeLabel && (

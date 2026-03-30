@@ -115,7 +115,8 @@
     "appOnlyTitle": "Recette disponible dans l'app Akeli",
     "appOnlySubtitle": "Accède aux ingrédients complets et aux étapes de préparation détaillées dans l'application mobile — 3€/mois seulement.",
     "platforms": "Disponible sur iOS et Android",
-    "viewAllFrom": "Voir tous les plats de"
+    "viewAllFrom": "Voir tous les plats de",
+    "servings": "{count, plural, one {# portion} other {# portions}}"
   },
   "auth": {
     "login": {

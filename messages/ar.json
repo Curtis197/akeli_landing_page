@@ -115,7 +115,8 @@
     "appOnlyTitle": "الوصفة متاحة في تطبيق أكيلي",
     "appOnlySubtitle": "اطلع على المكونات الكاملة وخطوات التحضير المفصلة في التطبيق — 3€ / الشهر فقط.",
     "platforms": "متاح على iOS وAndroid",
-    "viewAllFrom": "عرض كل أطباق"
+    "viewAllFrom": "عرض كل أطباق",
+    "servings": "{count, plural, one {# حصة} two {# حصتان} few {# حصص} other {# حصص}}"
   },
   "auth": {
     "login": {
