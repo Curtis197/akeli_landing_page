@@ -220,6 +220,7 @@ export default function CreatorProfilePage() {
 // ─── RecipeCard ───────────────────────────────────────────────────────────────
 
 function RecipeCard({ recipe }: { recipe: RecipeTeaser }) {
+  const tRecipes = useTranslations("recipes");
   const totalMin = (recipe.prep_time_min ?? 0) + (recipe.cook_time_min ?? 0);
   const timeLabel =
     totalMin >= 60
