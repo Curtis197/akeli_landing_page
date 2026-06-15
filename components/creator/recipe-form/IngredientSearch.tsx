@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { searchIngredients } from "@/lib/queries/ingredients";
 import type { IngredientResult } from "@/lib/queries/ingredients";
+import { useLocale } from "next-intl";
 
 interface IngredientSearchProps {
   onSelect: (ingredient: IngredientResult) => void;
@@ -15,12 +16,18 @@ export default function IngredientSearch({
   onSubmitNew,
   isMetricUser = true,
 }: IngredientSearchProps) {
+  const locale = useLocale();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<IngredientResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const getLocalizedName = (ing: IngredientResult) => {
+    const key = `name_${locale}` as keyof IngredientResult;
+    return (ing[key] as string) || ing.name_fr;
+  };
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -81,7 +88,7 @@ export default function IngredientSearch({
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-secondary transition-colors text-left"
               >
                 <span className="flex-1 font-medium text-foreground">
-                  {ing.name_fr}
+                  {getLocalizedName(ing)}
                 </span>
                 {ing.category && (
                   <span className="text-xs text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">

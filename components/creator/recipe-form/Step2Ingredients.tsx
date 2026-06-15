@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useId, useEffect } from "react";
+import { useLocale } from "next-intl";
 import {
   DndContext,
   closestCenter,
@@ -53,6 +54,7 @@ export default function Step2Ingredients({
   onChange,
   units,
 }: Step2Props) {
+  const locale = useLocale();
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState(EMPTY_DRAFT());
   const [submitModalQuery, setSubmitModalQuery] = useState<string | null>(null);
@@ -122,10 +124,13 @@ export default function Step2Ingredients({
       ? ingredient.default_metric_unit
       : ingredient.default_us_unit;
 
+    const key = `name_${locale}` as keyof IngredientResult;
+    const locName = (ingredient[key] as string) || ingredient.name_fr;
+
     setDraft((d) => ({
       ...d,
       ingredient_id: ingredient.id,
-      name: ingredient.name_fr,
+      name: locName,
       unit: autoUnit || "g",
       calories_per_100g: ingredient.calories_per_100g,
       protein_per_100g: ingredient.protein_per_100g,

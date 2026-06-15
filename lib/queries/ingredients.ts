@@ -4,6 +4,7 @@ export type IngredientResult = {
   id: string;
   name_fr: string;
   name_en: string | null;
+  name_ar?: string | null;
   category: string | null;
   calories_per_100g: number | null;
   protein_per_100g: number | null;
@@ -29,7 +30,7 @@ export async function searchIngredients(
   let supabaseQuery = supabase
     .from("ingredient")
     .select(
-      "id, name_fr, name_en, category, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, default_metric_unit, default_us_unit, hide_in_metric"
+      "id, name_fr, name_en, name_ar, category, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, default_metric_unit, default_us_unit, hide_in_metric"
     )
     .eq("status", "validated")
     .ilike("name_fr", `%${query.trim()}%`);
