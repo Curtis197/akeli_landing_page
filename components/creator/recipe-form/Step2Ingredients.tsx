@@ -76,6 +76,7 @@ export default function Step2Ingredients({
     if (!over || active.id === over.id) return;
     const oldIndex = ingredients.findIndex((i) => i.id === active.id);
     const newIndex = ingredients.findIndex((i) => i.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
     updateIngredients(arrayMove(ingredients, oldIndex, newIndex));
   };
 
@@ -143,7 +144,10 @@ export default function Step2Ingredients({
       {submitModalQuery !== null && (
         <IngredientSubmitModal
           initialName={submitModalQuery}
-          onClose={() => setSubmitModalQuery(null)}
+          onClose={() => {
+            setSubmitModalQuery(null);
+            setDraft(EMPTY_DRAFT());
+          }}
         />
       )}
 
