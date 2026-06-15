@@ -78,7 +78,9 @@ export default function EditRecipePage() {
             ingredient_ids: s.ingredient_ids ?? [],
           })),
         cover_image_url: data.cover_image_url ?? "",
-        gallery_urls: (data.gallery_urls as string[]) ?? [],
+        gallery_urls: ((data as any).recipe_image ?? [])
+          .sort((a: any, b: any) => a.sort_order - b.sort_order)
+          .map((img: any) => img.url as string),
         tags: ((data as any).recipe_tag ?? []).map((t: any) => t.tag_id),
         is_pork_free: data.is_pork_free ?? false,
         is_private: (data as any).is_private ?? false,
