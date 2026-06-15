@@ -21,6 +21,7 @@ export default function CreatorLayout({
     { label: t("profile"), href: "/profile" },
     { label: t("fanMode"), href: "/fan-mode" },
     { label: t("settings"), href: "/settings" },
+    { label: t("help"), href: "/help" },
   ];
 
   return (
