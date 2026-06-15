@@ -1,4 +1,4 @@
-﻿{
+{
     "nav":  {
                 "creators":  "CrÃ©ateurs",
                 "recipes":  "Recettes",
@@ -277,5 +277,25 @@
                    "reset":  "âœ• RÃ©initialiser",
                    "tryOtherFilters":  "Essaie d\u0027autres filtres.",
                    "defaultCreator":  "CrÃ©ateur Akeli"
-               }
+               },
+    "ingredientCategories": {
+        "liquid": "Liquide",
+        "oil": "Huile & Matière grasse",
+        "meat": "Viande",
+        "poultry": "Volaille",
+        "seafood": "Poisson & Fruits de mer",
+        "vegetable": "Légume",
+        "fruit": "Fruit",
+        "dairy": "Laitage & Œuf",
+        "grain": "Céréale & Pâte",
+        "spice": "Épice",
+        "herb": "Herbe",
+        "condiment": "Condiment",
+        "baking": "Boulangerie",
+        "nut": "Noix & Graine",
+        "legume": "Légumineuse",
+        "sweetener": "Sucre & Édulcorant",
+        "alcohol": "Alcool",
+        "other": "Autre"
+    }
 }

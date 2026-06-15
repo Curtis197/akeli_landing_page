@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { searchIngredients } from "@/lib/queries/ingredients";
 import type { IngredientResult } from "@/lib/queries/ingredients";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface IngredientSearchProps {
   onSelect: (ingredient: IngredientResult) => void;
@@ -17,6 +17,7 @@ export default function IngredientSearch({
   isMetricUser = true,
 }: IngredientSearchProps) {
   const locale = useLocale();
+  const tCat = useTranslations("ingredientCategories");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<IngredientResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -92,7 +93,7 @@ export default function IngredientSearch({
                 </span>
                 {ing.category && (
                   <span className="text-xs text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">
-                    {ing.category}
+                    {tCat.has(ing.category as any) ? tCat(ing.category as any) : ing.category}
                   </span>
                 )}
                 {ing.calories_per_100g != null && (
