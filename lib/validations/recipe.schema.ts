@@ -51,7 +51,12 @@ export const stepItemSchema = z.object({
   id: z.string(),
   step_number: z.number().int(),
   title: z.string().optional(),
-  content: z.string().optional(),
+  content: z.string()
+    .optional()
+    .refine(
+      (val) => !val || !/(?<!\b(cuisson|four|mijoter|température)\s*.{0,20})\b\d+(?:[\.,]\d+)?\s*(g|kg|ml|l|cl|oz|lb|cup|cups|tasse|tasses|c\.à\.s|c\.à\.c|tbsp|tsp|cuillère)\b/i.test(val),
+      { message: "Veuillez ne pas inclure de quantités exactes dans les instructions. Utilisez la section Ingrédients." }
+    ),
   image_url: z.string().optional(),
   timer_seconds: z.number().int().min(0).optional(),
   sort_order: z.number().int(),

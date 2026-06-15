@@ -7,11 +7,13 @@ import type { IngredientResult } from "@/lib/queries/ingredients";
 interface IngredientSearchProps {
   onSelect: (ingredient: IngredientResult) => void;
   onSubmitNew: (query: string) => void;
+  isMetricUser?: boolean;
 }
 
 export default function IngredientSearch({
   onSelect,
   onSubmitNew,
+  isMetricUser = true,
 }: IngredientSearchProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<IngredientResult[]>([]);
@@ -30,7 +32,7 @@ export default function IngredientSearch({
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const data = await searchIngredients(query);
+        const data = await searchIngredients(query, isMetricUser);
         setResults(data);
         setOpen(true);
       } finally {

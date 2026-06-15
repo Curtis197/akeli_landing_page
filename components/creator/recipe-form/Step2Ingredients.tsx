@@ -1,7 +1,7 @@
 // components/creator/recipe-form/Step2Ingredients.tsx
 "use client";
 
-import { useState, useId } from "react";
+import { useState, useId, useEffect } from "react";
 import {
   DndContext,
   closestCenter,
@@ -56,7 +56,14 @@ export default function Step2Ingredients({
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState(EMPTY_DRAFT());
   const [submitModalQuery, setSubmitModalQuery] = useState<string | null>(null);
+  const [isMetricUser, setIsMetricUser] = useState(true);
   const dndId = useId();
+
+  useEffect(() => {
+    if (typeof navigator !== "undefined") {
+      setIsMetricUser(!navigator.language.startsWith("en-US"));
+    }
+  }, []);
 
   const ingredients = data.ingredients;
 
@@ -111,10 +118,15 @@ export default function Step2Ingredients({
   };
 
   const handleIngredientSelect = (ingredient: IngredientResult) => {
+    const autoUnit = isMetricUser
+      ? ingredient.default_metric_unit
+      : ingredient.default_us_unit;
+
     setDraft((d) => ({
       ...d,
       ingredient_id: ingredient.id,
       name: ingredient.name_fr,
+      unit: autoUnit || "g",
       calories_per_100g: ingredient.calories_per_100g,
       protein_per_100g: ingredient.protein_per_100g,
       carbs_per_100g: ingredient.carbs_per_100g,
@@ -284,6 +296,7 @@ export default function Step2Ingredients({
           </h3>
 
           <IngredientSearch
+            isMetricUser={isMetricUser}
             onSelect={handleIngredientSelect}
             onSubmitNew={(q) => {
               setSubmitModalQuery(q);
@@ -314,20 +327,9 @@ export default function Step2Ingredients({
                   />
                 </div>
                 <div>
-                  <select
-                    value={draft.unit}
-                    onChange={(e) =>
-                      setDraft((d) => ({ ...d, unit: e.target.value }))
-                    }
-                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="">Unité...</option>
-                    {units.map((u) => (
-                      <option key={u.code} value={u.code}>
-                        {u.name_fr}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="w-full px-3 py-2 bg-background/50 text-sm text-muted-foreground font-medium flex items-center h-full">
+                    {units.find((u) => u.code === draft.unit)?.name_fr ?? draft.unit}
+                  </div>
                 </div>
               </div>
               <label className="flex items-center gap-2 cursor-pointer">
@@ -449,17 +451,9 @@ function SortableIngredientRow({
         }
         className="w-20 px-2 py-1 rounded border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
       />
-      <select
-        value={ingredient.unit}
-        onChange={(e) => onUnitChange(ingredient.id, e.target.value)}
-        className="w-24 px-2 py-1 rounded border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-      >
-        {units.map((u) => (
-          <option key={u.code} value={u.code}>
-            {u.name_fr}
-          </option>
-        ))}
-      </select>
+      <span className="w-24 px-2 py-1 text-sm font-medium text-muted-foreground truncate">
+        {units.find((u) => u.code === ingredient.unit)?.name_fr ?? ingredient.unit}
+      </span>
       <label className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
         <input
           type="checkbox"

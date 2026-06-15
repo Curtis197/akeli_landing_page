@@ -9,6 +9,9 @@ export type IngredientResult = {
   protein_per_100g: number | null;
   carbs_per_100g: number | null;
   fat_per_100g: number | null;
+  default_metric_unit: string | null;
+  default_us_unit: string | null;
+  hide_in_metric: boolean | null;
 };
 
 export type UnitConversion = {
@@ -18,18 +21,24 @@ export type UnitConversion = {
 };
 
 export async function searchIngredients(
-  query: string
+  query: string,
+  isMetricUser: boolean = true
 ): Promise<IngredientResult[]> {
   if (query.trim().length < 2) return [];
   const supabase = createClient();
-  const { data, error } = await supabase
+  let supabaseQuery = supabase
     .from("ingredient")
     .select(
-      "id, name_fr, name_en, category, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g"
+      "id, name_fr, name_en, category, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, default_metric_unit, default_us_unit, hide_in_metric"
     )
     .eq("status", "validated")
-    .ilike("name_fr", `%${query.trim()}%`)
-    .limit(10);
+    .ilike("name_fr", `%${query.trim()}%`);
+
+  if (isMetricUser) {
+    supabaseQuery = supabaseQuery.eq("hide_in_metric", false);
+  }
+
+  const { data, error } = await supabaseQuery.limit(10);
   if (error) throw error;
   return data ?? [];
 }

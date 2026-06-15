@@ -134,6 +134,15 @@ serve(async (req)=>{
     }
     const apiKey = Deno.env.get('GEMINI_API_KEY');
     const targets = ALL_LOCALES.filter((l)=>l !== source_locale);
+
+    // Normalize recipe ingredients to metric (runs if a US creator saved in cups/oz)
+    const { error: rpcError } = await supabase.rpc('normalize_recipe_ingredients_to_metric', { 
+      p_recipe_id: recipe_id 
+    });
+    if (rpcError) {
+      console.error("Failed to normalize units:", rpcError);
+    }
+
     // Respond immediately then continue translating
     const immediateResponse = new Response(JSON.stringify({
       success: true,
