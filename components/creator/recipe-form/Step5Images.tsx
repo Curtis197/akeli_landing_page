@@ -2,8 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import imageCompression from "browser-image-compression";
-import { createClient } from "@/lib/supabase/client";
+import { uploadImage } from "@/lib/utils/upload-image";
 import type { RecipeFormState } from "./RecipeWizard";
 
 interface Step5Props {
@@ -12,34 +11,10 @@ interface Step5Props {
   draftId: string | null;
 }
 
-const COMPRESSION_OPTIONS = {
-  maxSizeMB: 1,
-  maxWidthOrHeight: 1920,
-  useWebWorker: true,
-};
-
 export default function Step5Images({ data, onChange, draftId }: Step5Props) {
-  const supabase = createClient();
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const uploadFile = async (file: File, path: string): Promise<string> => {
-    const compressed = await imageCompression(file, COMPRESSION_OPTIONS);
-    const ext = file.type === "image/png" ? "png" : "jpg";
-    const finalPath = path.replace(/.webp$/, "." + ext);
-    const { error: uploadError } = await supabase.storage
-      .from("recipe-images")
-      .upload(finalPath, compressed, { upsert: true, contentType: file.type });
-
-    if (uploadError) throw uploadError;
-
-    const { data: publicData } = supabase.storage
-      .from("recipe-images")
-      .getPublicUrl(finalPath);
-
-    return publicData.publicUrl;
-  };
 
   // ── Cover image ──────────────────────────────────────────────────────────────
 
@@ -52,7 +27,7 @@ export default function Step5Images({ data, onChange, draftId }: Step5Props) {
       try {
         const id = draftId ?? crypto.randomUUID();
         const path = `${id}/cover.webp`;
-        const url = await uploadFile(file, path);
+        const url = await uploadImage(file, path);
         onChange({ cover_image_url: url });
       } catch {
         setError("Échec de l'upload. Réessaie.");
@@ -60,7 +35,7 @@ export default function Step5Images({ data, onChange, draftId }: Step5Props) {
         setUploadingCover(false);
       }
     },
-    [draftId, onChange, supabase]
+    [draftId, onChange]
   );
 
   const { getRootProps: getCoverRootProps, getInputProps: getCoverInputProps, isDragActive: isCoverDragActive } =
@@ -87,7 +62,7 @@ export default function Step5Images({ data, onChange, draftId }: Step5Props) {
         const urls = await Promise.all(
           toUpload.map((file, i) => {
             const idx = data.gallery_urls.length + i;
-            return uploadFile(file, `${id}/gallery_${idx}_${Date.now()}.webp`);
+            return uploadImage(file, `${id}/gallery_${idx}_${Date.now()}.webp`);
           })
         );
         onChange({ gallery_urls: [...data.gallery_urls, ...urls] });
@@ -97,7 +72,7 @@ export default function Step5Images({ data, onChange, draftId }: Step5Props) {
         setUploadingGallery(false);
       }
     },
-    [draftId, data.gallery_urls, onChange, supabase]
+    [draftId, data.gallery_urls, onChange]
   );
 
   const { getRootProps: getGalleryRootProps, getInputProps: getGalleryInputProps, isDragActive: isGalleryDragActive } =
