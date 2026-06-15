@@ -100,14 +100,16 @@ export async function getCreators(
   search: string,
   sort: "name" | "fan_count" = "name"
 ): Promise<CreatorSearchItem[]> {
-  const safeSearch = search.replace(/%/g, "\%").replace(/_/g, "\_");
+  // Strip characters with special meaning in PostgREST filter strings (`,().:*`)
+  // and PostgreSQL LIKE pattern characters (`%_`) before interpolating into .or().
+  const safeSearch = search.replace(/[,()*.:_%]/g, "");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let query: any = supabase
     .from("creator")
     .select("id, display_name, username, profile_image_url, fan_count, user_id")
     .limit(50);
-  if (search.trim().length > 0) {
-    query = query.or("display_name.ilike.%" + safeSearch + "%,username.ilike.%" + safeSearch + "%");
+  if (safeSearch.trim().length > 0) {
+    query = query.or(`display_name.ilike.%${safeSearch}%,username.ilike.%${safeSearch}%`);
   }
   if (sort === "fan_count") {
     query = query.order("fan_count", { ascending: false });
