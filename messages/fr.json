@@ -1,79 +1,79 @@
 {
   "nav": {
-    "creators": "CrÃ©ateurs",
+    "creators": "Créateurs",
     "recipes": "Recettes",
-    "about": "Ã€ propos",
+    "about": "ì propos",
     "login": "Connexion",
-    "signup": "Devenir crÃ©ateur",
+    "signup": "Devenir créateur",
     "register": "S'inscrire",
     "dashboard": "Mon espace",
     "myRecipes": "Mes recettes",
     "profile": "Mon profil",
     "chat": "Messages",
-    "settings": "ParamÃ¨tres",
-    "logout": "DÃ©connexion",
+    "settings": "Paramètres",
+    "logout": "Déconnexion",
     "fanMode": "Mode Fan",
     "payments": "Paiements",
     "help": "Aide"
   },
   "landing": {
     "hero": {
-      "title": "Mangez comme vous Ãªtes.",
-      "subtitle": "Des recettes crÃ©Ã©es par des crÃ©ateurs de votre culture, adaptÃ©es Ã  votre vie d'aujourd'hui.",
-      "ctaDownload": "TÃ©lÃ©charger l'app",
-      "ctaCreator": "Devenir crÃ©ateur"
+      "title": "Mangez comme vous êtes.",
+      "subtitle": "Des recettes créées par des créateurs de votre culture, adaptées à votre vie d'aujourd'hui.",
+      "ctaDownload": "Télécharger l'app",
+      "ctaCreator": "Devenir créateur"
     },
     "howItWorks": {
-      "title": "Comment Ã§a marche",
+      "title": "Comment ça marche",
       "step1": {
-        "title": "DÃ©couvrez des crÃ©ateurs",
-        "description": "Des crÃ©ateurs de votre culture partagent leurs recettes."
+        "title": "Découvrez des créateurs",
+        "description": "Des créateurs de votre culture partagent leurs recettes."
       },
       "step2": {
         "title": "Cuisinez avec l'app",
-        "description": "AccÃ©dez aux recettes complÃ¨tes dans l'application."
+        "description": "Accédez aux recettes complètes dans l'application."
       },
       "step3": {
         "title": "Partagez vos repas",
-        "description": "Construisez votre routine culinaire avec votre communautÃ©."
+        "description": "Construisez votre routine culinaire avec votre communauté."
       }
     },
     "pricing": {
       "title": "Un abonnement simple",
-      "price": "3â‚¬/mois",
-      "description": "AccÃ¨s Ã  toutes les recettes de la plateforme."
+      "price": "3��/mois",
+      "description": "Accès à toutes les recettes de la plateforme."
     },
-    "faqTitle": "Questions frÃ©quentes",
+    "faqTitle": "Questions fréquentes",
     "footer": {
-      "about": "Ã€ propos",
-      "becomeCreator": "Devenir crÃ©ateur",
+      "about": "ì propos",
+      "becomeCreator": "Devenir créateur",
       "terms": "CGU",
-      "privacy": "ConfidentialitÃ©",
-      "legal": "Mentions lÃ©gales"
+      "privacy": "Confidentialité",
+      "legal": "Mentions légales"
     }
   },
   "creators": {
-    "pageTitle": "CrÃ©ateurs Akeli",
-    "subtitle": "DÃ©couvrez les crÃ©ateurs culinaires de la diaspora africaine.",
-    "searchPlaceholder": "Rechercher un crÃ©ateurâ€¦",
-    "allRegions": "Toutes les rÃ©gions",
-    "allSpecialties": "Toutes les spÃ©cialitÃ©s",
-    "notFound": "Aucun crÃ©ateur trouvÃ©",
-    "notFoundCreator": "CrÃ©ateur introuvable",
-    "noRecipes": "Aucune recette publiÃ©e pour l'instant.",
-    "defaultName": "CrÃ©ateur Akeli",
-    "backToCatalog": "â† Retour au catalogue",
+    "pageTitle": "Créateurs Akeli",
+    "subtitle": "Découvrez les créateurs culinaires de la diaspora africaine.",
+    "searchPlaceholder": "Rechercher un créateur…",
+    "allRegions": "Toutes les régions",
+    "allSpecialties": "Toutes les spécialités",
+    "notFound": "Aucun créateur trouvé",
+    "notFoundCreator": "Créateur introuvable",
+    "noRecipes": "Aucune recette publiée pour l'instant.",
+    "defaultName": "Créateur Akeli",
+    "backToCatalog": "� � Retour au catalogue",
     "recipesBy": "Recettes de",
-    "ctaTitle": "AccÃ¨de aux recettes complÃ¨tes dans l'app Akeli",
-    "ctaSubtitle": "IngrÃ©dients dÃ©taillÃ©s, Ã©tapes pas-Ã -pas et bien plus dans l'application mobile.",
+    "ctaTitle": "Accède aux recettes complètes dans l'app Akeli",
+    "ctaSubtitle": "Ingrédients détaillés, étapes pas-à-pas et bien plus dans l'application mobile.",
     "filters": {
-      "region": "RÃ©gion",
-      "specialty": "SpÃ©cialitÃ©",
+      "region": "Région",
+      "specialty": "Spécialité",
       "all": "Tous"
     },
     "stats": {
       "recipes": "{count, plural, one {recette} other {recettes}}",
-      "recipesPublished": "{count, plural, one {recette publiÃ©e} other {recettes publiÃ©es}}",
+      "recipesPublished": "{count, plural, one {recette publiée} other {recettes publiées}}",
       "consumers": "consommateurs"
     },
     "fanBadge": "Mode Fan",
@@ -81,13 +81,13 @@
   },
   "recipes": {
     "pageTitle": "Catalogue Recettes",
-    "subtitle": "Explorez les recettes des crÃ©ateurs de la diaspora africaine. AccÃ©dez aux recettes complÃ¨tes dans l'app Akeli.",
-    "searchPlaceholder": "Rechercher une recetteâ€¦",
-    "allRegions": "Toutes les rÃ©gions",
-    "allDifficulties": "Toute difficultÃ©",
-    "notFound": "Aucune recette trouvÃ©e",
-    "ctaTitle": "AccÃ¨de aux recettes complÃ¨tes",
-    "ctaSubtitle": "IngrÃ©dients dÃ©taillÃ©s et Ã©tapes pas-Ã -pas dans l'app Akeli â€” 3â‚¬/mois.",
+    "subtitle": "Explorez les recettes des créateurs de la diaspora africaine. Accédez aux recettes complètes dans l'app Akeli.",
+    "searchPlaceholder": "Rechercher une recette⬦",
+    "allRegions": "Toutes les régions",
+    "allDifficulties": "Toute difficulté",
+    "notFound": "Aucune recette trouvée",
+    "ctaTitle": "Accède aux recettes complètes",
+    "ctaSubtitle": "Ingrédients détaillés et étapes pas-à-pas dans l'app Akeli � 3��/mois.",
     "count": "{count, plural, one {recette} other {recettes}}",
     "difficulty": {
       "easy": "Facile",
@@ -98,81 +98,81 @@
   "recipe": {
     "by": "Par",
     "time": "Temps",
-    "difficulty": "DifficultÃ©",
+    "difficulty": "Difficulté",
     "calories": "Calories",
     "portions": "Portions",
     "tags": "Tags",
     "appOnly": "Cette recette est disponible uniquement dans l'app Akeli",
-    "downloadApp": "TÃ©lÃ©charger l'app Akeli",
-    "mainIngredients": "IngrÃ©dients principaux",
-    "moreIngredients": "et {{count}} autres ingrÃ©dients",
+    "downloadApp": "Télécharger l'app Akeli",
+    "mainIngredients": "Ingrédients principaux",
+    "moreIngredients": "et {{count}} autres ingrédients",
     "notFound": "Recette introuvable",
-    "backToCatalog": "â† Retour au catalogue",
+    "backToCatalog": "� � Retour au catalogue",
     "porkFree": "Sans porc",
     "nutritionTitle": "Valeurs nutritionnelles",
-    "proteins": "ProtÃ©ines",
+    "proteins": "Protéines",
     "carbs": "Glucides",
     "fats": "Lipides",
     "appOnlyTitle": "Recette disponible dans l'app Akeli",
-    "appOnlySubtitle": "AccÃ¨de aux ingrÃ©dients complets et aux Ã©tapes de prÃ©paration dÃ©taillÃ©es dans l'application mobile â€” 3â‚¬/mois seulement.",
+    "appOnlySubtitle": "Accède aux ingrédients complets et aux étapes de préparation détaillées dans l'application mobile � 3��/mois seulement.",
     "platforms": "Disponible sur iOS et Android",
     "viewAllFrom": "Voir tous les plats de",
     "servings": "{count, plural, one {# portion} other {# portions}}"
   },
   "auth": {
     "login": {
-      "title": "Connexion crÃ©ateur",
-      "subtitle": "AccÃ¨de Ã  ton espace crÃ©ateur Akeli.",
+      "title": "Connexion créateur",
+      "subtitle": "Accède à ton espace créateur Akeli.",
       "email": "Email",
       "emailPlaceholder": "ton@email.com",
       "password": "Mot de passe",
       "submit": "Se connecter",
-      "loading": "Connexionâ€¦",
+      "loading": "Connexion⬦",
       "error": "Email ou mot de passe incorrect.",
-      "noAccount": "Pas encore crÃ©ateur ?",
+      "noAccount": "Pas encore créateur ?",
       "signup": "Rejoindre Akeli"
     },
     "signup": {
-      "title": "Devenir crÃ©ateur Akeli",
-      "subtitle": "Partage tes recettes et rejoins la communautÃ©.",
+      "title": "Devenir créateur Akeli",
+      "subtitle": "Partage tes recettes et rejoins la communauté.",
       "name": "Nom complet",
       "namePlaceholder": "Ton nom ou pseudo",
       "email": "Email",
       "emailPlaceholder": "ton@email.com",
       "password": "Mot de passe",
-      "passwordPlaceholder": "8 caractÃ¨res minimum",
-      "submit": "CrÃ©er mon compte",
-      "loading": "CrÃ©ation du compteâ€¦",
-      "hasAccount": "DÃ©jÃ  un compte ?",
+      "passwordPlaceholder": "8 caractères minimum",
+      "submit": "Créer mon compte",
+      "loading": "Création du compte⬦",
+      "hasAccount": "Déjà un compte ?",
       "login": "Se connecter",
-      "checkEmail": "VÃ©rifie ta boite mail",
-      "checkEmailHint": "Un lien de confirmation a Ã©tÃ© envoyÃ© Ã  {email}. Clique dessus pour activer ton compte crÃ©ateur.",
-      "backToLogin": "Retour Ã  la connexion"
+      "checkEmail": "Vérifie ta boite mail",
+      "checkEmailHint": "Un lien de confirmation a été envoyé à {email}. Clique dessus pour activer ton compte créateur.",
+      "backToLogin": "Retour à la connexion"
     }
   },
   "fanMode": {
-    "lockedTitle": "DÃ©bloque le Mode Fan",
-    "lockedDescription": "Le Mode Fan te permet d'activer un abonnement mensuel pour tes fans les plus fidÃ¨les. GÃ©nÃ¨re des revenus rÃ©currents en publiant au moins {count} recettes.",
+    "lockedTitle": "Débloque le Mode Fan",
+    "lockedDescription": "Le Mode Fan te permet d'activer un abonnement mensuel pour tes fans les plus fidèles. Génère des revenus récurrents en publiant au moins {count} recettes.",
     "progress": "Progression",
-    "recipesPublished": "recettes publiÃ©es",
-    "remaining": "{count, plural, one {recette restante} other {recettes restantes}} avant le dÃ©blocage.",
-    "createRecipe": "+ CrÃ©er une recette",
-    "active": "Actif â­",
+    "recipesPublished": "recettes publiées",
+    "remaining": "{count, plural, one {recette restante} other {recettes restantes}} avant le déblocage.",
+    "createRecipe": "+ Créer une recette",
+    "active": "Actif ⭐",
     "activeFans": "Fans actifs",
     "revenueThisMonth": "Revenus fans ce mois",
-    "revenueLastMonth": "Revenus fans mois prÃ©cÃ©dent",
-    "vsPrevMonth": "vs mois prÃ©cÃ©dent",
-    "chart": "Revenus fans â€” 6 derniers mois",
+    "revenueLastMonth": "Revenus fans mois précédent",
+    "vsPrevMonth": "vs mois précédent",
+    "chart": "Revenus fans � 6 derniers mois",
     "fanList": "Liste des fans",
     "noFans": "Aucun fan pour le moment.",
     "fanName": "Fan",
-    "subscribedAt": "AbonnÃ© le",
+    "subscribedAt": "Abonné le",
     "status": "Statut",
     "benefits": {
-      "0": "Abonnement mensuel pour tes fans Ã  partir de 3 â‚¬/mois",
-      "1": "Revenus rÃ©currents et prÃ©visibles",
-      "2": "Badge Â« Mode Fan Â» sur ton profil public",
-      "3": "AccÃ¨s Ã  des statistiques fans avancÃ©es"
+      "0": "Abonnement mensuel pour tes fans à partir de 3 ��/mois",
+      "1": "Revenus récurrents et prévisibles",
+      "2": "Badge « Mode Fan » sur ton profil public",
+      "3": "Accès à des statistiques fans avancées"
     }
   },
   "chat": {
@@ -183,8 +183,8 @@
     "loading": "Chargement...",
     "error": "Une erreur est survenue",
     "newConversation": "Nouvelle conversation",
-    "startDirect": "DÃ©marrer une conversation",
-    "createGroup": "CrÃ©er un groupe",
+    "startDirect": "Démarrer une conversation",
+    "createGroup": "Créer un groupe",
     "tabs": {
       "all": "Tous",
       "groups": "Groupes",
@@ -194,31 +194,31 @@
       "search": "Rechercher un groupe...",
       "filterAll": "Tous",
       "filterPublic": "Public",
-      "filterPrivate": "PrivÃ©",
-      "sortActivity": "ActivitÃ©",
+      "filterPrivate": "Privé",
+      "sortActivity": "Activité",
       "sortName": "Nom",
       "empty": "Aucun groupe",
       "groupName": "Nom du groupe",
-      "visibility": "VisibilitÃ©",
+      "visibility": "Visibilité",
       "public": "Public",
-      "private": "PrivÃ©",
-      "create": "CrÃ©er",
-      "createError": "Impossible de crÃ©er le groupe, rÃ©essaie."
+      "private": "Privé",
+      "create": "Créer",
+      "createError": "Impossible de créer le groupe, réessaie."
     },
     "direct": {
-      "search": "Rechercher un crÃ©ateur...",
+      "search": "Rechercher un créateur...",
       "sortName": "Nom",
-      "sortFollowers": "AbonnÃ©s",
+      "sortFollowers": "Abonnés",
       "empty": "Aucune conversation directe",
-      "emptyHint": "DÃ©marre une conversation avec un autre crÃ©ateur.",
-      "startConversation": "DÃ©marrer"
+      "emptyHint": "Démarre une conversation avec un autre créateur.",
+      "startConversation": "Démarrer"
     }
   },
   "dashboard": {
     "title": "Mon dashboard",
     "revenue": "Revenus",
     "consumers": "Consommateurs",
-    "recipes": "Recettes publiÃ©es",
+    "recipes": "Recettes publiées",
     "thisMonth": "Ce mois",
     "topRecipes": "Meilleures recettes",
     "aiInsights": "Explique-moi mes stats",
@@ -226,7 +226,7 @@
       "title": "Mode Fan",
       "fans": "Fans",
       "revenue": "Revenus Mode Fan",
-      "unlockAt": "Disponible Ã  partir de 30 recettes publiÃ©es",
+      "unlockAt": "Disponible à partir de 30 recettes publiées",
       "progress": "{{count}}/30 recettes"
     }
   },
@@ -235,8 +235,8 @@
     "edit": "Modifier la recette",
     "steps": {
       "basic": "Infos de base",
-      "ingredients": "IngrÃ©dients",
-      "steps": "Ã‰tapes",
+      "ingredients": "Ingrédients",
+      "steps": "�0tapes",
       "nutrition": "Nutrition",
       "images": "Images",
       "publish": "Tags & Publication"
@@ -244,10 +244,10 @@
     "fields": {
       "title": "Titre",
       "description": "Description",
-      "region": "RÃ©gion culinaire",
+      "region": "Région culinaire",
       "type": "Type de repas",
-      "difficulty": "DifficultÃ©",
-      "prepTime": "Temps de prÃ©paration",
+      "difficulty": "Difficulté",
+      "prepTime": "Temps de préparation",
       "cookTime": "Temps de cuisson",
       "portions": "Nombre de portions",
       "hours": "heures",
@@ -257,45 +257,45 @@
       "saveDraft": "Sauvegarder le brouillon",
       "publish": "Publier",
       "next": "Suivant",
-      "previous": "PrÃ©cÃ©dent"
+      "previous": "Précédent"
     },
     "autoSave": "Sauvegarde automatique..."
   },
   "common": {
     "loading": "Chargement...",
     "error": "Une erreur est survenue",
-    "retry": "RÃ©essayer",
+    "retry": "Réessayer",
     "save": "Enregistrer",
     "cancel": "Annuler",
     "delete": "Supprimer",
     "edit": "Modifier",
     "publish": "Publier",
-    "unpublish": "DÃ©publier",
+    "unpublish": "Dépublier",
     "draft": "Brouillon",
-    "published": "PubliÃ©",
+    "published": "Publié",
     "search": "Rechercher...",
-    "reset": "âœ• RÃ©initialiser",
+    "reset": "�S" Réinitialiser",
     "tryOtherFilters": "Essaie d'autres filtres.",
-    "defaultCreator": "CrÃ©ateur Akeli"
+    "defaultCreator": "Créateur Akeli"
   },
   "ingredientCategories": {
     "liquid": "Liquide",
-    "oil": "Huile & Matière grasse",
+    "oil": "Huile & Mati�re grasse",
     "fried_oil": "Huile de friture",
     "meat": "Viande",
     "poultry": "Volaille",
     "seafood": "Poisson & Fruits de mer",
-    "vegetable": "Légume",
+    "vegetable": "L�gume",
     "fruit": "Fruit",
-    "dairy": "Laitage & Œuf",
-    "grain": "Céréale & Pâte",
-    "spice": "Épice",
+    "dairy": "Laitage & Ruf",
+    "grain": "C�r�ale & P�te",
+    "spice": "�pice",
     "herb": "Herbe",
     "condiment": "Condiment",
     "baking": "Boulangerie",
     "nut": "Noix & Graine",
-    "legume": "Légumineuse",
-    "sweetener": "Sucre & Édulcorant",
+    "legume": "L�gumineuse",
+    "sweetener": "Sucre & �dulcorant",
     "alcohol": "Alcool",
     "other": "Autre"
   }
