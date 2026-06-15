@@ -1,3 +1,4 @@
+// components/creator/recipe-form/Step2Ingredients.tsx
 "use client";
 
 import { useState, useId } from "react";
@@ -18,84 +19,146 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { UNITS } from "@/lib/validations/recipe.schema";
 import type { RecipeFormState } from "./RecipeWizard";
+import type { MeasurementUnit } from "@/lib/queries/measurement-units";
+import type { IngredientResult } from "@/lib/queries/ingredients";
+import IngredientSearch from "./IngredientSearch";
+import IngredientSubmitModal from "./IngredientSubmitModal";
+import SectionHeaderRow from "./SectionHeaderRow";
 
-type Ingredient = RecipeFormState["ingredients"][number];
+type IngredientItem = RecipeFormState["ingredients"][number];
 
 interface Step2Props {
   data: RecipeFormState;
   onChange: (patch: Partial<RecipeFormState>) => void;
+  units: MeasurementUnit[];
 }
 
-const EMPTY_INGREDIENT = (): Ingredient => ({
+const EMPTY_DRAFT = (): Omit<IngredientItem, "sort_order"> => ({
   id: crypto.randomUUID(),
+  ingredient_id: "",
   name: "",
   quantity: 1,
   unit: "g",
   is_optional: false,
-  sort_order: 0,
+  is_section_header: false,
+  calories_per_100g: null,
+  protein_per_100g: null,
+  carbs_per_100g: null,
+  fat_per_100g: null,
 });
 
-export default function Step2Ingredients({ data, onChange }: Step2Props) {
+export default function Step2Ingredients({
+  data,
+  onChange,
+  units,
+}: Step2Props) {
   const [adding, setAdding] = useState(false);
-  const [draft, setDraft] = useState<Ingredient>(EMPTY_INGREDIENT());
+  const [draft, setDraft] = useState(EMPTY_DRAFT());
+  const [submitModalQuery, setSubmitModalQuery] = useState<string | null>(null);
   const dndId = useId();
 
   const ingredients = data.ingredients;
 
   const sensors = useSensors(
     useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
   );
 
-  const updateIngredients = (next: Ingredient[]) => {
+  const updateIngredients = (next: IngredientItem[]) => {
     onChange({ ingredients: next.map((ing, i) => ({ ...ing, sort_order: i })) });
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const oldIndex = ingredients.findIndex((i) => i.id === active.id);
-      const newIndex = ingredients.findIndex((i) => i.id === over.id);
-      updateIngredients(arrayMove(ingredients, oldIndex, newIndex));
-    }
+    if (!over || active.id === over.id) return;
+    const oldIndex = ingredients.findIndex((i) => i.id === active.id);
+    const newIndex = ingredients.findIndex((i) => i.id === over.id);
+    updateIngredients(arrayMove(ingredients, oldIndex, newIndex));
   };
 
-  const moveIngredient = (index: number, direction: "up" | "down") => {
-    if (direction === "up" && index === 0) return;
-    if (direction === "down" && index === ingredients.length - 1) return;
-    const newIndex = direction === "up" ? index - 1 : index + 1;
+  const moveItem = (index: number, dir: "up" | "down") => {
+    const newIndex = dir === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= ingredients.length) return;
     updateIngredients(arrayMove(ingredients, index, newIndex));
   };
 
-  const removeIngredient = (id: string) => {
+  const removeItem = (id: string) =>
     updateIngredients(ingredients.filter((i) => i.id !== id));
+
+  const addSection = () => {
+    const section: IngredientItem = {
+      id: crypto.randomUUID(),
+      ingredient_id: "",
+      name: "",
+      quantity: 0,
+      unit: "",
+      is_optional: false,
+      sort_order: ingredients.length,
+      is_section_header: true,
+      title: "Nouvelle section",
+    };
+    updateIngredients([...ingredients, section]);
   };
 
-  const handleAddIngredient = () => {
-    if (!draft.name.trim()) return;
-    const newList = [...ingredients, { ...draft, sort_order: ingredients.length }];
-    updateIngredients(newList);
-    setDraft(EMPTY_INGREDIENT());
+  const updateSectionTitle = (id: string, title: string) => {
+    updateIngredients(
+      ingredients.map((i) => (i.id === id ? { ...i, title } : i))
+    );
+  };
+
+  const handleIngredientSelect = (ingredient: IngredientResult) => {
+    setDraft((d) => ({
+      ...d,
+      ingredient_id: ingredient.id,
+      name: ingredient.name_fr,
+      calories_per_100g: ingredient.calories_per_100g,
+      protein_per_100g: ingredient.protein_per_100g,
+      carbs_per_100g: ingredient.carbs_per_100g,
+      fat_per_100g: ingredient.fat_per_100g,
+    }));
+  };
+
+  const handleAdd = () => {
+    if (!draft.ingredient_id || !draft.quantity || !draft.unit) return;
+    updateIngredients([
+      ...ingredients,
+      { ...draft, sort_order: ingredients.length },
+    ]);
+    setDraft(EMPTY_DRAFT());
     setAdding(false);
   };
 
-  const tooFew = ingredients.length < 3;
+  const nonSectionCount = ingredients.filter((i) => !i.is_section_header).length;
+  const tooFew = nonSectionCount < 3;
+
+  const draggableIds = ingredients
+    .filter((i) => !i.is_section_header)
+    .map((i) => i.id);
 
   return (
     <div className="space-y-6">
+      {submitModalQuery !== null && (
+        <IngredientSubmitModal
+          initialName={submitModalQuery}
+          onClose={() => setSubmitModalQuery(null)}
+        />
+      )}
+
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-foreground">Ingrédients</h2>
-        <span className={`text-xs ${tooFew ? "text-destructive" : "text-muted-foreground"}`}>
-          {ingredients.length} / minimum 3
+        <span
+          className={`text-xs ${tooFew ? "text-destructive" : "text-muted-foreground"}`}
+        >
+          {nonSectionCount} / minimum 3
         </span>
       </div>
 
-      {/* Sortable list */}
       {ingredients.length > 0 && (
         <>
-          {/* Desktop DnD */}
+          {/* Desktop DnD (non-section items only) */}
           <div className="hidden sm:block">
             <DndContext
               id={dndId}
@@ -103,200 +166,309 @@ export default function Step2Ingredients({ data, onChange }: Step2Props) {
               collisionDetection={closestCenter}
               onDragEnd={handleDragEnd}
             >
-              <SortableContext items={ingredients.map((i) => i.id)} strategy={verticalListSortingStrategy}>
-                <ul className="space-y-2">
-                  {ingredients.map((ing) => (
-                    <SortableIngredientRow
-                      key={ing.id}
-                      ingredient={ing}
-                      onRemove={removeIngredient}
-                    />
-                  ))}
+              <SortableContext
+                items={draggableIds}
+                strategy={verticalListSortingStrategy}
+              >
+                <ul className="space-y-1">
+                  {ingredients.map((ing, index) =>
+                    ing.is_section_header ? (
+                      <SectionHeaderRow
+                        key={ing.id}
+                        title={ing.title ?? ""}
+                        onChange={(t) => updateSectionTitle(ing.id, t)}
+                        onRemove={() => removeItem(ing.id)}
+                      />
+                    ) : (
+                      <SortableIngredientRow
+                        key={ing.id}
+                        ingredient={ing}
+                        units={units}
+                        onRemove={removeItem}
+                        onQuantityChange={(id, q) =>
+                          updateIngredients(
+                            ingredients.map((i) =>
+                              i.id === id ? { ...i, quantity: q } : i
+                            )
+                          )
+                        }
+                        onUnitChange={(id, u) =>
+                          updateIngredients(
+                            ingredients.map((i) =>
+                              i.id === id ? { ...i, unit: u } : i
+                            )
+                          )
+                        }
+                        onOptionalChange={(id, v) =>
+                          updateIngredients(
+                            ingredients.map((i) =>
+                              i.id === id ? { ...i, is_optional: v } : i
+                            )
+                          )
+                        }
+                      />
+                    )
+                  )}
                 </ul>
               </SortableContext>
             </DndContext>
           </div>
 
-          {/* Mobile list with arrows */}
-          <ul className="sm:hidden space-y-2">
-            {ingredients.map((ing, index) => (
-              <li
-                key={ing.id}
-                className="flex items-center gap-2 p-3 rounded-lg bg-secondary/50 border border-border"
-              >
-                <div className="flex flex-col gap-0.5">
-                  <button
-                    type="button"
-                    onClick={() => moveIngredient(index, "up")}
-                    disabled={index === 0}
-                    className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveIngredient(index, "down")}
-                    disabled={index === ingredients.length - 1}
-                    className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
-                  >
-                    ▼
-                  </button>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{ing.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {ing.quantity} {ing.unit}
-                    {ing.is_optional && " (optionnel)"}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeIngredient(ing.id)}
-                  className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+          {/* Mobile list */}
+          <ul className="sm:hidden space-y-1">
+            {ingredients.map((ing, index) =>
+              ing.is_section_header ? (
+                <SectionHeaderRow
+                  key={ing.id}
+                  title={ing.title ?? ""}
+                  onChange={(t) => updateSectionTitle(ing.id, t)}
+                  onRemove={() => removeItem(ing.id)}
+                />
+              ) : (
+                <li
+                  key={ing.id}
+                  className="flex items-center gap-2 p-3 rounded-lg bg-secondary/50 border border-border"
                 >
-                  ✕
-                </button>
-              </li>
-            ))}
+                  <div className="flex flex-col gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => moveItem(index, "up")}
+                      disabled={index === 0}
+                      className="p-0.5 text-muted-foreground disabled:opacity-30"
+                    >
+                      ▲
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveItem(index, "down")}
+                      disabled={index === ingredients.length - 1}
+                      className="p-0.5 text-muted-foreground disabled:opacity-30"
+                    >
+                      ▼
+                    </button>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {ing.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {ing.quantity}{" "}
+                      {units.find((u) => u.code === ing.unit)?.name_fr ??
+                        ing.unit}
+                      {ing.is_optional && " · optionnel"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeItem(ing.id)}
+                    className="p-1 text-muted-foreground hover:text-destructive"
+                  >
+                    ✕
+                  </button>
+                </li>
+              )
+            )}
           </ul>
         </>
       )}
 
-      {/* Add form */}
+      {/* Add ingredient form */}
       {adding ? (
         <div className="p-4 rounded-xl border border-border bg-secondary/30 space-y-3">
-          <h3 className="text-sm font-medium text-foreground">Ajouter un ingrédient</h3>
+          <h3 className="text-sm font-medium text-foreground">
+            Ajouter un ingrédient
+          </h3>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2">
-              <input
-                type="text"
-                placeholder="Nom de l'ingrédient *"
-                value={draft.name}
-                onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
+          <IngredientSearch
+            onSelect={handleIngredientSelect}
+            onSubmitNew={(q) => {
+              setSubmitModalQuery(q);
+              setAdding(false);
+            }}
+          />
 
-            <div>
-              <input
-                type="number"
-                placeholder="Quantité"
-                min={0.01}
-                step={0.01}
-                value={draft.quantity}
-                onChange={(e) => setDraft((d) => ({ ...d, quantity: parseFloat(e.target.value) || 0 }))}
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-
-            <div>
-              <select
-                value={draft.unit}
-                onChange={(e) => setDraft((d) => ({ ...d, unit: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                {UNITS.map((u) => (
-                  <option key={u} value={u}>{u}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={draft.is_optional}
-              onChange={(e) => setDraft((d) => ({ ...d, is_optional: e.target.checked }))}
-              className="rounded border-input accent-primary"
-            />
-            <span className="text-sm text-foreground">Ingrédient optionnel</span>
-          </label>
+          {draft.ingredient_id && (
+            <>
+              <p className="text-xs text-primary font-medium">
+                ✓ {draft.name}
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <input
+                    type="number"
+                    min={0.01}
+                    step={0.01}
+                    value={draft.quantity}
+                    onChange={(e) =>
+                      setDraft((d) => ({
+                        ...d,
+                        quantity: parseFloat(e.target.value) || 0,
+                      }))
+                    }
+                    placeholder="Quantité"
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <select
+                    value={draft.unit}
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, unit: e.target.value }))
+                    }
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">Unité...</option>
+                    {units.map((u) => (
+                      <option key={u.code} value={u.code}>
+                        {u.name_fr}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={draft.is_optional}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, is_optional: e.target.checked }))
+                  }
+                  className="rounded accent-primary"
+                />
+                <span className="text-sm text-foreground">
+                  Ingrédient optionnel
+                </span>
+              </label>
+            </>
+          )}
 
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={handleAddIngredient}
-              disabled={!draft.name.trim()}
-              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40"
+              onClick={handleAdd}
+              disabled={!draft.ingredient_id || !draft.quantity || !draft.unit}
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-40"
             >
               Ajouter
             </button>
             <button
               type="button"
-              onClick={() => { setAdding(false); setDraft(EMPTY_INGREDIENT()); }}
-              className="px-4 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+              onClick={() => {
+                setAdding(false);
+                setDraft(EMPTY_DRAFT());
+              }}
+              className="px-4 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary"
             >
               Annuler
             </button>
           </div>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => setAdding(true)}
-          className="w-full py-3 rounded-xl border-2 border-dashed border-border text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-        >
-          + Ajouter un ingrédient
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            className="flex-1 py-3 rounded-xl border-2 border-dashed border-border text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+          >
+            + Ajouter un ingrédient
+          </button>
+          <button
+            type="button"
+            onClick={addSection}
+            className="py-3 px-4 rounded-xl border-2 border-dashed border-border text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+          >
+            + Section
+          </button>
+        </div>
       )}
 
-      {tooFew && ingredients.length > 0 && (
+      {tooFew && nonSectionCount > 0 && (
         <p className="text-xs text-destructive">
-          Minimum 3 ingrédients requis ({ingredients.length}/3)
+          Minimum 3 ingrédients requis ({nonSectionCount}/3)
         </p>
       )}
     </div>
   );
 }
 
-// ─── Sortable row (desktop) ────────────────────────────────────────────────────
+// ─── Sortable row ─────────────────────────────────────────────────────────────
 
 function SortableIngredientRow({
   ingredient,
+  units,
   onRemove,
+  onQuantityChange,
+  onUnitChange,
+  onOptionalChange,
 }: {
-  ingredient: Ingredient;
+  ingredient: IngredientItem;
+  units: MeasurementUnit[];
   onRemove: (id: string) => void;
+  onQuantityChange: (id: string, q: number) => void;
+  onUnitChange: (id: string, u: string) => void;
+  onOptionalChange: (id: string, v: boolean) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: ingredient.id });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
   return (
     <li
       ref={setNodeRef}
-      style={style}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+      }}
       className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border"
     >
-      {/* Drag handle */}
       <button
         type="button"
         {...attributes}
         {...listeners}
-        className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1"
+        className="cursor-grab active:cursor-grabbing text-muted-foreground p-1"
         aria-label="Réordonner"
       >
         ⠿
       </button>
-
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground">{ingredient.name}</p>
-        <p className="text-xs text-muted-foreground">
-          {ingredient.quantity} {ingredient.unit}
-          {ingredient.is_optional && " · optionnel"}
+        <p className="text-sm font-medium text-foreground truncate">
+          {ingredient.name}
         </p>
       </div>
-
+      <input
+        type="number"
+        min={0.01}
+        step={0.01}
+        value={ingredient.quantity}
+        onChange={(e) =>
+          onQuantityChange(ingredient.id, parseFloat(e.target.value) || 0)
+        }
+        className="w-20 px-2 py-1 rounded border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+      />
+      <select
+        value={ingredient.unit}
+        onChange={(e) => onUnitChange(ingredient.id, e.target.value)}
+        className="w-24 px-2 py-1 rounded border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+      >
+        {units.map((u) => (
+          <option key={u.code} value={u.code}>
+            {u.name_fr}
+          </option>
+        ))}
+      </select>
+      <label className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
+        <input
+          type="checkbox"
+          checked={ingredient.is_optional}
+          onChange={(e) => onOptionalChange(ingredient.id, e.target.checked)}
+          className="accent-primary"
+        />
+        opt.
+      </label>
       <button
         type="button"
         onClick={() => onRemove(ingredient.id)}
-        className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+        className="p-1 text-muted-foreground hover:text-destructive"
       >
         ✕
       </button>
