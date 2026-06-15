@@ -18,8 +18,8 @@ export async function trackImpression(payload: ImpressionPayload): Promise<void>
   }
 }
 
-// Retourne l'id de la session ou null en cas d'erreur
-export async function trackOpen(payload: OpenPayload): Promise<string | null> {
+// Retourne { id, token } ou null en cas d'erreur
+export async function trackOpen(payload: OpenPayload): Promise<OpenResponse | null> {
   try {
     const res = await fetch('/api/track/open', {
       method: 'POST',
@@ -27,15 +27,14 @@ export async function trackOpen(payload: OpenPayload): Promise<string | null> {
       body: JSON.stringify(payload),
     });
     if (!res.ok) return null;
-    const data: OpenResponse = await res.json();
-    return data.id;
+    return await res.json() as OpenResponse;
   } catch {
     return null;
   }
 }
 
 // Fire-and-forget — utilisé dans beforeunload / cleanup
-export function trackClose(openId: string, openedAt: Date): void {
+export function trackClose(openId: string, token: string, openedAt: Date): void {
   const closedAt = new Date();
   const sessionDurationSeconds = Math.round(
     (closedAt.getTime() - openedAt.getTime()) / 1000
@@ -44,6 +43,7 @@ export function trackClose(openId: string, openedAt: Date): void {
   const payload: ClosePayload = {
     closed_at: closedAt.toISOString(),
     session_duration_seconds: sessionDurationSeconds,
+    token,
   };
 
   if (navigator.sendBeacon) {

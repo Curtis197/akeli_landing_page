@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHmac } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 import { getSupabaseAdmin } from '@/lib/tracking/supabase-admin';
 import { createClient } from '@/lib/supabase/server';
 import type { OpenPayload, OpenResponse } from '@/lib/tracking/types';
+
+function signSessionId(id: string): string {
+  return createHmac('sha256', process.env.TRACKING_CLOSE_SECRET ?? 'dev-secret')
+    .update(id)
+    .digest('hex');
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     if (error || !data) throw error;
 
-    return NextResponse.json({ id: data.id } satisfies OpenResponse);
+    return NextResponse.json({ id: data.id, token: signSessionId(data.id) } satisfies OpenResponse);
   } catch (error) {
     console.error('[track/open]', error);
     return NextResponse.json({ ok: false }, { status: 500 });
