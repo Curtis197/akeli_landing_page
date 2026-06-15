@@ -288,6 +288,65 @@ lib/
 
 ---
 
+## Section 5 — Testing Strategy
+
+### SQL / Database
+
+**Goal:** Verify triggers, constraints, and cascade behaviour against the real schema before the wizard writes real data.
+
+Test file location: `supabase/tests/recipe_wizard.test.sql`  
+Runner: `supabase test db` (pgTAP).
+
+**Tests to cover:**
+
+| Test | What it checks |
+|---|---|
+| `trg_recipe_slug` fires | INSERT recipe without slug → slug auto-generated, not null |
+| `trg_recipe_create_macro` fires | INSERT recipe → `recipe_macro` row created automatically |
+| `trg_recipe_count` fires | INSERT + DELETE recipe → `creator.recipe_count` increments / decrements |
+| `recipe_ingredient` unit FK | INSERT ingredient row with unknown unit code → rejected |
+| `recipe_ingredient` ingredient FK | INSERT ingredient row with unknown ingredient_id → rejected |
+| `recipe_ingredient` section header | INSERT `is_section_header=true` with `ingredient_id=null, quantity=null, unit=null` → accepted |
+| `recipe_step` section header | INSERT `is_section_header=true` with `content=null` → accepted |
+| `recipe_macro` UPDATE only | Macro row exists after recipe INSERT, UPDATE succeeds, second INSERT raises unique violation |
+| `recipe.preferred_meal_type` check | INSERT with invalid value → rejected by constraint |
+| `recipe.difficulty` check | INSERT with invalid value → rejected |
+| `ingredient_submission` status flow | INSERT `status='pending'` → readable; UPDATE to `validated` → accepted |
+| `food_region` FK | INSERT recipe with unknown region code → rejected |
+| `recipe_tag` FK | INSERT recipe_tag with unknown tag_id → rejected |
+
+### Edge Functions
+
+**Goal:** Verify `translate-recipe` is not double-triggered and behaves correctly when called by the DB trigger alone.
+
+Test file location: `supabase/functions/translate-recipe/index.test.ts`  
+Runner: Deno test (`supabase functions test`).
+
+**Tests to cover:**
+
+| Test | What it checks |
+|---|---|
+| Trigger fires on INSERT | After inserting a recipe via wizard save, `recipe_translation` rows appear for configured locales (fr, en) within the trigger timeout |
+| Trigger fires on UPDATE | Updating `title` or `description` re-triggers translation update |
+| No duplicate invocation | Wizard `handlePublish` does NOT call `functions.invoke("translate-recipe")` — confirmed by code review + absence of duplicate `recipe_translation` rows with same `generated_at` |
+| Missing locale handled | If translation for a locale fails, other locales still created (partial success) |
+| `is_auto = true` on generated rows | All auto-generated translations have `is_auto = true` |
+
+### Wizard Integration (manual / Playwright)
+
+Lightweight smoke tests to run after each wizard step implementation:
+
+| Step | Test |
+|---|---|
+| Step 2 | Search ingredient by name → result appears → select → `ingredient_id` populated in state |
+| Step 2 | Submit new ingredient → `ingredient_submission` row created with `status='pending'` → publish blocked |
+| Step 3 | Add step with timer → `timer_seconds` persisted to `recipe_step` on "Next" |
+| Step 3 | Add step image → `image_url` persisted |
+| Step 4 | Macros computed after Step 2 ingredients set → values non-zero if ingredients have nutritional data |
+| Publish | `is_published = true` set → `recipe_translation` rows exist → no duplicate trigger call |
+
+---
+
 ## Out of Scope (V2)
 
 - `compatible_starches uuid[]` on recipe
