@@ -241,9 +241,12 @@ export default function Step2Ingredients({
                 <SectionHeaderRow
                   key={ing.id}
                   id={ing.id}
+                  isMobile
                   title={ing.title ?? ""}
                   onChange={(t) => updateSectionTitle(ing.id, t)}
                   onRemove={() => removeItem(ing.id)}
+                  onMoveUp={index > 0 ? () => moveItem(index, "up") : undefined}
+                  onMoveDown={index < ingredients.length - 1 ? () => moveItem(index, "down") : undefined}
                 />
               ) : (
                 <li
@@ -255,7 +258,8 @@ export default function Step2Ingredients({
                       type="button"
                       onClick={() => moveItem(index, "up")}
                       disabled={index === 0}
-                      className="p-0.5 text-muted-foreground disabled:opacity-30"
+                      className="p-0.5 text-muted-foreground disabled:opacity-50"
+                      aria-label="Remonter l'ingrédient"
                     >
                       ▲
                     </button>
@@ -263,7 +267,8 @@ export default function Step2Ingredients({
                       type="button"
                       onClick={() => moveItem(index, "down")}
                       disabled={index === ingredients.length - 1}
-                      className="p-0.5 text-muted-foreground disabled:opacity-30"
+                      className="p-0.5 text-muted-foreground disabled:opacity-50"
+                      aria-label="Descendre l'ingrédient"
                     >
                       ▼
                     </button>

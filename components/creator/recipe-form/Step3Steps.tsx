@@ -64,6 +64,12 @@ export default function Step3Steps({ data, onChange, draftId }: Step3Props) {
   const removeItem = (id: string) =>
     updateSteps(steps.filter((s) => s.id !== id));
 
+  const moveStep = (index: number, dir: "up" | "down") => {
+    const newIndex = dir === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= steps.length) return;
+    updateSteps(arrayMove(steps, index, newIndex));
+  };
+
   const updateStep = (updated: StepItem) =>
     updateSteps(steps.map((s) => (s.id === updated.id ? updated : s)));
 
@@ -167,9 +173,12 @@ export default function Step3Steps({ data, onChange, draftId }: Step3Props) {
                   <SectionHeaderRow
                     key={step.id}
                     id={step.id}
+                    isMobile
                     title={step.title ?? ""}
                     onChange={(t) => updateStep({ ...step, title: t })}
                     onRemove={() => removeItem(step.id)}
+                    onMoveUp={index > 0 ? () => moveStep(index, "up") : undefined}
+                    onMoveDown={index < steps.length - 1 ? () => moveStep(index, "down") : undefined}
                   />
                 );
               }
