@@ -399,7 +399,7 @@ export default function RecipeWizard({
           disabled={currentStep === 1}
           className="px-5 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {"←"} {"À"} P{"é"}c{"é"}dent
+          ← Précédent
         </button>
         <span className="text-xs text-muted-foreground">{savedLabel}</span>
         {currentStep < 6 && (

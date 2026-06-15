@@ -21,12 +21,20 @@ export default function EditRecipePage() {
       const { data, error: err } = await supabase
         .from("recipe")
         .select(`
-          id, title, description, region, meal_types, difficulty,
-          prep_time_min, cook_time_min, servings,
-          cover_image_url, gallery_urls, is_pork_free,
-          recipe_ingredient ( id, ingredient_id, name_fr, quantity, unit, is_optional, sort_order, is_section_header, title ),
-          recipe_step ( id, step_number, content, sort_order, is_section_header, ingredient_ids ),
-          recipe_tag ( tag_id )
+          id, title, description, region, meal_types, preferred_meal_type,
+          difficulty, prep_time_min, cook_time_min, servings,
+          cover_image_url, is_pork_free, is_private, allergen_tags,
+          recipe_ingredient (
+            id, ingredient_id, quantity, unit, is_optional, sort_order,
+            is_section_header, title,
+            ingredient:ingredient_id ( name_fr, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g )
+          ),
+          recipe_step (
+            id, step_number, title, content, image_url, timer_seconds,
+            sort_order, is_section_header, ingredient_ids
+          ),
+          recipe_tag ( tag_id ),
+          recipe_image ( url, sort_order )
         `)
         .eq("id", id)
         .single();
