@@ -147,9 +147,7 @@ export default function Step2Ingredients({
   const nonSectionCount = ingredients.filter((i) => !i.is_section_header).length;
   const tooFew = nonSectionCount < 3;
 
-  const draggableIds = ingredients
-    .filter((i) => !i.is_section_header)
-    .map((i) => i.id);
+  const draggableIds = ingredients.map((i) => i.id);
 
   return (
     <div className="space-y-6">
@@ -191,6 +189,7 @@ export default function Step2Ingredients({
                     ing.is_section_header ? (
                       <SectionHeaderRow
                         key={ing.id}
+                        id={ing.id}
                         title={ing.title ?? ""}
                         onChange={(t) => updateSectionTitle(ing.id, t)}
                         onRemove={() => removeItem(ing.id)}
@@ -236,6 +235,7 @@ export default function Step2Ingredients({
               ing.is_section_header ? (
                 <SectionHeaderRow
                   key={ing.id}
+                  id={ing.id}
                   title={ing.title ?? ""}
                   onChange={(t) => updateSectionTitle(ing.id, t)}
                   onRemove={() => removeItem(ing.id)}

@@ -96,7 +96,7 @@ export default function Step3Steps({ data, onChange, draftId }: Step3Props) {
   };
 
   const nonSectionCount = steps.filter((s) => !s.is_section_header).length;
-  const draggableIds = steps.filter((s) => !s.is_section_header).map((s) => s.id);
+  const draggableIds = steps.map((s) => s.id);
   let displayStepNum = 0;
 
   return (
@@ -132,6 +132,7 @@ export default function Step3Steps({ data, onChange, draftId }: Step3Props) {
                       return (
                         <SectionHeaderRow
                           key={step.id}
+                          id={step.id}
                           title={step.title ?? ""}
                           onChange={(t) =>
                             updateStep({ ...step, title: t })
@@ -165,6 +166,7 @@ export default function Step3Steps({ data, onChange, draftId }: Step3Props) {
                 return (
                   <SectionHeaderRow
                     key={step.id}
+                    id={step.id}
                     title={step.title ?? ""}
                     onChange={(t) => updateStep({ ...step, title: t })}
                     onRemove={() => removeItem(step.id)}
