@@ -46,10 +46,10 @@ export function useIngredientSearch(query: string, creatorUserId: string, locale
 
         const { data, error } = await supabase
           .from("ingredient")
-          .select("id, name, name_fr, name_en, status, ingredient_category(name_fr, name_en)")
+          .select("id, name, name_fr, name_en, status, ingredient_category(name_fr, name_en, name_ar)")
           .or(filterExpr)
           .or(
-            `name_fr.ilike.%${debouncedQuery}%,name_en.ilike.%${debouncedQuery}%,name.ilike.%${debouncedQuery}%`
+            `name_fr.ilike.%${debouncedQuery}%,name_en.ilike.%${debouncedQuery}%,name.ilike.%${debouncedQuery}%,name_ar.ilike.%${debouncedQuery}%`
           )
           .order("name_fr", { ascending: true })
           .limit(10);
@@ -60,9 +60,8 @@ export function useIngredientSearch(query: string, creatorUserId: string, locale
         setResults(
           (data ?? []).map((ing: any) => {
             const cat = ing.ingredient_category;
-            const categoryLabel = cat
-              ? (locale === "fr" ? cat.name_fr : cat.name_en) ?? cat.name_fr ?? null
-              : null;
+            const catKey = `name_${locale}` as "name_fr" | "name_en" | "name_ar";
+            const categoryLabel = cat ? (cat[catKey] ?? cat.name_fr ?? null) : null;
             return {
               id: ing.id,
               name: ing.name_fr ?? ing.name ?? ing.name_en ?? "Ingrédient",
@@ -78,7 +77,7 @@ export function useIngredientSearch(query: string, creatorUserId: string, locale
 
     search();
     return () => { cancelled = true; };
-  }, [debouncedQuery, creatorUserId]);
+  }, [debouncedQuery, creatorUserId, locale]);
 
   return { results, loading };
 }

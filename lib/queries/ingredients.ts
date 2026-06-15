@@ -27,13 +27,14 @@ export async function searchIngredients(
 ): Promise<IngredientResult[]> {
   if (query.trim().length < 2) return [];
   const supabase = createClient();
+  const q = query.trim();
   let supabaseQuery = supabase
     .from("ingredient")
     .select(
       "id, name_fr, name_en, name_ar, category, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, default_metric_unit, default_us_unit, hide_in_metric"
     )
     .eq("status", "validated")
-    .ilike("name_fr", `%${query.trim()}%`);
+    .or(`name_fr.ilike.%${q}%,name_en.ilike.%${q}%,name_ar.ilike.%${q}%`);
 
   if (isMetricUser) {
     supabaseQuery = supabaseQuery.eq("hide_in_metric", false);
