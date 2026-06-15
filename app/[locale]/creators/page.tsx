@@ -10,10 +10,10 @@ import Navbar from "@/components/layout/Navbar";
 
 interface CreatorCard {
   id: string;
-  name: string | null;
+  display_name: string | null;
   bio: string | null;
-  profil_url: string | null;
-  heritage_region: string | null;
+  profile_image_url: string | null;
+  heritage_region: string | null; // optional
   specialties: string[];
   recipe_count: number;
   fan_mode: boolean;
@@ -37,7 +37,7 @@ export default function CreatorsPage() {
   useEffect(() => {
     supabase
       .from("creator")
-      .select("id, name, bio, profil_url, heritage_region, specialties, recipe_count")
+      .select("id, display_name, bio, profile_image_url, heritage_region, specialties, recipe_count")
       .gt("recipe_count", 0)
       .order("recipe_count", { ascending: false })
       .then(({ data }) => {
@@ -66,7 +66,7 @@ export default function CreatorsPage() {
   ).sort();
 
   const displayed = creators.filter((c) => {
-    if (search && !c.name?.toLowerCase().includes(search.toLowerCase())) return false;
+    if (search && !c.display_name?.toLowerCase().includes(search.toLowerCase())) return false;
     if (regionFilter && c.heritage_region !== regionFilter) return false;
     if (specialtyFilter && !c.specialties.includes(specialtyFilter)) return false;
     return true;
@@ -170,7 +170,7 @@ function CreatorCard({
   viewProfile: string;
   recipeCount: (n: number) => string;
 }) {
-  const initials = (creator.name ?? "?")
+  const initials = (creator.display_name ?? "?")
     .split(" ")
     .map((w) => w[0])
     .join("")
@@ -189,10 +189,10 @@ function CreatorCard({
       <div className="px-5 pb-5 -mt-8 flex flex-col gap-3">
         {/* Avatar */}
         <div className="flex items-end justify-between">
-          {creator.profil_url ? (
+          {creator.profile_image_url ? (
             <img
-              src={creator.profil_url}
-              alt={creator.name ?? ""}
+              src={creator.profile_image_url}
+              alt={creator.display_name ?? ""}
               className="w-16 h-16 rounded-full object-cover border-4 border-background shrink-0"
             />
           ) : (
@@ -210,7 +210,7 @@ function CreatorCard({
         {/* Name & region */}
         <div className="space-y-0.5">
           <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
-            {creator.name ?? defaultName}
+            {creator.display_name ?? defaultName}
           </p>
           {creator.heritage_region && (
             <p className="text-xs text-muted-foreground">{creator.heritage_region}</p>

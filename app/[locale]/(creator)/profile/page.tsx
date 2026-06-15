@@ -62,11 +62,11 @@ export default function ProfilePage() {
   // Populate form from store
   useEffect(() => {
     if (!creator) return;
-    setName(creator.name ?? "");
+    setName(creator.display_name ?? "");
     setBio(creator.bio ?? "");
     setHeritageRegion(creator.heritage_region ?? "");
     setSpecialties(creator.specialties ?? []);
-    setAvatarUrl(creator.profil_url ?? null);
+    setAvatarUrl(creator.profile_image_url ?? null);
   }, [creator]);
 
   // ── Avatar ──────────────────────────────────────────────────────────────────
@@ -133,12 +133,11 @@ export default function ProfilePage() {
       const { data, error } = await supabase
         .from("creator")
         .update({
-          name: name.trim() || null,
+          display_name: name.trim() || null,
           bio: bio.trim() || null,
           heritage_region: heritageRegion || null,
           specialties,
-          profil_url: newAvatarUrl,
-          updated_at: new Date().toISOString(),
+          profile_image_url: newAvatarUrl,
         })
         .eq("id", creator.id)
         .select("*")

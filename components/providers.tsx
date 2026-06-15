@@ -17,7 +17,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: creator } = await supabase
           .from("creator")
           .select("*")
-          .eq("auth_id", session.user.id)
+          .eq("user_id", session.user.id)
           .single();
         setCreator(creator);
       }
@@ -33,7 +33,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: creator } = await supabase
           .from("creator")
           .select("*")
-          .eq("auth_id", session.user.id)
+          .eq("user_id", session.user.id)
           .single();
         setCreator(creator);
       } else {

@@ -31,6 +31,7 @@ export default function ConversationPage() {
   const [sending, setSending] = useState(false);
   const [conversationTitle, setConversationTitle] = useState<string | null>(null);
   const [otherCreator, setOtherCreator] = useState<{ id: string } | null>(null);
+  const [conversationType, setConversationType] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const myUserId = user?.id ?? null;
@@ -50,13 +51,13 @@ export default function ConversationPage() {
 
   useEffect(() => {
     const loadConversationInfo = async () => {
-      // Load conversation title
       const { data: convData } = await supabase
         .from("conversation")
-        .select("resume")
+        .select("name, type")
         .eq("id", conversationId)
         .single();
-      setConversationTitle(convData?.resume ?? null);
+      setConversationTitle(convData?.name ?? null);
+      setConversationType((convData as any)?.type ?? null);
 
       // Find other participant and check if they are a creator
       if (myUserId) {
@@ -181,6 +182,11 @@ export default function ConversationPage() {
 
   // ─────────────────────────────────────────────────────────────────────────
 
+  const typeLabel = conversationType === "creator_group" ? "Groupe"
+    : conversationType === "private" ? "Direct"
+    : conversationType === "support" ? "Support"
+    : "Conversation";
+
   const HeaderInfo = () => (
     <>
       <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-base shrink-0">
@@ -190,7 +196,7 @@ export default function ConversationPage() {
         <p className="text-sm font-semibold text-foreground truncate">
           {conversationTitle ?? `Conversation #${conversationId.slice(0, 8)}`}
         </p>
-        <p className="text-xs text-muted-foreground">{otherCreator ? "Creator" : "Fan"}</p>
+        <p className="text-xs text-muted-foreground">{otherCreator ? "Creator" : typeLabel}</p>
       </div>
     </>
   );
@@ -200,7 +206,12 @@ export default function ConversationPage() {
       {/* Header */}
       <div className="flex items-center gap-3 pb-4 border-b border-border shrink-0">
         <button
-          onClick={() => router.push("/dashboard/chat")}
+          onClick={() => {
+            const backPath = conversationType === "creator_group" ? "/chat?tab=groups"
+              : conversationType === "private" ? "/chat?tab=direct"
+              : "/chat";
+            router.push(backPath as any);
+          }}
           className="text-muted-foreground hover:text-foreground transition-colors text-lg leading-none"
           aria-label="Retour"
         >

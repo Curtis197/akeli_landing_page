@@ -12,10 +12,21 @@ interface Step4Props {
 }
 
 export default function Step4Nutrition({ data, unitConversions }: Step4Props) {
-  const macros = useMemo(
-    () => computeMacros(data.ingredients, unitConversions, data.servings),
-    [data.ingredients, unitConversions, data.servings]
-  );
+  const macros = useMemo(() => {
+    const ingredientsForMacro = data.ingredients
+      .filter((i) => i.is_section_header || !!i.ingredient_id)
+      .map((i) => ({
+        ingredient_id: i.ingredient_id ?? "",
+        quantity: i.quantity ?? 0,
+        unit: i.unit ?? "",
+        is_section_header: i.is_section_header,
+        calories_per_100g: i.calories_per_100g,
+        protein_per_100g: i.protein_per_100g,
+        carbs_per_100g: i.carbs_per_100g,
+        fat_per_100g: i.fat_per_100g,
+      }));
+    return computeMacros(ingredientsForMacro, unitConversions, data.servings);
+  }, [data.ingredients, unitConversions, data.servings]);
 
   const rows = [
     { label: "Calories", value: macros.calories, unit: "kcal", max: 800 },

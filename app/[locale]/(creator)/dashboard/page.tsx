@@ -86,7 +86,7 @@ export default function DashboardPage() {
     }
   }
 
-  const firstName = creator?.name?.split(" ")[0] ?? "toi";
+  const firstName = creator?.display_name?.split(" ")[0] ?? "toi";
 
   return (
     <div className="space-y-8">

@@ -11,9 +11,9 @@ import Navbar from "@/components/layout/Navbar";
 
 interface CreatorProfile {
   id: string;
-  name: string | null;
+  display_name: string | null;
   bio: string | null;
-  profil_url: string | null;
+  profile_image_url: string | null;
   heritage_region: string | null;
   specialties: string[];
   recipe_count: number;
@@ -57,7 +57,7 @@ export default function CreatorProfilePage() {
     Promise.all([
       supabase
         .from("creator")
-        .select("id, name, bio, profil_url, heritage_region, specialties, recipe_count")
+        .select("id, display_name, bio, profile_image_url, heritage_region, specialties, recipe_count")
         .eq("id", creatorId)
         .single(),
       supabase
@@ -114,7 +114,7 @@ export default function CreatorProfilePage() {
     );
   }
 
-  const initials = (creator.name ?? "?")
+  const initials = (creator.display_name ?? "?")
     .split(" ")
     .map((w) => w[0])
     .join("")
@@ -130,10 +130,10 @@ export default function CreatorProfilePage() {
         {/* ── Profile header ── */}
         <section className="flex flex-col sm:flex-row gap-6 items-start">
           {/* Avatar */}
-          {creator.profil_url ? (
+          {creator.profile_image_url ? (
             <img
-              src={creator.profil_url}
-              alt={creator.name ?? ""}
+              src={creator.profile_image_url}
+              alt={creator.display_name ?? ""}
               className="w-24 h-24 rounded-full object-cover border-4 border-border shrink-0"
             />
           ) : (
@@ -146,7 +146,7 @@ export default function CreatorProfilePage() {
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl font-bold text-foreground">
-                  {creator.name ?? t("defaultName")}
+                  {creator.display_name ?? t("defaultName")}
                 </h1>
                 {fanMode && (
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
@@ -190,7 +190,7 @@ export default function CreatorProfilePage() {
         {/* ── Recipes ── */}
         <section className="space-y-5">
           <h2 className="text-lg font-semibold text-foreground">
-            {t("recipesBy")} {creator.name?.split(" ")[0] ?? t("defaultName")}
+            {t("recipesBy")} {creator.display_name?.split(" ")[0] ?? t("defaultName")}
           </h2>
 
           {recipes.length === 0 ? (

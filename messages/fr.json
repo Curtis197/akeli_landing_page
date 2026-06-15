@@ -11,7 +11,8 @@
     "chat": "Messages",
     "settings": "Paramètres",
     "logout": "Déconnexion",
-    "fanMode": "Mode Fan"
+    "fanMode": "Mode Fan",
+    "payments": "Paiements"
   },
   "landing": {
     "hero": {
@@ -180,7 +181,40 @@
     "title": "Messages",
     "noConversations": "Aucune conversation",
     "noConversationsHint": "Tes fans pourront te contacter depuis l'application mobile.",
-    "yesterday": "Hier"
+    "yesterday": "Hier",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "newConversation": "Nouvelle conversation",
+    "startDirect": "Démarrer une conversation",
+    "createGroup": "Créer un groupe",
+    "tabs": {
+      "all": "Tous",
+      "groups": "Groupes",
+      "direct": "Direct"
+    },
+    "groups": {
+      "search": "Rechercher un groupe...",
+      "filterAll": "Tous",
+      "filterPublic": "Public",
+      "filterPrivate": "Privé",
+      "sortActivity": "Activité",
+      "sortName": "Nom",
+      "empty": "Aucun groupe",
+      "groupName": "Nom du groupe",
+      "visibility": "Visibilité",
+      "public": "Public",
+      "private": "Privé",
+      "create": "Créer",
+      "createError": "Impossible de créer le groupe, réessaie."
+    },
+    "direct": {
+      "search": "Rechercher un créateur...",
+      "sortName": "Nom",
+      "sortFollowers": "Abonnés",
+      "empty": "Aucune conversation directe",
+      "emptyHint": "Démarre une conversation avec un autre créateur.",
+      "startConversation": "Démarrer"
+    }
   },
   "dashboard": {
     "title": "Mon dashboard",

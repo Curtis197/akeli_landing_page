@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { Link } from "@/lib/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
+import { useRecipeSession } from "@/hooks/use-recipe-session";
+import type { TrackingSource } from "@/lib/tracking/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,8 +32,8 @@ interface RecipeDetail {
   meal_types: string[];
   creator_id: string;
   creator: {
-    name: string | null;
-    profil_url: string | null;
+    display_name: string | null;
+    profile_image_url: string | null;
     heritage_region: string | null;
   } | null;
 }
@@ -44,11 +46,22 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+// ─── Session Tracker (invisible) ─────────────────────────────────────────────
+
+function RecipeSessionTracker({ recipeId, source }: { recipeId: string; source: TrackingSource }) {
+  useRecipeSession(recipeId, source);
+  return null;
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function RecipeDetailPage() {
   const t = useTranslations("recipe");
   const tCreators = useTranslations("creators");
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = String(params.slug);
+  const source: TrackingSource = (searchParams.get("from") as TrackingSource) ?? "feed";
   const supabase = createClient();
 
   const [recipe, setRecipe] = useState<RecipeDetail | null>(null);
@@ -62,7 +75,7 @@ export default function RecipeDetailPage() {
         id, slug, title, description, cover_image_url, region, difficulty,
         prep_time_min, cook_time_min, servings, calories, protein_g, carbs_g,
         fat_g, fiber_g, tags, is_pork_free, meal_types, creator_id,
-        creator:creator_id(name, profil_url, heritage_region)
+        creator:creator_id(display_name, profile_image_url, heritage_region)
       `)
       .eq("slug", slug)
       .eq("is_published", true)
@@ -124,7 +137,7 @@ export default function RecipeDetailPage() {
       ? `${totalMin} min`
       : null;
 
-  const creatorInitials = (recipe.creator?.name ?? "?")
+  const creatorInitials = (recipe.creator?.display_name ?? "?")
     .split(" ")
     .map((w) => w[0])
     .join("")
@@ -140,6 +153,7 @@ export default function RecipeDetailPage() {
   return (
     <>
       <Navbar />
+      <RecipeSessionTracker recipeId={recipe.id} source={source} />
       <main className="max-w-3xl mx-auto px-4 py-10 space-y-8">
         {/* Cover */}
         {recipe.cover_image_url ? (
@@ -171,10 +185,10 @@ export default function RecipeDetailPage() {
               href={`/creator/${recipe.creator_id}`}
               className="inline-flex items-center gap-2.5 group"
             >
-              {recipe.creator.profil_url ? (
+              {recipe.creator.profile_image_url ? (
                 <img
-                  src={recipe.creator.profil_url}
-                  alt={recipe.creator.name ?? ""}
+                  src={recipe.creator.profile_image_url}
+                  alt={recipe.creator.display_name ?? ""}
                   className="w-8 h-8 rounded-full object-cover"
                 />
               ) : (
@@ -183,7 +197,7 @@ export default function RecipeDetailPage() {
                 </div>
               )}
               <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                {t("by")} <strong>{recipe.creator.name ?? tCreators("defaultName")}</strong>
+                {t("by")} <strong>{recipe.creator.display_name ?? tCreators("defaultName")}</strong>
                 {recipe.creator.heritage_region && ` · ${recipe.creator.heritage_region}`}
               </span>
             </Link>
@@ -266,7 +280,7 @@ export default function RecipeDetailPage() {
               href={`/creator/${recipe.creator_id}`}
               className="text-primary hover:underline"
             >
-              {t("viewAllFrom")} {recipe.creator.name?.split(" ")[0] ?? tCreators("defaultName")} →
+              {t("viewAllFrom")} {recipe.creator.display_name?.split(" ")[0] ?? tCreators("defaultName")} →
             </Link>
           )}
         </div>

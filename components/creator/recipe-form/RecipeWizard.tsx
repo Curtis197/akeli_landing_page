@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { fetchMeasurementUnits } from "@/lib/queries/measurement-units";
@@ -199,15 +199,18 @@ export default function RecipeWizard({
   const updateMacros = useCallback(
     async (id: string, data: RecipeFormState) => {
       const { computeMacros } = await import("@/lib/utils/macro-calculator");
-      type IngredientForMacro = import("@/lib/utils/macro-calculator").IngredientForMacro;
       const ingredientsForMacro = data.ingredients
         .filter((i) => i.is_section_header || !!i.ingredient_id)
         .map((i) => ({
-          ...i,
           ingredient_id: i.ingredient_id ?? "",
           quantity: i.quantity ?? 0,
           unit: i.unit ?? "",
-        })) as IngredientForMacro[];
+          is_section_header: i.is_section_header,
+          calories_per_100g: i.calories_per_100g,
+          protein_per_100g: i.protein_per_100g,
+          carbs_per_100g: i.carbs_per_100g,
+          fat_per_100g: i.fat_per_100g,
+        }));
       const macros = computeMacros(ingredientsForMacro, unitConversions, data.servings);
       const totalG = macros.total_weight_g * data.servings;
       await supabase
@@ -338,7 +341,9 @@ export default function RecipeWizard({
     if (isSaving) return "Sauvegarde...";
     if (!lastSaved) return "";
     const s = Math.round((Date.now() - lastSaved.getTime()) / 1000);
-    return s < 60 ? `Sauvegardé il y a ${s}s` : `Sauvegardé il y a ${Math.round(s / 60)}min`;
+    return s < 60
+      ? `Sauvé il y a ${s}s`
+      : `Sauvé il y a ${Math.round(s / 60)}min`;
   })();
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -394,7 +399,7 @@ export default function RecipeWizard({
           disabled={currentStep === 1}
           className="px-5 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          ← Précédent
+          {"←"} {"À"} P{"é"}c{"é"}dent
         </button>
         <span className="text-xs text-muted-foreground">{savedLabel}</span>
         {currentStep < 6 && (
@@ -402,7 +407,7 @@ export default function RecipeWizard({
             onClick={handleNext}
             className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
           >
-            Suivant →
+            Suivant {"→"}
           </button>
         )}
       </div>
@@ -446,7 +451,7 @@ function WizardProgress({
       <div className="sm:hidden">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-foreground">
-            Étape {currentStep} — {STEP_LABELS[currentStep - 1]}
+            {"É"}tape {currentStep} {"—"} {STEP_LABELS[currentStep - 1]}
           </span>
           <span className="text-xs text-muted-foreground">
             {currentStep}/6

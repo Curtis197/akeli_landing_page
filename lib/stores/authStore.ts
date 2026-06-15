@@ -5,16 +5,22 @@ import type { User } from "@supabase/supabase-js";
 
 interface CreatorProfile {
   id: string;
-  auth_id: string;
-  name: string | null;
+  user_id: string;
+  display_name: string | null;
   bio: string | null;
-  profil_url: string | null;
+  profile_image_url: string | null;
+  username: string | null;
   heritage_region: string | null;
   specialties: string[];
-  stripe_onboarding_complete: boolean;
-  payment_enabled: boolean;
-  total_earnings: number;
+  specialty_codes: string[];
+  language_codes: string[];
   recipe_count: number;
+  fan_count: number;
+  total_revenue: number;
+  instagram_handle: string | null;
+  tiktok_handle: string | null;
+  youtube_handle: string | null;
+  website_url: string | null;
 }
 
 interface AuthState {
