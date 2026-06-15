@@ -5,7 +5,7 @@
 > En cas de contradiction, `V1_ARCHITECTURE_DECISIONS.md` fait autorité.
 
 **Statut** : Référence V1 Website — Prêt pour Claude Code  
-**Date** : Mars 2026  
+**Date** : Mars 2026 — mis à jour Juin 2026 (fix sécurité IDOR session-close)  
 **Auteur** : Curtis — Fondateur Akeli  
 **Tables concernées** : `recipe_impression`, `recipe_open`  
 **Document associé** : `V1_RECIPE_SCHEMA_ADDITIONS.md`
@@ -21,10 +21,11 @@ Le website Akeli est une surface de **découverte publique** : les recettes sont
 | Impression | `recipe_impression` | Carte recette visible dans `/recipes` ou `/creator/[username]` | ✅ trackée |
 | Open + Session | `recipe_open` | Ouverture de `/recipe/[slug]` + fermeture de l'onglet/navigation | ✅ trackée |
 
-**Principe de sécurité :**  
+**Principes de sécurité :**  
 Les inserts anonymes utilisent la **service key Supabase** — jamais exposée côté client.  
 Toutes les requêtes de tracking passent par des **API Routes Next.js** (`/api/track/...`).  
-Le client Next.js n'appelle jamais Supabase directement pour les inserts de tracking.
+Le client Next.js n'appelle jamais Supabase directement pour les inserts de tracking.  
+La route de fermeture de session (`PATCH /api/track/open/[id]`) est protégée par un **token HMAC par session** — voir section 10.
 
 ---
 
@@ -77,12 +78,14 @@ export interface OpenPayload {
 }
 
 export interface OpenResponse {
-  id: string;  // UUID de la ligne recipe_open insérée
+  id: string;     // UUID de la ligne recipe_open insérée
+  token: string;  // HMAC-SHA256 de l'id — requis pour fermer la session (voir section 10)
 }
 
 export interface ClosePayload {
-  closed_at: string;         // ISO string
+  closed_at: string;
   session_duration_seconds: number;
+  token: string;  // Token reçu lors de l'ouverture — prouve l'ownership de la session
 }
 ```
 
@@ -108,9 +111,10 @@ export const supabaseAdmin = createClient(
 );
 ```
 
-**Variable d'environnement à configurer sur Vercel :**
+**Variables d'environnement à configurer sur Vercel :**
 ```
-SUPABASE_SERVICE_ROLE_KEY=eyJ...   ← jamais préfixée NEXT_PUBLIC_
+SUPABASE_SERVICE_ROLE_KEY=eyJ...       ← jamais préfixée NEXT_PUBLIC_
+TRACKING_CLOSE_SECRET=<hex 32 octets>  ← générer avec: openssl rand -hex 32
 ```
 
 ---
@@ -187,7 +191,7 @@ export async function POST(request: NextRequest) {
 
     if (error || !data) throw error;
 
-    return NextResponse.json({ id: data.id } satisfies OpenResponse);
+    return NextResponse.json({ id: data.id, token: signSessionId(data.id) } satisfies OpenResponse);
   } catch (error) {
     console.error('[track/open]', error);
     return NextResponse.json({ ok: false }, { status: 500 });
@@ -201,28 +205,55 @@ export async function POST(request: NextRequest) {
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/tracking/supabase-admin';
+import { createHmac, timingSafeEqual } from 'crypto';
+import { getSupabaseAdmin } from '@/lib/tracking/supabase-admin';
 import type { ClosePayload } from '@/lib/tracking/types';
+
+const MAX_SESSION_SECONDS = 86_400; // 24 h
+
+function signSessionId(id: string): string {
+  return createHmac('sha256', process.env.TRACKING_CLOSE_SECRET ?? 'dev-secret')
+    .update(id)
+    .digest('hex');
+}
+
+function verifyToken(id: string, token: string): boolean {
+  const expected = signSessionId(id);
+  try {
+    return timingSafeEqual(Buffer.from(token, 'hex'), Buffer.from(expected, 'hex'));
+  } catch {
+    return false;
+  }
+}
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body: ClosePayload = await request.json();
-    const { id } = params;
+    const { id } = await params;
 
-    if (!id || !body.closed_at || body.session_duration_seconds === undefined) {
+    if (!id || !body.closed_at || body.session_duration_seconds === undefined || !body.token) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
-    await supabaseAdmin
+    // Vérification du token HMAC — prouve que l'appelant a bien ouvert cette session
+    if (!verifyToken(id, body.token)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Clamper la durée dans une plage saine
+    const duration = Math.max(0, Math.min(Math.round(body.session_duration_seconds), MAX_SESSION_SECONDS));
+
+    await (getSupabaseAdmin() as any)
       .from('recipe_open')
       .update({
         closed_at: body.closed_at,
-        session_duration_seconds: body.session_duration_seconds,
+        session_duration_seconds: duration,
       })
-      .eq('id', id);
+      .eq('id', id)
+      .is('closed_at', null); // Idempotent — une session ne se ferme qu'une fois
 
     return NextResponse.json({ ok: true });
   } catch (error) {
@@ -260,8 +291,9 @@ export async function trackImpression(payload: ImpressionPayload): Promise<void>
   }
 }
 
-// Retourne l'id de la session ou null en cas d'erreur
-export async function trackOpen(payload: OpenPayload): Promise<string | null> {
+// Retourne { id, token } ou null en cas d'erreur
+// Le token doit être conservé en mémoire et passé à trackClose
+export async function trackOpen(payload: OpenPayload): Promise<OpenResponse | null> {
   try {
     const res = await fetch('/api/track/open', {
       method: 'POST',
@@ -269,15 +301,15 @@ export async function trackOpen(payload: OpenPayload): Promise<string | null> {
       body: JSON.stringify(payload),
     });
     if (!res.ok) return null;
-    const data: OpenResponse = await res.json();
-    return data.id;
+    return await res.json() as OpenResponse;
   } catch {
     return null;
   }
 }
 
 // Fire-and-forget — utilisé dans beforeunload / cleanup
-export function trackClose(openId: string, openedAt: Date): void {
+// token : reçu de trackOpen, prouve l'ownership de la session côté serveur
+export function trackClose(openId: string, token: string, openedAt: Date): void {
   const closedAt = new Date();
   const sessionDurationSeconds = Math.round(
     (closedAt.getTime() - openedAt.getTime()) / 1000
@@ -286,6 +318,7 @@ export function trackClose(openId: string, openedAt: Date): void {
   const payload: ClosePayload = {
     closed_at: closedAt.toISOString(),
     session_duration_seconds: sessionDurationSeconds,
+    token, // Inclus dans le body — compatible sendBeacon (pas besoin de headers)
   };
 
   // sendBeacon garantit l'envoi même si la page est en train de se fermer
@@ -384,6 +417,7 @@ import type { TrackingSource } from '@/lib/tracking/types';
 
 export function useRecipeSession(recipeId: string, source: TrackingSource) {
   const openIdRef = useRef<string | null>(null);
+  const tokenRef = useRef<string | null>(null);   // ← token HMAC conservé en mémoire
   const openedAtRef = useRef<Date | null>(null);
 
   useEffect(() => {
@@ -392,16 +426,19 @@ export function useRecipeSession(recipeId: string, source: TrackingSource) {
     // Ouvrir la session à l'arrivée sur la page
     const open = async () => {
       openedAtRef.current = new Date();
-      const id = await trackOpen({ recipe_id: recipeId, source });
-      if (mounted) openIdRef.current = id;
+      const session = await trackOpen({ recipe_id: recipeId, source });
+      if (mounted && session) {
+        openIdRef.current = session.id;
+        tokenRef.current = session.token; // Stocké en mémoire, jamais persisté
+      }
     };
 
     open();
 
     // Fermer la session à la navigation ou fermeture d'onglet
     const handleUnload = () => {
-      if (openIdRef.current && openedAtRef.current) {
-        trackClose(openIdRef.current, openedAtRef.current);
+      if (openIdRef.current && tokenRef.current && openedAtRef.current) {
+        trackClose(openIdRef.current, tokenRef.current, openedAtRef.current);
       }
     };
 
@@ -511,9 +548,10 @@ Les liens depuis la page `/recipes` incluent `?from=feed` :
 
 ### API Routes
 - [ ] `POST /api/track/impression` — insert avec `user_id` null si anonyme
-- [ ] `POST /api/track/open` — retourne l'id de la ligne insérée
-- [ ] `PATCH /api/track/open/[id]` — update `closed_at` + `session_duration_seconds`
+- [ ] `POST /api/track/open` — retourne `{ id, token }` (token HMAC)
+- [ ] `PATCH /api/track/open/[id]` — vérifie le token, clampe la durée, filtre `closed_at IS NULL`
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` configurée sur Vercel (sans préfixe `NEXT_PUBLIC_`)
+- [ ] `TRACKING_CLOSE_SECRET` configurée sur Vercel (générer avec `openssl rand -hex 32`)
 - [ ] `supabase-admin.ts` jamais importé dans un fichier `'use client'`
 
 ### Impression
@@ -524,8 +562,9 @@ Les liens depuis la page `/recipes` incluent `?from=feed` :
 - [ ] Source passée correctement depuis chaque page
 
 ### Session
-- [ ] `trackOpen` appelé au mount de `RecipeDetailPage`
-- [ ] `trackClose` appelé via `beforeunload` ET via cleanup du `useEffect`
+- [ ] `trackOpen` appelé au mount de `RecipeDetailPage`, retourne `{ id, token }`
+- [ ] `tokenRef` conserve le token en mémoire dans `useRecipeSession`
+- [ ] `trackClose` reçoit `(openId, token, openedAt)` — token dans le body JSON
 - [ ] `navigator.sendBeacon` utilisé pour `trackClose` (fiabilité fermeture onglet)
 - [ ] Fallback `fetch keepalive` si `sendBeacon` non disponible
 - [ ] Source passée via `?from=` dans l'URL
@@ -552,6 +591,62 @@ Pas de rate limiting sur les API routes de tracking en V1 (volume faible). À im
 
 ---
 
+## 10. Sécurité — Token HMAC par session
+
+### Problème résolu (Juin 2026)
+
+La route `PATCH /api/track/open/[id]` utilisait uniquement l'UUID de la session comme identifiant. N'importe quel appelant connaissant un UUID pouvait modifier les données `closed_at` et `session_duration_seconds` d'une session qui ne lui appartient pas — **IDOR (Insecure Direct Object Reference)**.
+
+**Pourquoi l'authentification par cookie ne suffit pas ici :**  
+`trackClose` s'appuie sur `navigator.sendBeacon` pour garantir l'envoi lors de la fermeture de l'onglet. `sendBeacon` ne supporte pas les headers personnalisés et ne garantit pas l'envoi des cookies dans tous les contextes (partitionnement de cookies, CORS). Il n'est donc pas fiable pour porter un token d'authentification standard.
+
+### Solution : token HMAC par session
+
+```
+POST /api/track/open
+  → Server insère la ligne, génère HMAC-SHA256(id, TRACKING_CLOSE_SECRET)
+  → Répond { id, token }
+
+Client stocke { id, token } en mémoire (useRef)
+
+PATCH /api/track/open/:id  (body: { closed_at, session_duration_seconds, token })
+  → Server recalcule HMAC(id, secret)
+  → timingSafeEqual(token_reçu, token_attendu)
+  → Si NOK → 401
+  → Si OK  → update avec session_duration clampée à [0, 86400]
+           → filtre .is('closed_at', null) pour l'idempotence
+```
+
+### Propriétés du token
+
+| Propriété | Valeur |
+|-----------|--------|
+| Algorithme | HMAC-SHA256 |
+| Clé | `TRACKING_CLOSE_SECRET` (env var, 32 octets hex) |
+| Message | UUID de la ligne `recipe_open` |
+| Format | Hex string (64 caractères) |
+| Durée de vie | Illimitée (bound à l'id, pas au temps) |
+| Transport | Corps JSON — compatible `sendBeacon` |
+| Comparaison | `timingSafeEqual` — résistant aux timing attacks |
+
+### Pourquoi pas un token expirant ?
+
+Un token à durée de vie limitée (ex. JWT avec `exp`) améliorerait la sécurité mais introduit une complexité (horloge serveur, rotation) et peut faire rater des fermetures de session longues. Pour des données d'analytics non-critiques, un HMAC non-expirant lié à l'id est un compromis raisonnable. À réévaluer si le tracking évolue vers des données sensibles.
+
+### Variables d'environnement
+
+```bash
+# Générer le secret
+openssl rand -hex 32
+
+# Configurer sur Vercel
+vercel env add TRACKING_CLOSE_SECRET production
+```
+
+En l'absence de `TRACKING_CLOSE_SECRET`, la route utilise `'dev-secret'` (fallback local uniquement). **Ne jamais déployer sans cette variable en production.**
+
+---
+
 ## Documents associés
 
 | Document | Contenu |
@@ -564,5 +659,6 @@ Pas de rate limiting sur les API routes de tracking en V1 (volume faible). À im
 ---
 
 *Document créé : Mars 2026*  
+*Mis à jour : Juin 2026 — Section 10 ajoutée (fix IDOR session-close, token HMAC)*  
 *Auteur : Curtis — Fondateur Akeli*  
-*Version : 1.0 — Next.js Website V1 Recipe Tracking*
+*Version : 1.1 — Next.js Website V1 Recipe Tracking*
