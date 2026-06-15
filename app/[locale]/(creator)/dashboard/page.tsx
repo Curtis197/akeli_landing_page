@@ -60,6 +60,11 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!creator) return;
     setLoading(true);
+
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+
     Promise.all([
       supabase
         .from("creator_dashboard_stats")
@@ -67,30 +72,74 @@ export default function DashboardPage() {
         .eq("creator_id", creator.id)
         .single(),
       supabase
-        .from("recipe")
-        .select("id, title, cover_image_url, is_published")
+        .from("recipe_performance_summary")
+        .select("recipe_id, title, cover_image_url, is_published, total_consumptions, total_revenue")
         .eq("creator_id", creator.id)
-        .eq("is_published", true)
-        .order("updated_at", { ascending: false })
+        .order("total_revenue", { ascending: false })
         .limit(5),
-    ]).then(([statsRes, recipesRes]) => {
+      supabase
+        .from("creator_revenue_log")
+        .select("amount, revenue_type, logged_at")
+        .eq("creator_id", creator.id)
+        .gte("logged_at", sixMonthsAgo.toISOString()),
+    ]).then(([statsRes, recipesRes, logsRes]) => {
+      // Process top recipes
       const topRecipes: TopRecipe[] = (recipesRes.data ?? []).map((r) => ({
-        id: r.id,
+        id: r.recipe_id,
         title: r.title,
         cover_image_url: r.cover_image_url ?? null,
-        consumptions: 0,
-        revenue: 0,
+        consumptions: r.total_consumptions ?? 0,
+        revenue: r.total_revenue ?? 0,
         is_published: r.is_published,
       }));
-      if (statsRes.data) setStats({
-        ...EMPTY_STATS,
-        ...statsRes.data,
-        top_recipes: topRecipes,
-        monthly_history: [],
+
+      // Process monthly history
+      const historyMap = new Map<string, { fan_revenue: number; consumption_revenue: number }>();
+      
+      // Initialize past 6 months to ensure chart looks continuous
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const monthKey = d.toLocaleString("fr-FR", { month: "short", year: "2-digit" });
+        historyMap.set(monthKey, { fan_revenue: 0, consumption_revenue: 0 });
+      }
+
+      const logs = logsRes.data ?? [];
+      logs.forEach(log => {
+        const d = new Date(log.logged_at);
+        const monthKey = d.toLocaleString("fr-FR", { month: "short", year: "2-digit" });
+        if (historyMap.has(monthKey)) {
+          const entry = historyMap.get(monthKey)!;
+          if (log.revenue_type === "fan_mode") {
+            entry.fan_revenue += Number(log.amount);
+          } else {
+            entry.consumption_revenue += Number(log.amount);
+          }
+        }
       });
-      else setStats({ ...EMPTY_STATS, top_recipes: topRecipes });
+
+      const monthlyHistory: MonthlyRevenue[] = Array.from(historyMap.entries()).map(([month, data]) => ({
+        month,
+        fan_revenue: data.fan_revenue,
+        consumption_revenue: data.consumption_revenue,
+      }));
+
+      if (statsRes.data) {
+        setStats({
+          ...EMPTY_STATS,
+          ...statsRes.data,
+          top_recipes: topRecipes,
+          monthly_history: monthlyHistory,
+        });
+      } else {
+        setStats({ ...EMPTY_STATS, top_recipes: topRecipes, monthly_history: monthlyHistory });
+      }
+      
       setLoading(false);
-    }).catch(() => setLoading(false));
+    }).catch((err) => {
+      console.error(err);
+      setLoading(false);
+    });
   }, [creator, supabase]);
 
   async function fetchAiInsight() {
