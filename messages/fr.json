@@ -40,12 +40,12 @@
     },
     "pricing": {
       "title": "Un abonnement simple",
-      "price": "3��/mois",
+      "price": "3€/mois",
       "description": "Accès à toutes les recettes de la plateforme."
     },
     "faqTitle": "Questions fréquentes",
     "footer": {
-      "about": "ì propos",
+      "about": "À propos",
       "becomeCreator": "Devenir créateur",
       "terms": "CGU",
       "privacy": "Confidentialité",
@@ -87,7 +87,7 @@
     "allDifficulties": "Toute difficulté",
     "notFound": "Aucune recette trouvée",
     "ctaTitle": "Accède aux recettes complètes",
-    "ctaSubtitle": "Ingrédients détaillés et étapes pas-à-pas dans l'app Akeli � 3��/mois.",
+    "ctaSubtitle": "Ingrédients détaillés et étapes pas-à-pas dans l'app Akeli à 3€/mois.",
     "count": "{count, plural, one {recette} other {recettes}}",
     "difficulty": {
       "easy": "Facile",
@@ -107,14 +107,14 @@
     "mainIngredients": "Ingrédients principaux",
     "moreIngredients": "et {{count}} autres ingrédients",
     "notFound": "Recette introuvable",
-    "backToCatalog": "� � Retour au catalogue",
+    "backToCatalog": "← Retour au catalogue",
     "porkFree": "Sans porc",
     "nutritionTitle": "Valeurs nutritionnelles",
     "proteins": "Protéines",
     "carbs": "Glucides",
     "fats": "Lipides",
     "appOnlyTitle": "Recette disponible dans l'app Akeli",
-    "appOnlySubtitle": "Accède aux ingrédients complets et aux étapes de préparation détaillées dans l'application mobile � 3��/mois seulement.",
+    "appOnlySubtitle": "Accède aux ingrédients complets et aux étapes de préparation détaillées dans l'application mobile à 3€/mois seulement.",
     "platforms": "Disponible sur iOS et Android",
     "viewAllFrom": "Voir tous les plats de",
     "servings": "{count, plural, one {# portion} other {# portions}}"
@@ -162,14 +162,14 @@
     "revenueThisMonth": "Revenus fans ce mois",
     "revenueLastMonth": "Revenus fans mois précédent",
     "vsPrevMonth": "vs mois précédent",
-    "chart": "Revenus fans � 6 derniers mois",
+    "chart": "Revenus fans - 6 derniers mois",
     "fanList": "Liste des fans",
     "noFans": "Aucun fan pour le moment.",
     "fanName": "Fan",
     "subscribedAt": "Abonné le",
     "status": "Statut",
     "benefits": {
-      "0": "Abonnement mensuel pour tes fans à partir de 3 ��/mois",
+      "0": "Abonnement mensuel pour tes fans à partir de 3€/mois",
       "1": "Revenus récurrents et prévisibles",
       "2": "Badge « Mode Fan » sur ton profil public",
       "3": "Accès à des statistiques fans avancées"
@@ -274,18 +274,18 @@
     "draft": "Brouillon",
     "published": "Publié",
     "search": "Rechercher...",
-    "reset": "�S" Réinitialiser",
+    "reset": "Réinitialiser",
     "tryOtherFilters": "Essaie d'autres filtres.",
     "defaultCreator": "Créateur Akeli"
   },
   "ingredientCategories": {
     "liquid": "Liquide",
-    "oil": "Huile & Mati�re grasse",
+    "oil": "Huile & Matière grasse",
     "fried_oil": "Huile de friture",
     "meat": "Viande",
     "poultry": "Volaille",
     "seafood": "Poisson & Fruits de mer",
-    "vegetable": "L�gume",
+    "vegetable": "Légume",
     "fruit": "Fruit",
     "dairy": "Laitage & Ruf",
     "grain": "C�r�ale & P�te",
