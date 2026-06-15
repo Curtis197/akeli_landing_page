@@ -75,7 +75,7 @@ export default function DashboardPage() {
         .from("recipe_performance_summary")
         .select("recipe_id, title, cover_image_url, is_published, total_consumptions, total_revenue")
         .eq("creator_id", creator.id)
-        .order("total_revenue", { ascending: false })
+        .order("total_consumptions", { ascending: false })
         .limit(5),
       supabase
         .from("creator_revenue_log")
