@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politique de Confidentialité - Akeli</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: white;
+            min-height: 100vh;
+        }
+        
+        .header {
+            text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .doc-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .doc-date {
+            font-size: 14px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #3BB78F;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .toc {
+            background-color: #f8f9fa;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 5px;
+        }
+        
+        .toc h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .toc li {
+            margin-bottom: 8px;
+        }
+        
+        .toc a {
+            color: #3BB78F;
+            text-decoration: none;
+            font-size: 15px;
+        }
+        
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        
+        h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #34495e;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #34495e;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-align: justify;
+        }
+        
+        strong {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .highlight-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .info-box {
+            background-color: #d1ecf1;
+            border-left: 4px solid #3BB78F;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .warning-box {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .critical-box {
+            background-color: #dc3545;
+            color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .critical-box strong {
+            color: white;
+        }
+        
+        ul {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 15px;
+        }
+        
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .footer {
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .footer-links {
+            margin-top: 10px;
+        }
+        
+        .footer-links a {
+            color: #3BB78F;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+        
+        @media print {
+            body {
+                background-color: white;
+            }
+            .back-link {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .doc-title {
+                font-size: 24px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+            
+            h3 {
+                font-size: 16px;
+            }
+            
+            p {
+                font-size: 15px;
+                text-align: left;
+            }
+            
+            table {
+                font-size: 13px;
+            }
+            
+            table th, table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Retour à l'accueil</a>
+        
+        <div class="header">
+            <div class="logo">Akeli</div>
+            <h1 class="doc-title">Politique de Confidentialité</h1>
+            <p class="doc-date">En vigueur au 28 octobre 2025</p>
+        </div>
+
+        <div class="toc">
+            <h3>Table des matières</h3>
+            <ul>
+                <li><a href="#preambule">Préambule</a></li>
+                <li><a href="#article1">Article 1 - Responsable du traitement</a></li>
+                <li><a href="#article2">Article 2 - Données personnelles collectées</a></li>
+                <li><a href="#article3">Article 3 - Finalités du traitement</a></li>
+                <li><a href="#article4">Article 4 - Destinataires des données</a></li>
+                <li><a href="#article5">Article 5 - Transferts hors UE</a></li>
+                <li><a href="#article6">Article 6 - Durée de conservation</a></li>
+                <li><a href="#article7">Article 7 - Sécurité des données</a></li>
+                <li><a href="#article8">Article 8 - Vos droits</a></li>
+                <li><a href="#article9">Article 9 - Droit de réclamation (CNIL)</a></li>
+            </ul>
+        </div>
+
+        <h2 id="preambule">PRÉAMBULE</h2>
+        <p>La protection de vos données personnelles est une priorité pour Akeli. Cette Politique de Confidentialité vous informe sur la manière dont nous collectons, utilisons, stockons et protégeons vos données personnelles dans le cadre de l'utilisation de notre application mobile.</p>
+        <p>Cette politique est conforme au <strong>Règlement Général sur la Protection des Données (RGPD)</strong> n°2016/679 du 27 avril 2016 et à la <strong>loi Informatique et Libertés</strong> n°78-17 du 6 janvier 1978 modifiée.</p>
+        <p>Cette politique doit être lue en complément de nos <a href="cgu.html">Conditions Générales d'Utilisation (CGU)</a> et de nos <a href="mentions-legales.html">Mentions Légales</a>.</p>
+
+        <h2 id="article1">ARTICLE 1 - RESPONSABLE DU TRAITEMENT</h2>
+        <p>Le responsable du traitement de vos données personnelles est :</p>
+        <div class="info-box">
+            <p><strong>Jean-Philippe CAPRE</strong></p>
+            <p>Entrepreneur Individuel</p>
+            <p>SIRET : [Votre numéro SIRET]</p>
+            <p>Adresse : [Votre adresse professionnelle]</p>
+            <p>Email : legal@akeli.app</p>
+            <p><strong>Contact du Délégué à la Protection des Données (DPO) :</strong> legal@akeli.app</p>
+        </div>
+
+        <h2 id="article2">ARTICLE 2 - DONNÉES PERSONNELLES COLLECTÉES</h2>
+        <p>Nous collectons différentes catégories de données personnelles, dont certaines sont des <strong>données sensibles au sens de l'article 9 du RGPD</strong>.</p>
+
+        <h3>2.1 Données d'identification</h3>
+        <ul>
+            <li><strong>Nom et prénom</strong></li>
+            <li><strong>Adresse email</strong></li>
+            <li><strong>Identifiant unique de compte</strong></li>
+        </ul>
+        <p><strong>Base légale :</strong> Exécution du contrat (article 6.1.b du RGPD) et consentement (article 6.1.a du RGPD)</p>
+        <p><strong>Finalité :</strong> Création et gestion de votre compte utilisateur, communication avec vous, facturation</p>
+
+        <h3>2.2 Données de forme physique</h3>
+        <ul>
+            <li><strong>Poids</strong></li>
+            <li><strong>Âge</strong></li>
+            <li><strong>Objectifs fitness</strong> (perte de poids, prise de masse musculaire, maintien, etc.)</li>
+        </ul>
+        <p><strong>Base légale :</strong> Consentement (article 6.1.a du RGPD)</p>
+        <p><strong>Finalité :</strong> Personnalisation des recommandations de repas, adaptation des plans alimentaires à vos objectifs</p>
+
+        <h3>2.3 Préférences alimentaires</h3>
+        <ul>
+            <li><strong>Préférences culinaires</strong> (types de cuisine, plats favoris, etc.)</li>
+            <li><strong>Restrictions alimentaires</strong> (végétarien, vegan, halal, kasher, etc.)</li>
+            <li><strong>Intolérances alimentaires</strong> (lactose, gluten, etc.)</li>
+        </ul>
+        <p><strong>Base légale :</strong> Consentement (article 6.1.a du RGPD)</p>
+        <p><strong>Finalité :</strong> Personnalisation des recommandations de repas générées par notre intelligence artificielle</p>
+
+        <h3>2.4 Données de santé - Allergies alimentaires (DONNÉES SENSIBLES)</h3>
+        
+        <div class="critical-box">
+            <p><strong>⚠️ IMPORTANT : Traitement de données sensibles de santé</strong></p>
+            <p>Nous collectons des informations sur vos <strong>allergies alimentaires</strong> sous forme de texte libre.</p>
+            <p><strong>Ces données constituent des données sensibles de santé au sens de l'article 9 du RGPD</strong>, car elles révèlent des informations sur votre état de santé et peuvent avoir des conséquences médicales importantes.</p>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Conditions de traitement :</strong></p>
+            <ul>
+                <li><strong>Base légale (Article 9.2.a du RGPD) :</strong> Consentement explicite pour le traitement de vos données de santé</li>
+                <li><strong>Base légale complémentaire (Article 6.1.a du RGPD) :</strong> Consentement pour le traitement de données personnelles</li>
+            </ul>
+        </div>
+
+        <h4>Votre consentement explicite :</h4>
+        <p>En fournissant vos informations d'allergies alimentaires, vous donnez votre <strong>consentement explicite et éclairé</strong> pour que nous collections et traitions ces données sensibles de santé dans le seul but de :</p>
+        <ul>
+            <li>Personnaliser les recommandations de repas en excluant les aliments auxquels vous êtes allergique</li>
+            <li>Assurer votre sécurité alimentaire dans l'utilisation de notre application</li>
+            <li>Générer des plans de repas adaptés à vos contraintes de santé</li>
+        </ul>
+        <p><strong>Vous pouvez retirer ce consentement à tout moment</strong> en supprimant vos informations d'allergies dans les paramètres de votre compte ou en nous contactant à legal@akeli.app. Le retrait de votre consentement n'affectera pas la licéité du traitement effectué avant ce retrait.</p>
+
+        <h4>Mesures de sécurité renforcées :</h4>
+        <p>Conformément à l'article 32 du RGPD et compte tenu de la nature sensible de ces données, nous mettons en œuvre des mesures de sécurité renforcées :</p>
+        <ul>
+            <li><strong>Chiffrement des données</strong> en transit (protocole TLS) et au repos</li>
+            <li><strong>Accès strictement contrôlé</strong> aux données d'allergies, limité aux seuls systèmes nécessaires</li>
+            <li><strong>Hébergement sécurisé</strong> sur des serveurs Supabase situés dans l'Union Européenne</li>
+            <li><strong>Aucun partage</strong> de vos données d'allergies avec des tiers, sauf obligation légale</li>
+            <li><strong>Pseudonymisation</strong> des données lorsque possible</li>
+            <li><strong>Audit régulier</strong> des mesures de sécurité</li>
+        </ul>
+
+        <div class="warning-box">
+            <p><strong>Limitation de responsabilité :</strong></p>
+            <p>Bien que nous prenions toutes les précautions pour exclure les allergènes identifiés de nos recommandations, <strong>nous ne pouvons garantir l'absence totale d'allergènes</strong> dans les recettes générées par notre intelligence artificielle.</p>
+            <p><strong>Il est de votre responsabilité de :</strong></p>
+            <ul>
+                <li>Vérifier systématiquement la composition des aliments avant consommation</li>
+                <li>Consulter un professionnel de santé pour toute question concernant vos allergies</li>
+                <li>Ne pas vous fier uniquement à notre application pour la gestion de vos allergies graves</li>
+            </ul>
+            <p><strong>L'application Akeli ne constitue en aucun cas un dispositif médical et ne remplace pas l'avis d'un allergologue ou d'un médecin.</strong></p>
+        </div>
+
+        <h3>2.5 Données de paiement</h3>
+        <p>Nous collectons indirectement des informations de paiement via notre prestataire <strong>Stripe</strong> :</p>
+        <ul>
+            <li>Montant et date des transactions</li>
+            <li>Statut de l'abonnement</li>
+            <li>Identifiant client Stripe</li>
+        </ul>
+        <p><strong>Nous ne stockons jamais directement vos données bancaires</strong> (numéro de carte, CVV, etc.). Ces informations sont traitées exclusivement par Stripe, certifié conforme aux normes PCI-DSS.</p>
+
+        <h2 id="article3">ARTICLE 3 - FINALITÉS DU TRAITEMENT</h2>
+        <p>Vos données personnelles sont collectées et traitées pour les finalités suivantes :</p>
+
+        <h3>3.1 Fourniture du service</h3>
+        <ul>
+            <li>Créer et gérer votre compte utilisateur</li>
+            <li>Vous donner accès aux fonctionnalités de l'application</li>
+            <li>Gérer votre abonnement</li>
+        </ul>
+
+        <h3>3.2 Personnalisation par intelligence artificielle</h3>
+        <ul>
+            <li><strong>Générer des recommandations de repas personnalisées</strong> en utilisant l'intelligence artificielle</li>
+            <li>Adapter les suggestions en fonction de vos préférences alimentaires, objectifs de forme physique, et allergies</li>
+            <li>Créer des plans de repas hebdomadaires optimisés</li>
+            <li>Proposer des recettes de cuisine africaine adaptées à votre profil</li>
+        </ul>
+
+        <div class="info-box">
+            <p><strong>Transparence sur l'utilisation de l'IA :</strong></p>
+            <p>Notre application utilise des algorithmes d'intelligence artificielle pour analyser vos données (préférences, objectifs, allergies) et générer des recommandations personnalisées. Ces traitements automatisés sont effectués uniquement sur la base de votre consentement et dans le but d'améliorer votre expérience utilisateur.</p>
+            <p>Les décisions générées par l'IA ne sont pas juridiquement contraignantes et vous restez libre de suivre ou non les recommandations proposées.</p>
+        </div>
+
+        <h3>3.3 Gestion de la facturation</h3>
+        <ul>
+            <li>Traiter vos paiements via Stripe</li>
+            <li>Émettre des factures</li>
+            <li>Gérer les renouvellements d'abonnement</li>
+            <li>Traiter les demandes de résiliation</li>
+        </ul>
+
+        <h2 id="article4">ARTICLE 4 - DESTINATAIRES DES DONNÉES</h2>
+        <p>Vos données personnelles sont traitées par Jean-Philippe CAPRE et ne sont partagées qu'avec les prestataires techniques suivants :</p>
+
+        <h3>4.1 Stripe (Processeur de paiements)</h3>
+        <p><strong>Données partagées :</strong> Nom, email, montant de la transaction, date de paiement</p>
+        <p><strong>Finalité :</strong> Traitement sécurisé des paiements par abonnement</p>
+        <p><strong>Localisation :</strong> États-Unis</p>
+        <p><strong>Garanties :</strong> Stripe est certifié conforme aux Standard Contractual Clauses (SCC) de l'Union Européenne et respecte le RGPD.</p>
+
+        <h3>4.2 Supabase (Hébergement des données)</h3>
+        <p><strong>Données partagées :</strong> Toutes les données stockées dans votre compte</p>
+        <p><strong>Finalité :</strong> Hébergement et stockage sécurisé de vos données</p>
+        <p><strong>Localisation :</strong> Serveurs situés exclusivement dans l'Union Européenne</p>
+        <p><strong>Garanties :</strong> Supabase s'engage contractuellement à respecter le RGPD</p>
+
+        <div class="highlight-box">
+            <p><strong>Vos données d'allergies (données sensibles de santé) ne sont jamais partagées avec des tiers</strong>, même Stripe, et restent exclusivement stockées sur les serveurs Supabase dans l'Union Européenne.</p>
+        </div>
+
+        <h2 id="article5">ARTICLE 5 - TRANSFERTS DE DONNÉES HORS UNION EUROPÉENNE</h2>
+        
+        <h3>5.1 Stripe (États-Unis)</h3>
+        <p>Certaines de vos données (nom, email, informations de paiement) sont transférées vers les États-Unis dans le cadre du traitement des paiements par Stripe.</p>
+        <p><strong>Garanties mises en place :</strong></p>
+        <ul>
+            <li>Stripe a mis en place des <strong>Clauses Contractuelles Types (Standard Contractual Clauses - SCC)</strong> approuvées par la Commission Européenne</li>
+            <li>Stripe respecte les principes du RGPD et offre un niveau de protection équivalent à celui de l'Union Européenne</li>
+        </ul>
+
+        <h3>5.2 Données sensibles (allergies)</h3>
+        <div class="info-box">
+            <p><strong>Vos données de santé (allergies) ne sont jamais transférées hors de l'Union Européenne.</strong> Elles restent exclusivement stockées sur les serveurs Supabase situés dans l'UE.</p>
+        </div>
+
+        <h2 id="article6">ARTICLE 6 - DURÉE DE CONSERVATION DES DONNÉES</h2>
+        
+        <h3>6.1 Pendant la durée de votre compte</h3>
+        <p>Toutes vos données (identification, préférences, allergies, données de forme physique) sont conservées tant que votre compte est actif.</p>
+
+        <h3>6.2 Après suppression de votre compte</h3>
+        <div class="highlight-box">
+            <p><strong>Dès que vous supprimez votre compte depuis l'application, toutes vos données personnelles sont immédiatement et définitivement supprimées de notre base de données.</strong></p>
+            <p>Nous n'appliquons <strong>aucune période de conservation post-suppression</strong> pour vos données personnelles et données de santé.</p>
+        </div>
+        <p><strong>Exception :</strong> Conformément aux obligations comptables et fiscales françaises, les données de facturation peuvent être conservées pendant une durée maximale de <strong>10 ans</strong> après la clôture du compte, uniquement pour répondre à d'éventuelles obligations légales.</p>
+
+        <h2 id="article7">ARTICLE 7 - SÉCURITÉ DES DONNÉES</h2>
+        <p>Nous mettons en œuvre toutes les mesures techniques et organisationnelles appropriées pour garantir la sécurité et la confidentialité de vos données personnelles :</p>
+
+        <h3>7.1 Mesures techniques</h3>
+        <ul>
+            <li><strong>Chiffrement des données</strong> : Toutes les données sont chiffrées en transit (protocole TLS 1.3) et au repos (chiffrement AES-256)</li>
+            <li><strong>Authentification sécurisée</strong> : Système d'authentification robuste avec hachage des mots de passe</li>
+            <li><strong>Pare-feu et protection réseau</strong> : Infrastructure protégée par des pare-feu et systèmes de détection d'intrusion</li>
+            <li><strong>Sauvegardes régulières</strong> : Sauvegardes quotidiennes automatisées avec chiffrement</li>
+            <li><strong>Hébergement sécurisé</strong> : Serveurs situés dans des datacenters certifiés ISO 27001 dans l'UE</li>
+        </ul>
+
+        <h3>7.2 Notification de violation</h3>
+        <p>En cas de violation de données personnelles susceptible d'engendrer un risque élevé pour vos droits et libertés, nous nous engageons à :</p>
+        <ul>
+            <li>Notifier la CNIL dans les <strong>72 heures</strong> suivant la découverte de la violation</li>
+            <li>Vous informer directement dans les meilleurs délais si la violation concerne vos données sensibles (allergies)</li>
+            <li>Mettre en œuvre toutes les mesures nécessaires pour limiter les conséquences de la violation</li>
+        </ul>
+
+        <h2 id="article8">ARTICLE 8 - VOS DROITS SUR VOS DONNÉES</h2>
+        <p>Conformément au RGPD et à la loi Informatique et Libertés, vous disposez des droits suivants :</p>
+
+        <h3>8.1 Droit d'accès (Article 15 RGPD)</h3>
+        <p>Vous avez le droit d'obtenir la confirmation que des données vous concernant sont traitées, et d'accéder à ces données.</p>
+        <p><strong>Comment exercer ce droit :</strong> Depuis les paramètres de votre compte dans l'application, ou par email à legal@akeli.app</p>
+
+        <h3>8.2 Droit de rectification (Article 16 RGPD)</h3>
+        <p>Vous avez le droit de faire rectifier des données inexactes ou incomplètes vous concernant.</p>
+        <p><strong>Comment exercer ce droit :</strong> Vous pouvez modifier directement vos informations depuis votre compte dans l'application.</p>
+
+        <h3>8.3 Droit à l'effacement / Droit à l'oubli (Article 17 RGPD)</h3>
+        <p>Vous avez le droit de demander l'effacement de vos données personnelles.</p>
+        <p><strong>Comment exercer ce droit :</strong> Supprimez votre compte directement depuis l'application. Toutes vos données seront immédiatement et définitivement supprimées.</p>
+
+        <h3>8.4 Droit à la portabilité (Article 20 RGPD)</h3>
+        <p>Vous avez le droit de recevoir vos données personnelles dans un format structuré, couramment utilisé et lisible par machine.</p>
+        <p><strong>Comment exercer ce droit :</strong> Contactez-nous à legal@akeli.app. Nous vous transmettrons vos données au format JSON dans un délai d'un mois.</p>
+
+        <h3>8.5 Droit d'opposition (Article 21 RGPD)</h3>
+        <p>Vous avez le droit de vous opposer à tout moment au traitement de vos données personnelles.</p>
+        <p><strong>Comment exercer ce droit :</strong> Contactez-nous à legal@akeli.app</p>
+
+        <h3>8.6 Droit de retirer votre consentement</h3>
+        <div class="warning-box">
+            <p><strong>Important pour les allergies :</strong> Si vous retirez votre consentement pour le traitement de vos allergies, nous supprimerons ces informations, mais l'application ne pourra plus adapter les recommandations en conséquence. Votre sécurité alimentaire ne sera plus garantie par notre système.</p>
+        </div>
+        <p><strong>Comment exercer ce droit :</strong> Supprimez les informations d'allergies depuis votre compte, ou contactez-nous à legal@akeli.app</p>
+
+        <h3>8.7 Délai de réponse</h3>
+        <p>Nous nous engageons à répondre à toute demande d'exercice de vos droits dans un délai d'<strong>un mois</strong> à compter de la réception de votre demande.</p>
+
+        <h2 id="article9">ARTICLE 9 - DROIT DE RÉCLAMATION AUPRÈS DE LA CNIL</h2>
+        <p>Si vous estimez que le traitement de vos données personnelles constitue une violation du RGPD, vous avez le droit d'introduire une réclamation auprès de la Commission Nationale de l'Informatique et des Libertés (CNIL).</p>
+
+        <div class="info-box">
+            <p><strong>Coordonnées de la CNIL :</strong></p>
+            <p><strong>Commission Nationale de l'Informatique et des Libertés (CNIL)</strong><br>
+            3 Place de Fontenoy<br>
+            TSA 80715<br>
+            75334 PARIS CEDEX 07</p>
+            <p><strong>Téléphone :</strong> 01 53 73 22 22<br>
+            <strong>Site web :</strong> <a href="https://www.cnil.fr" target="_blank">https://www.cnil.fr</a><br>
+            <strong>Formulaire de plainte en ligne :</strong> <a href="https://www.cnil.fr/fr/plaintes" target="_blank">https://www.cnil.fr/fr/plaintes</a></p>
+        </div>
+
+        <p>Avant de saisir la CNIL, nous vous encourageons à nous contacter directement à legal@akeli.app afin que nous puissions traiter votre demande dans les meilleurs délais.</p>
+
+        <div class="footer">
+            <p>&copy; 2025 Akeli - Tous droits réservés</p>
+            <div class="footer-links">
+                <a href="mentions-legales.html">Mentions Légales</a> |
+                <a href="cgu.html">CGU</a> |
+                <a href="politique-confidentialite.html">Politique de Confidentialité</a>
+            </div>
+            <p style="margin-top: 15px;">
+                <strong>Contact :</strong> legal@akeli.app
+            </p>
+            <p style="margin-top: 10px; font-size: 12px;">
+                Date de dernière mise à jour : 28 octobre 2025 | Version 1.0
+            </p>
+        </div>
+    </div>
+</body>
+</html>

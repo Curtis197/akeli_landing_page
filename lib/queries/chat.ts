@@ -128,7 +128,9 @@ export async function getCreators(
   sort: "name" | "fan_count" = "name",
   excludeUserId?: string
 ): Promise<CreatorSearchItem[]> {
-  const safeSearch = search.replace(/%/g, "\%").replace(/_/g, "\_");
+  // Strip characters with special meaning in PostgREST filter strings (`,().:*`)
+  // and PostgreSQL LIKE pattern characters (`%_`) before interpolating into .or().
+  const safeSearch = search.replace(/[,()*.:_%]/g, "");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let query: any = supabase
     .from("creator")
@@ -137,8 +139,8 @@ export async function getCreators(
   if (excludeUserId) {
     query = query.neq("user_id", excludeUserId);
   }
-  if (search.trim().length > 0) {
-    query = query.or("display_name.ilike.%" + safeSearch + "%,username.ilike.%" + safeSearch + "%");
+  if (safeSearch.trim().length > 0) {
+    query = query.or(`display_name.ilike.%${safeSearch}%,username.ilike.%${safeSearch}%`);
   }
   if (sort === "fan_count") {
     query = query.order("fan_count", { ascending: false });

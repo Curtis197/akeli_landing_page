@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import RecipeWizard from "@/components/creator/recipe-form/RecipeWizard";
 import type { RecipeFormState } from "@/components/creator/recipe-form/RecipeWizard";
-import { CODE_TO_UNIT } from "@/lib/validations/recipe.schema";
 
 export default function EditRecipePage() {
   const { id } = useParams<{ id: string }>();
@@ -19,10 +18,24 @@ export default function EditRecipePage() {
     if (!id) return;
 
     async function loadRecipe() {
-      // draft_data stores the complete wizard form state — use it as the primary source
       const { data, error: err } = await supabase
         .from("recipe")
-        .select("id, title, description, region, difficulty, prep_time_min, cook_time_min, servings, cover_image_url, is_pork_free, draft_data")
+        .select(`
+          id, title, description, region, meal_types, preferred_meal_type,
+          difficulty, prep_time_min, cook_time_min, servings,
+          cover_image_url, is_pork_free, is_private, allergen_tags,
+          recipe_ingredient (
+            id, ingredient_id, quantity, unit, is_optional, sort_order,
+            is_section_header, title,
+            ingredient:ingredient_id ( name_fr, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g )
+          ),
+          recipe_step (
+            id, step_number, title, content, image_url, timer_seconds,
+            sort_order, is_section_header, ingredient_ids
+          ),
+          recipe_tag ( tag_id ),
+          recipe_image ( url, sort_order )
+        `)
         .eq("id", id)
         .single();
 
@@ -32,125 +45,47 @@ export default function EditRecipePage() {
         return;
       }
 
-      console.log("[EditRecipe] recipe row:", { id: data.id, has_draft_data: !!data.draft_data });
-
-      // If draft_data exists, it is the canonical form state
-      if (data.draft_data) {
-        const draft = data.draft_data as Partial<RecipeFormState>;
-        console.log("[EditRecipe] draft_data ingredients (raw):", draft.ingredients);
-        // Migrate ingredients: old format stored name/unit/quantity directly on the item.
-        // New format wraps them under ingredient: { id, name, category, status }.
-        if (draft.ingredients) {
-          draft.ingredients = draft.ingredients
-            .filter((item) => item.is_section_header || !!(item as any).ingredient || !!(item as any).name)
-            .map((item: any) => {
-              if (item.is_section_header) return item;
-              // Already in new format — but check for the "list-uuid-as-ingredient-id" corruption:
-              // when ingredient.id === item.id, the old migration wrote the list item's local UUID
-              // as the ingredient FK (not a real ingredient table ID). Null it out so the sync skips it.
-              if (item.ingredient && typeof item.ingredient.name === "string") {
-                if (item.ingredient.id && item.ingredient.id === item.id) {
-                  console.warn("[EditRecipe] ingredient.id === item.id (corrupted FK), nulling:", item);
-                  return { ...item, ingredient: { ...item.ingredient, id: null } };
-                }
-                return item;
-              }
-              // Old format: name/unit/quantity at root level
-              // NOTE: item.id is a local crypto.randomUUID(), NOT an ingredient table FK.
-              // Only use ingredient_id if it exists; otherwise skip via null so wizard filters it out.
-              const resolvedIngredientId = item.ingredient_id ?? null;
-              console.log("[EditRecipe] migrating old-format ingredient:", { item_id: item.id, ingredient_id: item.ingredient_id, name: item.name, resolvedIngredientId });
-              return {
-                id: item.id,
-                type: "ingredient" as const,
-                is_section_header: false as const,
-                ingredient: {
-                  id: resolvedIngredientId,
-                  name: item.name ?? "Ingrédient",
-                  category: null,
-                  status: "validated" as const,
-                },
-                quantity: item.quantity ?? 0,
-                unit: item.unit ?? "g",
-                is_optional: item.is_optional ?? false,
-                sort_order: item.sort_order ?? 0,
-              };
-            });
-          console.log("[EditRecipe] draft_data ingredients after migration:", draft.ingredients.length);
-        }
-        setInitialData(draft);
-        setLoading(false);
-        return;
-      }
-
-      // Fallback: reconstruct from direct columns + related tables
-      console.log("[EditRecipe] no draft_data — fetching recipe_ingredient + recipe_step");
-      const [{ data: riRows, error: riErr }, { data: stepRows, error: stepErr }] = await Promise.all([
-        supabase
-          .from("recipe_ingredient")
-          .select("id, ingredient_id, quantity, unit, is_optional, is_section_header, title, sort_order, ingredient(id, name, name_fr, name_en, status)")
-          .eq("recipe_id", id)
-          .order("sort_order", { ascending: true }),
-        supabase
-          .from("recipe_step")
-          .select("id, step_number, sort_order, content, title, is_section_header")
-          .eq("recipe_id", id)
-          .order("sort_order", { ascending: true }),
-      ]);
-      console.log("[EditRecipe] recipe_ingredient rows:", riRows, "error:", riErr);
-      console.log("[EditRecipe] recipe_step rows:", stepRows, "error:", stepErr);
-
-      const ingredients = (riRows ?? []).map((row: any) => {
-        if (row.is_section_header) {
-          return {
-            id: row.id,
-            type: "section_header" as const,
-            is_section_header: true as const,
-            title: row.title ?? "",
-            sort_order: row.sort_order ?? 0,
-          };
-        }
-        const ing = row.ingredient;
-        return {
-          id: row.id,
-          type: "ingredient" as const,
-          is_section_header: false as const,
-          ingredient: {
-            id: ing?.id ?? row.ingredient_id,
-            name: ing?.name_fr ?? ing?.name ?? ing?.name_en ?? "Ingrédient",
-            category: null,
-            status: (ing?.status ?? "validated") as "validated" | "pending",
-          },
-          quantity: row.quantity ?? 0,
-          unit: CODE_TO_UNIT[row.unit] ?? row.unit ?? "g",
-          is_optional: row.is_optional ?? false,
-          sort_order: row.sort_order ?? 0,
-        };
-      });
-
-      const steps = (stepRows ?? []).map((row: any) => {
-        if (row.is_section_header) {
-          return { id: row.id, type: "section_header" as const, is_section_header: true as const, title: row.title ?? "", sort_order: row.sort_order ?? 0 };
-        }
-        return { id: row.id, type: "step" as const, is_section_header: false as const, content: row.content ?? "", title: row.title ?? null, sort_order: row.sort_order ?? 0 };
-      });
-
       const mapped: Partial<RecipeFormState> = {
         title: data.title ?? "",
         description: (data as any).description ?? "",
         region: data.region ?? "",
-        meal_types: [],
+        meal_types: (data.meal_types as string[]) ?? [],
         difficulty: (data.difficulty as RecipeFormState["difficulty"]) ?? "",
         prep_time_min: data.prep_time_min ?? 30,
         cook_time_min: data.cook_time_min ?? 0,
         servings: data.servings ?? 4,
-        ingredients,
-        steps,
-        macros_skipped: true,
+        ingredients: ((data as any).recipe_ingredient ?? [])
+          .sort((a: any, b: any) => a.sort_order - b.sort_order)
+          .map((ing: any) => ({
+            id: ing.id,
+            ingredient_id: ing.ingredient_id,
+            name: ing.name_fr ?? "",
+            quantity: ing.quantity,
+            unit: ing.unit,
+            is_optional: ing.is_optional ?? false,
+            sort_order: ing.sort_order,
+            is_section_header: ing.is_section_header ?? false,
+            title: ing.title ?? undefined,
+          })),
+        steps: ((data as any).recipe_step ?? [])
+          .sort((a: any, b: any) => a.sort_order - b.sort_order)
+          .map((s: any) => ({
+            id: s.id,
+            step_number: s.step_number ?? 1,
+            content: s.content,
+            sort_order: s.sort_order,
+            is_section_header: s.is_section_header ?? false,
+            ingredient_ids: s.ingredient_ids ?? [],
+          })),
         cover_image_url: data.cover_image_url ?? "",
-        gallery_urls: [],
-        tags: [],
+        gallery_urls: ((data as any).recipe_image ?? [])
+          .sort((a: any, b: any) => a.sort_order - b.sort_order)
+          .map((img: any) => img.url as string),
+        tags: ((data as any).recipe_tag ?? []).map((t: any) => t.tag_id),
         is_pork_free: data.is_pork_free ?? false,
+        is_private: (data as any).is_private ?? false,
+        allergen_tags: (data as any).allergen_tags ?? [],
+        preferred_meal_type: ((data as any).preferred_meal_type as RecipeFormState["preferred_meal_type"]) ?? "any",
       };
 
       setInitialData(mapped);

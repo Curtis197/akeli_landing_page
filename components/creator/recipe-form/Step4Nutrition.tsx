@@ -1,188 +1,95 @@
+// components/creator/recipe-form/Step4Nutrition.tsx
 "use client";
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useMemo } from "react";
+import { computeMacros } from "@/lib/utils/macro-calculator";
 import type { RecipeFormState } from "./RecipeWizard";
+import type { UnitConversion } from "@/lib/queries/ingredients";
 
 interface Step4Props {
   data: RecipeFormState;
-  onChange: (patch: Partial<RecipeFormState>) => void;
-  draftId: string | null;
+  unitConversions: UnitConversion[];
 }
 
-interface MacroField {
-  key: keyof Pick<RecipeFormState, "calories" | "protein_g" | "carbs_g" | "fat_g" | "fiber_g">;
-  label: string;
-  unit: string;
-}
+export default function Step4Nutrition({ data, unitConversions }: Step4Props) {
+  const macros = useMemo(() => {
+    const ingredientsForMacro = data.ingredients
+      .filter((i) => i.is_section_header || !!i.ingredient_id)
+      .map((i) => ({
+        ingredient_id: i.ingredient_id ?? "",
+        quantity: i.quantity ?? 0,
+        unit: i.unit ?? "",
+        is_section_header: i.is_section_header,
+        calories_per_100g: i.calories_per_100g,
+        protein_per_100g: i.protein_per_100g,
+        carbs_per_100g: i.carbs_per_100g,
+        fat_per_100g: i.fat_per_100g,
+      }));
+    return computeMacros(ingredientsForMacro, unitConversions, data.servings);
+  }, [data.ingredients, unitConversions, data.servings]);
 
-const MACRO_FIELDS: MacroField[] = [
-  { key: "calories", label: "Calories", unit: "kcal" },
-  { key: "protein_g", label: "Protéines", unit: "g" },
-  { key: "carbs_g", label: "Glucides", unit: "g" },
-  { key: "fat_g", label: "Lipides", unit: "g" },
-  { key: "fiber_g", label: "Fibres", unit: "g" },
-];
-
-export default function Step4Nutrition({ data, onChange, draftId }: Step4Props) {
-  const supabase = createClient();
-  const [isCalculating, setIsCalculating] = useState(false);
-  const [calcError, setCalcError] = useState<string | null>(null);
-  const [manualMode, setManualMode] = useState(false);
-
-  const handleAutoCalc = async () => {
-    if (!draftId) {
-      setCalcError("Sauvegarde d'abord la recette avant de calculer les macros.");
-      return;
-    }
-    setIsCalculating(true);
-    setCalcError(null);
-    try {
-      const { data: result, error } = await supabase.rpc("calculate_recipe_macros", {
-        p_recipe_id: draftId,
-      });
-      if (error) throw error;
-      if (result) {
-        onChange({
-          calories: result.calories ?? undefined,
-          protein_g: result.protein_g ?? undefined,
-          carbs_g: result.carbs_g ?? undefined,
-          fat_g: result.fat_g ?? undefined,
-          fiber_g: result.fiber_g ?? undefined,
-          macros_skipped: false,
-        });
-      }
-    } catch {
-      setCalcError("Calcul impossible. Renseigne les valeurs manuellement.");
-      setManualMode(true);
-    } finally {
-      setIsCalculating(false);
-    }
-  };
-
-  const handleSkip = () => {
-    onChange({
-      calories: undefined,
-      protein_g: undefined,
-      carbs_g: undefined,
-      fat_g: undefined,
-      fiber_g: undefined,
-      macros_skipped: true,
-    });
-  };
-
-  const hasValues = MACRO_FIELDS.some((f) => data[f.key] !== undefined);
+  const rows = [
+    { label: "Calories", value: macros.calories, unit: "kcal", max: 800 },
+    { label: "Protéines", value: macros.protein_g, unit: "g", max: 50 },
+    { label: "Glucides", value: macros.carbs_g, unit: "g", max: 100 },
+    { label: "Lipides", value: macros.fat_g, unit: "g", max: 60 },
+    { label: "Fibres", value: macros.fiber_g, unit: "g", max: 20 },
+  ];
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-foreground">Informations nutritionnelles</h2>
-      <p className="text-sm text-muted-foreground">
-        Ces informations sont optionnelles mais aident les utilisateurs à suivre leur alimentation.
-      </p>
-
-      {/* Auto-calc button */}
-      {!manualMode && (
-        <div className="p-4 rounded-xl border border-border bg-secondary/30 space-y-3">
-          <p className="text-sm font-medium text-foreground">Calcul automatique</p>
-          <p className="text-xs text-muted-foreground">
-            Nous calculons les macros à partir de tes ingrédients.
-          </p>
-          <button
-            type="button"
-            onClick={handleAutoCalc}
-            disabled={isCalculating}
-            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60"
-          >
-            {isCalculating ? "Calcul en cours..." : "Calculer automatiquement"}
-          </button>
-          {calcError && (
-            <p className="text-xs text-destructive">{calcError}</p>
-          )}
-        </div>
-      )}
-
-      {/* Macro inputs */}
-      {(manualMode || hasValues) && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-foreground">
-              {manualMode ? "Saisie manuelle" : "Valeurs calculées"}
-            </p>
-            {!manualMode && (
-              <button
-                type="button"
-                onClick={() => setManualMode(true)}
-                className="text-xs text-primary hover:underline"
-              >
-                Modifier manuellement
-              </button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {MACRO_FIELDS.map(({ key, label, unit }) => (
-              <div key={key} className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">
-                  {label}
-                </label>
-                <div className="flex items-center gap-1">
-                  <input
-                    type="number"
-                    min={0}
-                    step={key === "calories" ? 1 : 0.1}
-                    value={data[key] ?? ""}
-                    onChange={(e) => {
-                      const val = e.target.value === "" ? undefined : parseFloat(e.target.value);
-                      onChange({ [key]: val, macros_skipped: false });
-                    }}
-                    readOnly={!manualMode}
-                    placeholder="—"
-                    className={`w-full px-2 py-1.5 rounded-lg border border-input text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring ${
-                      manualMode ? "bg-background" : "bg-secondary cursor-default"
-                    }`}
-                  />
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">{unit}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Manual mode toggle if no auto calc tried */}
-      {!manualMode && !hasValues && (
-        <button
-          type="button"
-          onClick={() => setManualMode(true)}
-          className="text-sm text-primary hover:underline"
-        >
-          Saisir manuellement
-        </button>
-      )}
-
-      {/* Skip */}
-      <div className="border-t border-border pt-4">
-        <label className="flex items-start gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={data.macros_skipped}
-            onChange={(e) => {
-              if (e.target.checked) {
-                handleSkip();
-              } else {
-                onChange({ macros_skipped: false });
-              }
-            }}
-            className="mt-0.5 rounded border-input accent-primary"
-          />
-          <div>
-            <p className="text-sm font-medium text-foreground">Passer cette étape</p>
-            <p className="text-xs text-muted-foreground">
-              Les informations nutritionnelles ne seront pas affichées pour cette recette.
-            </p>
-          </div>
-        </label>
+      <div>
+        <h2 className="text-xl font-semibold text-foreground">Nutrition</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Calculées automatiquement à partir du catalogue d'ingrédients — par
+          portion ({data.servings} pers.)
+        </p>
       </div>
+
+      {macros.missing_data_count > 0 && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+          <p className="text-xs text-amber-700 dark:text-amber-400">
+            ⚠ {macros.missing_data_count} ingrédient
+            {macros.missing_data_count > 1 ? "s" : ""} sans données
+            nutritionnelles — valeurs approximatives.
+          </p>
+        </div>
+      )}
+
+      <div className="space-y-4 rounded-xl border border-border p-4 bg-secondary/10">
+        {rows.map(({ label, value, unit, max }) => (
+          <div key={label} className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground">
+                {label}
+              </span>
+              <span className="text-sm text-foreground font-semibold">
+                {value} {unit}
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-secondary overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${Math.min((value / max) * 100, 100)}%` }}
+              />
+            </div>
+          </div>
+        ))}
+
+        <div className="pt-2 border-t border-border flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">
+            Poids total estimé par portion
+          </span>
+          <span className="text-xs font-medium text-foreground">
+            {macros.total_weight_g} g
+          </span>
+        </div>
+      </div>
+
+      <p className="text-xs text-muted-foreground">
+        Les fibres ne sont pas encore disponibles dans notre catalogue
+        d'ingrédients. Elles seront calculées dans une prochaine version.
+      </p>
     </div>
   );
 }

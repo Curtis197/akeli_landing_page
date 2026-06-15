@@ -12,9 +12,11 @@ export interface OpenPayload {
 
 export interface OpenResponse {
   id: string;
+  token: string;
 }
 
 export interface ClosePayload {
   closed_at: string;
   session_duration_seconds: number;
+  token: string;
 }

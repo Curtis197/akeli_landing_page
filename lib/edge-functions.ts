@@ -43,15 +43,6 @@ export async function correctText(
   return data
 }
 
-// ─── Gemini: Translate recipe (fire & forget — no await needed) ───────────────
-export function translateRecipeAsync(recipeId: string, sourceLocale: string): void {
-  // Intentionally not awaited — translation happens in background
-  const supabase = createClient()
-  supabase.functions.invoke('translate-recipe', {
-    body: { recipe_id: recipeId, source_locale: sourceLocale },
-  }).catch(err => console.warn('Translation background error:', err))
-}
-
 // ─── Translate content (generic) ─────────────────────────────────────────────
 export async function translateContent(params: {
   table: string
