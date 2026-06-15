@@ -5,9 +5,7 @@ export const step1Schema = z.object({
   description: z.string().max(300, "Maximum 300 caractères").optional(),
   region: z.string().min(1, "Région culinaire requise"),
   meal_types: z.array(z.string()).min(1, "Sélectionne au moins un type de repas"),
-  preferred_meal_type: z
-    .enum(["any", "breakfast", "lunch", "dinner", "snack"])
-    .default("any"),
+  preferred_meal_type: z.enum(["any", "breakfast", "lunch", "dinner", "snack"]),
   difficulty: z.enum(["easy", "medium", "hard"], {
     message: "Sélectionne un niveau de difficulté",
   }),

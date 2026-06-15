@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { useRouter } from "@/lib/i18n/navigation";
+import { useRouter, Link } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 
@@ -30,6 +30,7 @@ export default function ConversationPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [conversationTitle, setConversationTitle] = useState<string | null>(null);
+  const [otherCreator, setOtherCreator] = useState<{ id: string } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const myUserId = user?.id ?? null;
@@ -48,16 +49,40 @@ export default function ConversationPage() {
   }, [conversationId, supabase]);
 
   useEffect(() => {
-    // Load conversation title
-    supabase
-      .from("conversation")
-      .select("resume")
-      .eq("id", conversationId)
-      .single()
-      .then(({ data }) => setConversationTitle(data?.resume ?? null));
+    const loadConversationInfo = async () => {
+      // Load conversation title
+      const { data: convData } = await supabase
+        .from("conversation")
+        .select("resume")
+        .eq("id", conversationId)
+        .single();
+      setConversationTitle(convData?.resume ?? null);
 
+      // Find other participant and check if they are a creator
+      if (myUserId) {
+        const { data: participants } = await supabase
+          .from("conversation_participant")
+          .select("user_id")
+          .eq("conversation_id", conversationId)
+          .neq("user_id", myUserId)
+          .limit(1);
+
+        const otherId = participants?.[0]?.user_id;
+        if (otherId) {
+          const { data: creatorData } = await supabase
+            .from("creator")
+            .select("id")
+            .eq("user_id", otherId)
+            .single();
+
+          if (creatorData) setOtherCreator(creatorData);
+        }
+      }
+    };
+
+    loadConversationInfo();
     loadMessages();
-  }, [conversationId, loadMessages, supabase]);
+  }, [conversationId, loadMessages, supabase, myUserId]);
 
   // ── Supabase Realtime ───────────────────────────────────────────────────────
 
@@ -156,6 +181,20 @@ export default function ConversationPage() {
 
   // ─────────────────────────────────────────────────────────────────────────
 
+  const HeaderInfo = () => (
+    <>
+      <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-base shrink-0">
+        👤
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground truncate">
+          {conversationTitle ?? `Conversation #${conversationId.slice(0, 8)}`}
+        </p>
+        <p className="text-xs text-muted-foreground">{otherCreator ? "Creator" : "Fan"}</p>
+      </div>
+    </>
+  );
+
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
       {/* Header */}
@@ -167,15 +206,19 @@ export default function ConversationPage() {
         >
           ←
         </button>
-        <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-base shrink-0">
-          👤
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground truncate">
-            {conversationTitle ?? `Conversation #${conversationId.slice(0, 8)}`}
-          </p>
-          <p className="text-xs text-muted-foreground">Fan</p>
-        </div>
+
+        {otherCreator ? (
+          <Link
+            href={`/creator/${otherCreator.id}`}
+            className="flex flex-1 items-center gap-3 min-w-0 hover:opacity-80 transition-opacity"
+          >
+            <HeaderInfo />
+          </Link>
+        ) : (
+          <div className="flex flex-1 items-center gap-3 min-w-0">
+            <HeaderInfo />
+          </div>
+        )}
       </div>
 
       {/* Messages */}
@@ -279,3 +322,4 @@ function MessageBubble({
     </div>
   );
 }
+

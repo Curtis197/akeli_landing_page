@@ -24,9 +24,8 @@ export default function EditRecipePage() {
           id, title, description, region, meal_types, difficulty,
           prep_time_min, cook_time_min, servings,
           cover_image_url, gallery_urls, is_pork_free,
-          recipe_ingredient ( id, ingredient_id, name_fr, quantity, unit, is_optional, sort_order ),
-          recipe_step ( id, content, sort_order ),
-          recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g, is_auto ),
+          recipe_ingredient ( id, ingredient_id, name_fr, quantity, unit, is_optional, sort_order, is_section_header, title ),
+          recipe_step ( id, step_number, content, sort_order, is_section_header, ingredient_ids ),
           recipe_tag ( tag_id )
         `)
         .eq("id", id)
@@ -37,10 +36,6 @@ export default function EditRecipePage() {
         setLoading(false);
         return;
       }
-
-      const macro = Array.isArray(data.recipe_macro)
-        ? data.recipe_macro[0]
-        : data.recipe_macro;
 
       const mapped: Partial<RecipeFormState> = {
         title: data.title ?? "",
@@ -61,24 +56,26 @@ export default function EditRecipePage() {
             unit: ing.unit,
             is_optional: ing.is_optional ?? false,
             sort_order: ing.sort_order,
+            is_section_header: ing.is_section_header ?? false,
+            title: ing.title ?? undefined,
           })),
         steps: ((data as any).recipe_step ?? [])
           .sort((a: any, b: any) => a.sort_order - b.sort_order)
           .map((s: any) => ({
             id: s.id,
+            step_number: s.step_number ?? 1,
             content: s.content,
             sort_order: s.sort_order,
+            is_section_header: s.is_section_header ?? false,
+            ingredient_ids: s.ingredient_ids ?? [],
           })),
-        calories: macro?.calories ?? undefined,
-        protein_g: macro?.protein_g ?? undefined,
-        carbs_g: macro?.carbs_g ?? undefined,
-        fat_g: macro?.fat_g ?? undefined,
-        fiber_g: macro?.fiber_g ?? undefined,
-        macros_skipped: !macro,
         cover_image_url: data.cover_image_url ?? "",
         gallery_urls: (data.gallery_urls as string[]) ?? [],
         tags: ((data as any).recipe_tag ?? []).map((t: any) => t.tag_id),
         is_pork_free: data.is_pork_free ?? false,
+        is_private: (data as any).is_private ?? false,
+        allergen_tags: (data as any).allergen_tags ?? [],
+        preferred_meal_type: ((data as any).preferred_meal_type as RecipeFormState["preferred_meal_type"]) ?? "any",
       };
 
       setInitialData(mapped);

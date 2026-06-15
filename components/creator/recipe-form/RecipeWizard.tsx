@@ -1,11 +1,18 @@
+// components/creator/recipe-form/RecipeWizard.tsx
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
+import { fetchMeasurementUnits } from "@/lib/queries/measurement-units";
+import { fetchUnitConversions } from "@/lib/queries/ingredients";
+import { fetchIngredientAllergens } from "@/lib/queries/allergens";
+import type { MeasurementUnit } from "@/lib/queries/measurement-units";
+import type { UnitConversion } from "@/lib/queries/ingredients";
 import type {
-  Step1Data, Step2Data, Step3Data, Step4Data, Step5Data, Step6Data,
+  Step2Data,
+  Step3Data,
 } from "@/lib/validations/recipe.schema";
 import Step1Basic from "./Step1Basic";
 import Step2Ingredients from "./Step2Ingredients";
@@ -22,6 +29,7 @@ export interface RecipeFormState {
   description: string;
   region: string;
   meal_types: string[];
+  preferred_meal_type: "any" | "breakfast" | "lunch" | "dinner" | "snack";
   difficulty: "easy" | "medium" | "hard" | "";
   prep_time_min: number;
   cook_time_min: number;
@@ -30,19 +38,14 @@ export interface RecipeFormState {
   ingredients: Step2Data["ingredients"];
   // Step 3
   steps: Step3Data["steps"];
-  // Step 4
-  calories?: number;
-  protein_g?: number;
-  carbs_g?: number;
-  fat_g?: number;
-  fiber_g?: number;
-  macros_skipped: boolean;
   // Step 5
   cover_image_url: string;
   gallery_urls: string[];
   // Step 6
   tags: string[];
   is_pork_free: boolean;
+  is_private: boolean;
+  allergen_tags: string[];
 }
 
 const INITIAL_STATE: RecipeFormState = {
@@ -50,17 +53,19 @@ const INITIAL_STATE: RecipeFormState = {
   description: "",
   region: "",
   meal_types: [],
+  preferred_meal_type: "any",
   difficulty: "",
   prep_time_min: 30,
   cook_time_min: 0,
   servings: 4,
   ingredients: [],
   steps: [],
-  macros_skipped: false,
   cover_image_url: "",
   gallery_urls: [],
   tags: [],
   is_pork_free: false,
+  is_private: false,
+  allergen_tags: [],
 };
 
 const STEP_LABELS = [
@@ -72,14 +77,17 @@ const STEP_LABELS = [
   "Publication",
 ];
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 interface RecipeWizardProps {
-  recipeId?: string;           // If editing an existing recipe
+  recipeId?: string;
   initialData?: Partial<RecipeFormState>;
 }
 
-export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProps) {
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export default function RecipeWizard({
+  recipeId,
+  initialData,
+}: RecipeWizardProps) {
   const router = useRouter();
   const supabase = createClient();
   const { creator } = useAuthStore();
@@ -93,20 +101,25 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [units, setUnits] = useState<MeasurementUnit[]>([]);
+  const [unitConversions, setUnitConversions] = useState<UnitConversion[]>([]);
   const isDirtyRef = useRef(false);
 
-  // ── Auto-save every 30s ────────────────────────────────────────────────────
-  const saveDraft = useCallback(async (data: RecipeFormState) => {
-    if (!creator) return;
-    setIsSaving(true);
-    try {
-      // Only columns that exist on the recipe table
-      const instructions = data.steps.map((s, i) => `${i + 1}. ${s.content}`).join("\n") || "";
-      const recipePayload = {
+  // ── Fetch supporting data once on mount ───────────────────────────────────
+  useEffect(() => {
+    fetchMeasurementUnits().then(setUnits).catch(console.error);
+    fetchUnitConversions().then(setUnitConversions).catch(console.error);
+  }, []);
+
+  // ── Save recipe row ────────────────────────────────────────────────────────
+  const saveRecipeRow = useCallback(
+    async (data: RecipeFormState): Promise<string | null> => {
+      if (!creator) return null;
+
+      const payload = {
         creator_id: creator.id,
         title: data.title || "Brouillon",
         description: data.description || null,
-        instructions,
         region: data.region || null,
         difficulty: data.difficulty || null,
         prep_time_min: data.prep_time_min,
@@ -114,41 +127,143 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
         servings: data.servings,
         cover_image_url: data.cover_image_url || null,
         is_pork_free: data.is_pork_free,
+        is_private: data.is_private,
+        meal_types: data.meal_types,
+        preferred_meal_type: data.preferred_meal_type,
         is_published: false,
         language: "fr",
         draft_data: data,
       };
 
-      let id = draftId;
-      if (id) {
-        await supabase.from("recipe").update(recipePayload).eq("id", id);
+      if (draftId) {
+        await supabase.from("recipe").update(payload).eq("id", draftId);
+        return draftId;
       } else {
         const { data: newRecipe, error } = await supabase
           .from("recipe")
-          .insert(recipePayload)
+          .insert(payload)
           .select("id")
           .single();
         if (error) throw error;
-        if (newRecipe) { id = newRecipe.id; setDraftId(newRecipe.id); }
+        if (newRecipe) setDraftId(newRecipe.id);
+        return newRecipe?.id ?? null;
       }
+    },
+    [creator, draftId, supabase]
+  );
 
-      // Sync gallery images to recipe_image table
-      if (id && data.gallery_urls.length > 0) {
-        await supabase.from("recipe_image").delete().eq("recipe_id", id);
-        await supabase.from("recipe_image").insert(
-          data.gallery_urls.map((url, i) => ({ recipe_id: id, url, sort_order: i }))
-        );
+  // ── Sync recipe_ingredient ─────────────────────────────────────────────────
+  const syncIngredients = useCallback(
+    async (id: string, data: RecipeFormState) => {
+      await supabase.from("recipe_ingredient").delete().eq("recipe_id", id);
+      if (!data.ingredients.length) return;
+      await supabase.from("recipe_ingredient").insert(
+        data.ingredients.map((ing) => ({
+          recipe_id: id,
+          ingredient_id: ing.is_section_header ? null : ing.ingredient_id || null,
+          quantity: ing.is_section_header ? null : ing.quantity,
+          unit: ing.is_section_header ? null : ing.unit || null,
+          is_optional: ing.is_optional,
+          sort_order: ing.sort_order,
+          is_section_header: ing.is_section_header,
+          title: ing.is_section_header ? ing.title : null,
+        }))
+      );
+    },
+    [supabase]
+  );
+
+  // ── Sync recipe_step ───────────────────────────────────────────────────────
+  const syncSteps = useCallback(
+    async (id: string, data: RecipeFormState) => {
+      await supabase.from("recipe_step").delete().eq("recipe_id", id);
+      if (!data.steps.length) return;
+      await supabase.from("recipe_step").insert(
+        data.steps.map((step) => ({
+          recipe_id: id,
+          step_number: step.step_number,
+          title: step.title || null,
+          content: step.is_section_header ? null : step.content || null,
+          image_url: step.image_url || null,
+          timer_seconds: step.timer_seconds ?? null,
+          sort_order: step.sort_order,
+          is_section_header: step.is_section_header,
+          ingredient_ids: step.ingredient_ids ?? [],
+        }))
+      );
+    },
+    [supabase]
+  );
+
+  // ── Update recipe_macro ────────────────────────────────────────────────────
+  const updateMacros = useCallback(
+    async (id: string, data: RecipeFormState) => {
+      const { computeMacros } = await import("@/lib/utils/macro-calculator");
+      type IngredientForMacro = import("@/lib/utils/macro-calculator").IngredientForMacro;
+      const ingredientsForMacro = data.ingredients
+        .filter((i) => i.is_section_header || !!i.ingredient_id)
+        .map((i) => ({
+          ...i,
+          ingredient_id: i.ingredient_id ?? "",
+          quantity: i.quantity ?? 0,
+          unit: i.unit ?? "",
+        })) as IngredientForMacro[];
+      const macros = computeMacros(ingredientsForMacro, unitConversions, data.servings);
+      const totalG = macros.total_weight_g * data.servings;
+      await supabase
+        .from("recipe_macro")
+        .update({
+          calories: macros.calories * data.servings,
+          protein_g: macros.protein_g * data.servings,
+          carbs_g: macros.carbs_g * data.servings,
+          fat_g: macros.fat_g * data.servings,
+          fiber_g: 0,
+          total_weight_g: totalG,
+          calories_per_100g: totalG > 0 ? (macros.calories * data.servings * 100) / totalG : null,
+          protein_per_100g: totalG > 0 ? (macros.protein_g * data.servings * 100) / totalG : null,
+          carbs_per_100g: totalG > 0 ? (macros.carbs_g * data.servings * 100) / totalG : null,
+          fat_per_100g: totalG > 0 ? (macros.fat_g * data.servings * 100) / totalG : null,
+        })
+        .eq("recipe_id", id);
+    },
+    [supabase, unitConversions]
+  );
+
+  // ── Main save/sync ─────────────────────────────────────────────────────────
+  const saveDraft = useCallback(
+    async (data: RecipeFormState, syncStep?: number) => {
+      setIsSaving(true);
+      try {
+        const id = await saveRecipeRow(data);
+        if (!id) return;
+
+        if (syncStep === 2) await syncIngredients(id, data);
+        if (syncStep === 3) await syncSteps(id, data);
+        if (syncStep === 4) await updateMacros(id, data);
+
+        if (data.gallery_urls.length > 0) {
+          await supabase.from("recipe_image").delete().eq("recipe_id", id);
+          await supabase.from("recipe_image").insert(
+            data.gallery_urls.map((url, i) => ({
+              recipe_id: id,
+              url,
+              sort_order: i,
+            }))
+          );
+        }
+
+        setLastSaved(new Date());
+        isDirtyRef.current = false;
+      } catch (err) {
+        console.error("Save failed:", err);
+      } finally {
+        setIsSaving(false);
       }
+    },
+    [saveRecipeRow, syncIngredients, syncSteps, updateMacros, supabase]
+  );
 
-      setLastSaved(new Date());
-      isDirtyRef.current = false;
-    } catch (err) {
-      console.error("Auto-save failed:", err);
-    } finally {
-      setIsSaving(false);
-    }
-  }, [creator, draftId, supabase]);
-
+  // ── Auto-save every 30s ────────────────────────────────────────────────────
   useEffect(() => {
     const interval = setInterval(() => {
       if (isDirtyRef.current) saveDraft(formState);
@@ -156,25 +271,23 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
     return () => clearInterval(interval);
   }, [formState, saveDraft]);
 
-  // ── Update form state ──────────────────────────────────────────────────────
+  // ── Form update ────────────────────────────────────────────────────────────
   const updateForm = useCallback((patch: Partial<RecipeFormState>) => {
     setFormState((prev) => ({ ...prev, ...patch }));
     isDirtyRef.current = true;
   }, []);
 
-  // ── Navigation ────────────────────────────────────────────────────────────
-  const goToStep = (step: number) => {
-    if (step >= 1 && step <= 6) setCurrentStep(step);
-  };
-
+  // ── Navigation ─────────────────────────────────────────────────────────────
   const handleNext = async () => {
-    await saveDraft(formState);
-    goToStep(currentStep + 1);
+    await saveDraft(formState, currentStep);
+    if (currentStep < 6) setCurrentStep((s) => s + 1);
   };
 
-  const handlePrev = () => goToStep(currentStep - 1);
+  const handlePrev = () => {
+    if (currentStep > 1) setCurrentStep((s) => s - 1);
+  };
 
-  // ── Publish ───────────────────────────────────────────────────────────────
+  // ── Publish ────────────────────────────────────────────────────────────────
   const handlePublish = async (publish: boolean) => {
     setIsPublishing(true);
     try {
@@ -183,47 +296,33 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
       if (!id) return;
 
       if (publish) {
-        // Write related tables before publishing
-        // Tags: replace all
+        const ingredientIds = formState.ingredients
+          .filter((i) => !i.is_section_header && i.ingredient_id)
+          .map((i) => i.ingredient_id!);
+        const allergenSlugs = await fetchIngredientAllergens(ingredientIds);
+
         await supabase.from("recipe_tag").delete().eq("recipe_id", id);
         if (formState.tags.length > 0) {
           await supabase.from("recipe_tag").insert(
             formState.tags.map((tag_id) => ({ recipe_id: id, tag_id }))
           );
         }
-        // Macros
-        if (!formState.macros_skipped && formState.calories) {
-          await supabase.from("recipe_macro").upsert({
-            recipe_id: id,
-            calories: formState.calories ?? null,
-            protein_g: formState.protein_g ?? null,
-            carbs_g: formState.carbs_g ?? null,
-            fat_g: formState.fat_g ?? null,
-            fiber_g: formState.fiber_g ?? null,
-          }, { onConflict: "recipe_id" });
-        }
-        // Ingredients (only ones linked to the ingredient catalog)
-        await supabase.from("recipe_ingredient").delete().eq("recipe_id", id);
-        const linked = formState.ingredients.filter((ing) => ing.ingredient_id);
-        if (linked.length > 0) {
-          await supabase.from("recipe_ingredient").insert(
-            linked.map((ing) => ({
-              recipe_id: id,
-              ingredient_id: ing.ingredient_id,
-              quantity: ing.quantity,
-              unit: ing.unit,
-              is_optional: ing.is_optional ?? false,
-              sort_order: ing.sort_order,
-            }))
-          );
-        }
-      }
 
-      await supabase.from("recipe").update({ is_published: publish }).eq("id", id);
+        // translate_recipe trigger fires automatically on UPDATE — no manual invoke
+        await supabase
+          .from("recipe")
+          .update({
+            is_published: true,
+            allergen_tags: allergenSlugs,
+          })
+          .eq("id", id);
 
-      if (publish) {
-        // Fire-and-forget translation
-        supabase.functions.invoke("translate-recipe", { body: { recipe_id: id } });
+        updateForm({ allergen_tags: allergenSlugs });
+      } else {
+        await supabase
+          .from("recipe")
+          .update({ is_published: false })
+          .eq("id", id);
       }
 
       router.push("/dashboard/recipes");
@@ -234,37 +333,49 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
     }
   };
 
-  // ── Auto-save indicator ────────────────────────────────────────────────────
+  // ── Autosave label ─────────────────────────────────────────────────────────
   const savedLabel = (() => {
     if (isSaving) return "Sauvegarde...";
     if (!lastSaved) return "";
-    const seconds = Math.round((Date.now() - lastSaved.getTime()) / 1000);
-    if (seconds < 60) return `Sauvegardé il y a ${seconds}s`;
-    return `Sauvegardé il y a ${Math.round(seconds / 60)}min`;
+    const s = Math.round((Date.now() - lastSaved.getTime()) / 1000);
+    return s < 60 ? `Sauvegardé il y a ${s}s` : `Sauvegardé il y a ${Math.round(s / 60)}min`;
   })();
 
-  // ─────────────────────────────────────────────────────────────────────────
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Progress bar */}
-      <WizardProgress currentStep={currentStep} onStepClick={goToStep} />
+      <WizardProgress currentStep={currentStep} onStepClick={setCurrentStep} />
 
-      {/* Step content */}
       <div className="mt-8">
         {currentStep === 1 && (
           <Step1Basic data={formState} onChange={updateForm} />
         )}
         {currentStep === 2 && (
-          <Step2Ingredients data={formState} onChange={updateForm} />
+          <Step2Ingredients
+            data={formState}
+            onChange={updateForm}
+            units={units}
+          />
         )}
         {currentStep === 3 && (
-          <Step3Steps data={formState} onChange={updateForm} />
+          <Step3Steps
+            data={formState}
+            onChange={updateForm}
+            draftId={draftId}
+          />
         )}
         {currentStep === 4 && (
-          <Step4Nutrition data={formState} onChange={updateForm} draftId={draftId} />
+          <Step4Nutrition
+            data={formState}
+            unitConversions={unitConversions}
+          />
         )}
         {currentStep === 5 && (
-          <Step5Images data={formState} onChange={updateForm} draftId={draftId} />
+          <Step5Images
+            data={formState}
+            onChange={updateForm}
+            draftId={draftId}
+          />
         )}
         {currentStep === 6 && (
           <Step6Tags
@@ -277,7 +388,6 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
         )}
       </div>
 
-      {/* Bottom navigation */}
       <div className="mt-8 flex items-center justify-between border-t border-border pt-6">
         <button
           onClick={handlePrev}
@@ -286,17 +396,15 @@ export default function RecipeWizard({ recipeId, initialData }: RecipeWizardProp
         >
           ← Précédent
         </button>
-
         <span className="text-xs text-muted-foreground">{savedLabel}</span>
-
-        {currentStep < 6 ? (
+        {currentStep < 6 && (
           <button
             onClick={handleNext}
             className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
           >
             Suivant →
           </button>
-        ) : null}
+        )}
       </div>
     </div>
   );
@@ -309,11 +417,10 @@ function WizardProgress({
   onStepClick,
 }: {
   currentStep: number;
-  onStepClick: (step: number) => void;
+  onStepClick: (s: number) => void;
 }) {
   return (
     <div>
-      {/* Desktop tabs */}
       <div className="hidden sm:flex items-center gap-1">
         {STEP_LABELS.map((label, i) => {
           const step = i + 1;
@@ -336,8 +443,6 @@ function WizardProgress({
           );
         })}
       </div>
-
-      {/* Mobile progress bar */}
       <div className="sm:hidden">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-foreground">
