@@ -41,6 +41,7 @@ export default function StepCard({
       const path = `step-images/${draftId}/${step.id}`;
       const url = await uploadImage(file, path);
       update({ image_url: url });
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } finally {
       setUploading(false);
     }
@@ -216,7 +217,7 @@ export default function StepCard({
                     <button
                       key={ing.ingredient_id ?? ing.id}
                       type="button"
-                      onClick={() => toggleIngredient(ing.ingredient_id ?? "")}
+                      onClick={() => ing.ingredient_id && toggleIngredient(ing.ingredient_id)}
                       disabled={!ing.ingredient_id}
                       className={`px-2 py-1 rounded-full text-xs border transition-colors ${
                         selected
