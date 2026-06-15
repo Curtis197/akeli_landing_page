@@ -20,24 +20,26 @@ export default function Step6Tags({
   isPublishing,
 }: Step6Props) {
   const supabase = createClient();
-  const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [availableTags, setAvailableTags] = useState<
+    { id: string; name_fr: string }[]
+  >([]);
 
   useEffect(() => {
     supabase
-      .from("tags")
-      .select("name")
-      .order("name")
+      .from("tag")
+      .select("id, name_fr")
+      .order("name_fr")
       .then(({ data }) => {
-        if (data) setAvailableTags(data.map((t: { name: string }) => t.name));
+        if (data) setAvailableTags(data);
       });
   }, [supabase]);
 
-  const toggleTag = (tag: string) => {
+  const toggleTag = (tagId: string) => {
     const current = data.tags;
-    if (current.includes(tag)) {
-      onChange({ tags: current.filter((t) => t !== tag) });
+    if (current.includes(tagId)) {
+      onChange({ tags: current.filter((t) => t !== tagId) });
     } else if (current.length < 8) {
-      onChange({ tags: [...current, tag] });
+      onChange({ tags: [...current, tagId] });
     }
   };
 
@@ -47,8 +49,12 @@ export default function Step6Tags({
   if (!data.region) missing.push("Région");
   if (!data.meal_types.length) missing.push("Type de repas");
   if (!data.difficulty) missing.push("Difficulté");
-  if (data.ingredients.length < 3) missing.push("Ingrédients (min 3)");
-  if (data.steps.length < 3) missing.push("Étapes (min 3)");
+  if (data.ingredients.filter((i) => !i.is_section_header).length < 3)
+    missing.push("Ingrédients (min 3)");
+  if (data.ingredients.filter((i) => !i.is_section_header).some((i) => !i.ingredient_id))
+    missing.push("Ingrédients non liés au catalogue");
+  if (data.steps.filter((s) => !s.is_section_header).length < 3)
+    missing.push("Étapes (min 3)");
   if (!data.cover_image_url) missing.push("Photo de couverture");
 
   const canPublish = missing.length === 0;
@@ -67,13 +73,13 @@ export default function Step6Tags({
         {availableTags.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {availableTags.map((tag) => {
-              const selected = data.tags.includes(tag);
+              const selected = data.tags.includes(tag.id);
               const disabled = !selected && data.tags.length >= 8;
               return (
                 <button
-                  key={tag}
+                  key={tag.id}
                   type="button"
-                  onClick={() => toggleTag(tag)}
+                  onClick={() => toggleTag(tag.id)}
                   disabled={disabled}
                   className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
                     selected
@@ -83,7 +89,7 @@ export default function Step6Tags({
                       : "border-border text-foreground hover:bg-secondary"
                   }`}
                 >
-                  {tag}
+                  {tag.name_fr}
                 </button>
               );
             })}
@@ -92,6 +98,22 @@ export default function Step6Tags({
           <p className="text-sm text-muted-foreground">Chargement des tags...</p>
         )}
       </div>
+
+      {/* Visibility */}
+      <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-border hover:bg-secondary/30 transition-colors">
+        <input
+          type="checkbox"
+          checked={(data as any).is_private ?? false}
+          onChange={(e) => (onChange as any)({ is_private: e.target.checked })}
+          className="rounded border-input accent-primary w-4 h-4"
+        />
+        <div>
+          <p className="text-sm font-medium text-foreground">Recette privée</p>
+          <p className="text-xs text-muted-foreground">
+            Visible uniquement par vos fans abonnés.
+          </p>
+        </div>
+      </label>
 
       {/* Pork free */}
       <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-border hover:bg-secondary/30 transition-colors">
@@ -108,6 +130,27 @@ export default function Step6Tags({
           </p>
         </div>
       </label>
+
+      {(data as any).allergen_tags?.length > 0 && (
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">
+            Allergènes détectés automatiquement
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {((data as any).allergen_tags as string[]).map((slug: string) => (
+              <span
+                key={slug}
+                className="px-2 py-1 rounded-full text-xs border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+              >
+                {slug}
+              </span>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Basés sur les ingrédients sélectionnés. Vérifiez avant publication.
+          </p>
+        </div>
+      )}
 
       {/* Recipe preview card */}
       <div className="rounded-xl border border-border overflow-hidden">
