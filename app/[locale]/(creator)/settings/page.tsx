@@ -90,9 +90,12 @@ export default function SettingsPage() {
       const { data, error } = await supabase.functions.invoke("create-connect-account", {
         body: { creator_id: creator.id },
       });
+      console.log("create-connect-account response:", { data, error });
+      
       if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
+      const url = data?.url || data?.data?.url;
+      if (url) {
+        window.location.href = url;
       } else {
         throw new Error("Pas d'URL d'onboarding reçue.");
       }
