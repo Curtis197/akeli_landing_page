@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { step1Schema, MEAL_TYPES, DIFFICULTY_OPTIONS } from "@/lib/validations/recipe.schema";
+import { step1Schema, MEAL_TYPES, PREFERRED_MEAL_TYPES, DIFFICULTY_OPTIONS } from "@/lib/validations/recipe.schema";
 import type { Step1Data } from "@/lib/validations/recipe.schema";
 import type { RecipeFormState } from "./RecipeWizard";
 import { createClient } from "@/lib/supabase/client";
@@ -30,6 +30,7 @@ export default function Step1Basic({ data, onChange }: Step1Props) {
       description: data.description,
       region: data.region,
       meal_types: data.meal_types,
+      preferred_meal_type: (data as any).preferred_meal_type ?? "any",
       difficulty: data.difficulty as Step1Data["difficulty"] | undefined,
       prep_time_min: data.prep_time_min,
       cook_time_min: data.cook_time_min,
@@ -60,6 +61,7 @@ export default function Step1Basic({ data, onChange }: Step1Props) {
         description: values.description ?? "",
         region: values.region ?? "",
         meal_types: (values.meal_types as string[]) ?? [],
+        preferred_meal_type: (values.preferred_meal_type as any) ?? "any",
         difficulty: (values.difficulty as RecipeFormState["difficulty"]) ?? "",
         prep_time_min: values.prep_time_min ?? 30,
         cook_time_min: values.cook_time_min ?? 0,
@@ -171,6 +173,36 @@ export default function Step1Basic({ data, onChange }: Step1Props) {
         {errors.meal_types && (
           <p className="text-xs text-destructive">{errors.meal_types.message}</p>
         )}
+      </div>
+
+      {/* Preferred meal time */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground">
+          Moment préféré
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {PREFERRED_MEAL_TYPES.map(({ value, label }) => {
+            const selected = watch("preferred_meal_type") === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() =>
+                  setValue("preferred_meal_type", value as any, {
+                    shouldValidate: true,
+                  })
+                }
+                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                  selected
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border text-foreground hover:bg-secondary"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Difficulty */}
