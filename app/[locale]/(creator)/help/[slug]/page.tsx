@@ -161,9 +161,6 @@ export async function generateMetadata({
   return { title: `${content.title} — Aide Akeli` };
 }
 
-export function generateStaticParams() {
-  return Object.keys(HELP_CONTENT).map((slug) => ({ slug }));
-}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
