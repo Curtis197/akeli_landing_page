@@ -23,7 +23,7 @@ export default function EditRecipePage() {
         .select(`
           id, title, description, region, meal_types, preferred_meal_type,
           difficulty, prep_time_min, cook_time_min, servings,
-          cover_image_url, is_pork_free, is_private, allergen_tags,
+          cover_image_url, is_pork_free, is_private, show_on_website, allergen_tags,
           recipe_ingredient (
             id, ingredient_id, quantity, unit, is_optional, sort_order,
             is_section_header, title,
@@ -84,6 +84,7 @@ export default function EditRecipePage() {
         tags: ((data as any).recipe_tag ?? []).map((t: any) => t.tag_id),
         is_pork_free: data.is_pork_free ?? false,
         is_private: (data as any).is_private ?? false,
+        show_on_website: (data as any).show_on_website ?? false,
         allergen_tags: (data as any).allergen_tags ?? [],
         preferred_meal_type: ((data as any).preferred_meal_type as RecipeFormState["preferred_meal_type"]) ?? "any",
       };

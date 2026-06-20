@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import { Link, useRouter } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 
 export default function LoginPage() {
   const router = useRouter();
+  const params = useParams();
+  const locale = (params.locale as string) ?? "fr";
   const supabase = createClient();
   const { setUser } = useAuthStore();
 
@@ -23,14 +26,14 @@ export default function LoginPage() {
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${siteUrl}/auth/callback`,
+        redirectTo: `${siteUrl}/${locale}/auth/callback`,
       },
     });
 
     if (authError) {
-      setError(authError.message ?? "Une erreur est survenue avec Google.");
-      setLoading(false);
+      setError(authError.message || "Une erreur est survenue avec Google.");
     }
+    setLoading(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {

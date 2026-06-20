@@ -16,6 +16,7 @@ interface Recipe {
   title: string;
   cover_image_url: string | null;
   is_published: boolean;
+  show_on_website?: boolean;
   region: string | null;
   difficulty: string | null;
   created_at: string;
@@ -46,7 +47,7 @@ export default function RecipesListPage() {
       const [{ data }, perfData] = await Promise.all([
         supabase
           .from("recipe")
-          .select("id, slug, title, cover_image_url, is_published, region, difficulty, created_at")
+          .select("id, slug, title, cover_image_url, is_published, show_on_website, region, difficulty, created_at")
           .eq("creator_id", creator.id)
           .order("created_at", { ascending: false }),
         getRecipePerformance(supabase, creator.id, perfSortBy),
@@ -233,6 +234,11 @@ function RecipeRow({ recipe, perf, actionLoading, onEdit, onDuplicate, onToggleP
             <span className={"px-2 py-0.5 rounded-full text-[10px] font-medium " + (recipe.is_published ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700")}>
               {recipe.is_published ? "Publiée" : "Brouillon"}
             </span>
+            {recipe.is_published && (
+              <span className={"px-2 py-0.5 rounded-full text-[10px] font-medium " + (recipe.show_on_website ? "bg-blue-100 text-blue-700" : "bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-400")}>
+                {recipe.show_on_website ? "Sur le site" : "App uniquement"}
+              </span>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             {recipe.difficulty && <span>{DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}</span>}

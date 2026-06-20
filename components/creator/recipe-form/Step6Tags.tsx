@@ -115,6 +115,22 @@ export default function Step6Tags({
         </div>
       </label>
 
+      {/* Show on website */}
+      <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-border hover:bg-secondary/30 transition-colors">
+        <input
+          type="checkbox"
+          checked={data.show_on_website ?? false}
+          onChange={(e) => onChange({ show_on_website: e.target.checked })}
+          className="rounded border-input accent-primary w-4 h-4"
+        />
+        <div>
+          <p className="text-sm font-medium text-foreground">Afficher sur le site web</p>
+          <p className="text-xs text-muted-foreground">
+            Afficher la recette complète (ingrédients et étapes) sur le site. Si désactivé, seul un teaser sera visible.
+          </p>
+        </div>
+      </label>
+
       {/* Pork free */}
       <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-border hover:bg-secondary/30 transition-colors">
         <input

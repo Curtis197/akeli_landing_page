@@ -108,7 +108,14 @@ serve(async (req)=>{
     }
     const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
     const body = await req.json();
-    const { recipe_id, source_locale } = body;
+    let recipe_id = body.recipe_id;
+    let source_locale = body.source_locale;
+
+    // Fallback for Supabase database webhook trigger payload
+    if (!recipe_id && body.record) {
+      recipe_id = body.record.id;
+      source_locale = body.record.language;
+    }
     if (!recipe_id || !source_locale) {
       return new Response(JSON.stringify({
         error: 'recipe_id and source_locale are required'

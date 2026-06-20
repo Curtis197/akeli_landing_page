@@ -115,9 +115,18 @@
     "fats": "Lipides",
     "appOnlyTitle": "Recette disponible dans l'app Akeli",
     "appOnlySubtitle": "Accède aux ingrédients complets et aux étapes de préparation détaillées dans l'application mobile à 3€/mois seulement.",
+    "appPromotionTitle": "Envie d'aller plus loin ?",
+    "appPromotionSubtitle": "Pour un meilleur suivi, une adaptation de la recette à vos besoins et des conseils personnalisés, téléchargez l'application Akeli.",
     "platforms": "Disponible sur iOS et Android",
     "viewAllFrom": "Voir tous les plats de",
-    "servings": "{count, plural, one {# portion} other {# portions}}"
+    "servings": "{count, plural, one {# portion} other {# portions}}",
+    "ingredients": "Ingrédients",
+    "steps": "Étapes de préparation",
+    "optional": "opt.",
+    "startCooking": "Commencer la recette",
+    "finishCooking": "Terminer la cuisson",
+    "cookingMode": "Mode Cuisson",
+    "timerAlert": "Étape terminée !"
   },
   "auth": {
     "login": {

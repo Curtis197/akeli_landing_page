@@ -45,6 +45,7 @@ export interface RecipeFormState {
   tags: string[];
   is_pork_free: boolean;
   is_private: boolean;
+  show_on_website: boolean;
   allergen_tags: string[];
 }
 
@@ -65,6 +66,7 @@ const INITIAL_STATE: RecipeFormState = {
   tags: [],
   is_pork_free: false,
   is_private: false,
+  show_on_website: false,
   allergen_tags: [],
 };
 
@@ -128,6 +130,7 @@ export default function RecipeWizard({
         cover_image_url: data.cover_image_url || null,
         is_pork_free: data.is_pork_free,
         is_private: data.is_private,
+        show_on_website: data.show_on_website,
         meal_types: data.meal_types,
         preferred_meal_type: data.preferred_meal_type,
         is_published: false,
@@ -317,6 +320,7 @@ export default function RecipeWizard({
           .update({
             is_published: true,
             allergen_tags: allergenSlugs,
+            show_on_website: formState.show_on_website,
           })
           .eq("id", id);
 

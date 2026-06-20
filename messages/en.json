@@ -114,10 +114,19 @@
     "carbs": "Carbs",
     "fats": "Fats",
     "appOnlyTitle": "Recipe available in the Akeli app",
-    "appOnlySubtitle": "Access full ingredients and detailed preparation steps in the mobile app â€” â‚¬3/month only.",
+    "appOnlySubtitle": "Access full ingredients and detailed preparation steps in the mobile app — €3/month only.",
+    "appPromotionTitle": "Want to go further?",
+    "appPromotionSubtitle": "For better tracking, adaptation of the recipe, and better advice, download the Akeli app.",
     "platforms": "Available on iOS and Android",
     "viewAllFrom": "See all dishes by",
-    "servings": "{count, plural, one {# serving} other {# servings}}"
+    "servings": "{count, plural, one {# serving} other {# servings}}",
+    "ingredients": "Ingredients",
+    "steps": "Preparation Steps",
+    "optional": "optional",
+    "startCooking": "Start Cooking",
+    "finishCooking": "Finish Cooking",
+    "cookingMode": "Cooking Mode",
+    "timerAlert": "Step completed !"
   },
   "auth": {
     "login": {

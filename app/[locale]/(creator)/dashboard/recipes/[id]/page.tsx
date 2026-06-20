@@ -55,6 +55,7 @@ interface Recipe {
   servings: number | null;
   is_published: boolean;
   is_pork_free: boolean | null;
+  show_on_website: boolean | null;
   tags: string[];
   calories: number | null;
   protein_g: number | null;
@@ -102,7 +103,7 @@ export default function RecipeDetailPage() {
         .from("recipe")
         .select(
           "id, slug, title, description, cover_image_url, region, difficulty, " +
-          "prep_time_min, cook_time_min, servings, is_published, is_pork_free, " +
+          "prep_time_min, cook_time_min, servings, is_published, is_pork_free, show_on_website, " +
           "created_at, updated_at, draft_data, " +
           "food_region:region ( name_fr ), " +
           "recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ), " +
@@ -290,6 +291,17 @@ export default function RecipeDetailPage() {
           >
             {recipe.is_published ? "Publiée" : "Brouillon"}
           </span>
+          {recipe.is_published && (
+            <span
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                recipe.show_on_website
+                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                  : "bg-zinc-100 text-zinc-700 dark:bg-zinc-900/30 dark:text-zinc-400"
+              }`}
+            >
+              {recipe.show_on_website ? "Sur le site" : "App uniquement"}
+            </span>
+          )}
           {recipe.is_pork_free && (
             <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
               Sans porc

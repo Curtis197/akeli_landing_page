@@ -33,10 +33,10 @@ VALUES ('00000000-0000-0000-0000-000000000004', 'africain', 'Africain');
 
 -- ── Test 1: slug auto-generated on INSERT ─────────────────────────────────────
 
-INSERT INTO public.recipe (id, creator_id, title, difficulty, prep_time_min, servings)
+INSERT INTO public.recipe (id, creator_id, title, difficulty, prep_time_min, servings, is_published)
 VALUES ('00000000-0000-0000-0000-000000000010',
         '00000000-0000-0000-0000-000000000002',
-        'Jollof Rice Test', 'easy', 30, 4);
+        'Jollof Rice Test', 'easy', 30, 4, true);
 
 SELECT ok(
   (SELECT slug IS NOT NULL FROM public.recipe

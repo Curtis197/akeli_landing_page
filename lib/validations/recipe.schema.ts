@@ -89,6 +89,7 @@ export const step6Schema = z.object({
   tags: z.array(z.string()).max(8, "Maximum 8 tags"),
   is_pork_free: z.boolean().default(false),
   is_private: z.boolean().default(false),
+  show_on_website: z.boolean().default(false),
   allergen_tags: z.array(z.string()).default([]),
 });
 
