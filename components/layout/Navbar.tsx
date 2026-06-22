@@ -10,7 +10,6 @@ import { useAuthStore } from "@/lib/stores/authStore";
 const LOCALES = [
   { code: "fr", flag: "🇫🇷", label: "Français" },
   { code: "en", flag: "🇬🇧", label: "English" },
-  { code: "ar", flag: "🇸🇦", label: "العربية" },
 ] as const;
 
 export default function Navbar() {
