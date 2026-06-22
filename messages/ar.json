@@ -18,38 +18,90 @@
   },
   "landing": {
     "hero": {
-      "title": "ØªÙ†Ø§ÙˆÙ„ Ø·Ø¹Ø§Ù…Ùƒ ÙƒÙ…Ø§ Ø£Ù†Øª.",
-      "subtitle": "ÙˆØµÙØ§Øª ÙŠØµÙ†Ø¹Ù‡Ø§ Ù…Ø¨Ø¯Ø¹ÙˆÙ† Ù…Ù† Ø«Ù‚Ø§ÙØªÙƒØŒ Ù…ÙÙƒÙŠÙŽÙ‘ÙØ© Ù„Ø­ÙŠØ§ØªÙƒ Ø§Ù„ÙŠÙˆÙ….",
-      "ctaDownload": "ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚",
-      "ctaCreator": "ÙƒÙ† Ù…Ø¨Ø¯Ø¹Ø§Ù‹"
+      "title": "Mangez comme vous êtes.",
+      "subtitle": "Retrouvez votre corps avec les plats de chez vous.",
+      "ctaDownload": "Télécharger l'app",
+      "ctaCreator": "Devenir créateur"
     },
-    "howItWorks": {
-      "title": "ÙƒÙŠÙ ÙŠØ¹Ù…Ù„",
+    "ticker": {
+      "items": [
+        "La cuisine que vous aimez",
+        "Faite pour vous",
+        "Mangez à votre faim",
+        "Vos plats, repensés",
+        "Retrouvez votre énergie",
+        "Chez vous, partout"
+      ]
+    },
+    "mechanism": {
+      "eyebrow": "Votre cuisine, repensée pour vous",
+      "title": "Comment Akeli vous accompagne",
       "step1": {
-        "title": "Ø§ÙƒØªØ´Ù Ø§Ù„Ù…Ø¨Ø¯Ø¹ÙŠÙ†",
-        "description": "Ù…Ø¨Ø¯Ø¹ÙˆÙ† Ù…Ù† Ø«Ù‚Ø§ÙØªÙƒ ÙŠØ´Ø§Ø±ÙƒÙˆÙ† ÙˆØµÙØ§ØªÙ‡Ù…."
+        "title": "Vos plats, repensés",
+        "description": "Vos plats préférés, repensés pour vous faire du bien — le goût reste entier."
       },
       "step2": {
-        "title": "Ø§Ø·Ø¨Ø® Ù…Ø¹ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚",
-        "description": "Ø§Ø·Ù„Ø¹ Ø¹Ù„Ù‰ Ø§Ù„ÙˆØµÙØ§Øª Ø§Ù„ÙƒØ§Ù…Ù„Ø© ÙÙŠ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚."
+        "title": "Mangez à votre faim",
+        "description": "Des recettes généreuses qui rassasient vraiment. Le plaisir reste, la satiété aussi."
       },
       "step3": {
-        "title": "Ø´Ø§Ø±Ùƒ ÙˆØ¬Ø¨Ø§ØªÙƒ",
-        "description": "Ø§Ø¨Ù†Ù Ø±ÙˆØªÙŠÙ†Ùƒ Ø§Ù„Ù…Ø·Ø¨Ø®ÙŠ Ù…Ø¹ Ù…Ø¬ØªÙ…Ø¹Ùƒ."
+        "title": "Un plan qui part de vous",
+        "description": "Un accompagnement construit à partir de votre cuisine, de vos habitudes et de votre profil."
       }
     },
-    "pricing": {
-      "title": "Ø§Ø´ØªØ±Ø§Ùƒ Ø¨Ø³ÙŠØ·",
-      "price": "3â‚¬ / Ø§Ù„Ø´Ù‡Ø±",
-      "description": "Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ Ø¬Ù…ÙŠØ¹ ÙˆØµÙØ§Øª Ø§Ù„Ù…Ù†ØµØ©."
+    "payoff": {
+      "eyebrow": "Votre raison d'y croire",
+      "headline": "Retrouvez votre corps. Restez vous-même."
     },
-    "faqTitle": "Ø§Ù„Ø£Ø³Ø¦Ù„Ø© Ø§Ù„Ø´Ø§Ø¦Ø¹Ø©",
+    "proof": {
+      "eyebrow": "La communauté grandit",
+      "title": "Une cuisine qui vous ressemble",
+      "stats": {
+        "recipes": {
+          "value": "100+",
+          "label": "recettes pour commencer"
+        },
+        "regions": {
+          "value": "12",
+          "label": "régions de cuisine"
+        },
+        "culture": {
+          "value": "100%",
+          "label": "cuisine de chez vous"
+        }
+      }
+    },
+    "creatorTeaser": {
+      "eyebrow": "Pour celles et ceux qui cuisinent",
+      "headline": "Votre cuisine peut vous nourrir en retour.",
+      "cta": "Devenir créateur"
+    },
+    "pricing": {
+      "eyebrow": "Tarif",
+      "title": "Un abonnement simple",
+      "price": "2,99 €/mois",
+      "description": "Toutes les recettes, et un accompagnement fait pour vous.",
+      "features": [
+        "Toutes les recettes de la plateforme",
+        "Un plan construit à partir de votre cuisine",
+        "De nouvelles recettes chaque semaine",
+        "Sur iOS et Android"
+      ],
+      "cta": "Télécharger l'app"
+    },
+    "faqTitle": "Questions fréquentes",
+    "finalCta": {
+      "eyebrow": "On commence ?",
+      "title": "Mangez comme vous êtes.",
+      "ctaDownload": "Télécharger l'app",
+      "ctaCreator": "Devenir créateur"
+    },
     "footer": {
-      "about": "Ù…Ù† Ù†Ø­Ù†",
-      "becomeCreator": "ÙƒÙ† Ù…Ø¨Ø¯Ø¹Ø§Ù‹",
-      "terms": "Ø§Ù„Ø´Ø±ÙˆØ· ÙˆØ§Ù„Ø£Ø­ÙƒØ§Ù…",
-      "privacy": "Ø³ÙŠØ§Ø³Ø© Ø§Ù„Ø®ØµÙˆØµÙŠØ©",
-      "legal": "Ø§Ù„Ø¥Ø´Ø¹Ø§Ø±Ø§Øª Ø§Ù„Ù‚Ø§Ù†ÙˆÙ†ÙŠØ©"
+      "about": "À propos",
+      "becomeCreator": "Devenir créateur",
+      "terms": "CGU",
+      "privacy": "Confidentialité",
+      "legal": "Mentions légales"
     }
   },
   "creators": {
@@ -106,7 +158,6 @@
     "downloadApp": "ØªØ­Ù…ÙŠÙ„ ØªØ·Ø¨ÙŠÙ‚ Ø£ÙƒÙŠÙ„ÙŠ",
     "mainIngredients": "Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©",
     "moreIngredients": "Ùˆ{{count}} Ù…ÙƒÙˆÙ†Ø§Øª Ø£Ø®Ø±Ù‰",
-    "notFound": "Ø§Ù„ÙˆØµÙØ© ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯Ø©",
     "notFound": "Ø§Ù„ÙˆØµÙ Ø© ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯Ø©",
     "backToCatalog": "â†’ Ø§Ù„Ø¹ÙˆØ¯Ø© Ø¥Ù„Ù‰ Ø§Ù„ÙƒØªØ§Ù„ÙˆØ¬",
     "porkFree": "Ø®Ø§Ù„Ù  Ù…Ù† Ù„Ø­Ù… Ø§Ù„Ø®Ù†Ø²ÙŠØ±",

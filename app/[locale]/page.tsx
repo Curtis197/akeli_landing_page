@@ -13,13 +13,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const userFAQ = faqData.filter((q) => q.placement === "landing");
-const TICKER_ITEMS = [
-  "Recettes authentiques","12 regions africaines","Createurs passionnes",
-  "App mobile disponible","Cuisine de la diaspora","Partagez vos repas",
-];
 
 export default function LandingPage() {
   const t = useTranslations("landing");
+  const tickerItems = t.raw("ticker.items") as string[];
+  const pricingFeatures = t.raw("pricing.features") as string[];
   return (
     <>
       <Navbar />
@@ -63,7 +61,7 @@ export default function LandingPage() {
         {/* TICKER */}
         <div className="overflow-hidden py-3.5" style={{ backgroundColor: "var(--color-brand-amber)" }}>
           <div className="flex whitespace-nowrap animate-ticker">
-            {[...TICKER_ITEMS,...TICKER_ITEMS].map((item,i) => (
+            {[...tickerItems, ...tickerItems].map((item, i) => (
               <span key={i} className="mx-8 text-sm font-semibold" style={{ color:"var(--color-brand-dark)" }}>
                 &#10022; {item}
               </span>
@@ -71,16 +69,16 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* HOW IT WORKS */}
+        {/* MECHANISM */}
         <section className="px-6 sm:px-12 py-20 sm:py-28" style={{ backgroundColor: "var(--color-brand-cream)" }}>
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-16">
               <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color:"var(--color-brand-green)" }}>
-                Simple &amp; intuitif
+                {t("mechanism.eyebrow")}
               </p>
               <h2 className="text-4xl sm:text-5xl font-bold"
                 style={{ fontFamily:"var(--font-display)", color:"var(--color-brand-dark)" }}>
-                {t("howItWorks.title")}
+                {t("mechanism.title")}
               </h2>
             </div>
             <div className="grid sm:grid-cols-3 gap-8 sm:gap-6">
@@ -100,10 +98,10 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <h3 className="font-semibold text-base mb-2" style={{ color:"var(--color-brand-dark)" }}>
-                    {t(`howItWorks.${key}.title`)}
+                    {t(`mechanism.${key}.title`)}
                   </h3>
                   <p className="text-sm leading-relaxed" style={{ color:"var(--color-brand-forest)" }}>
-                    {t(`howItWorks.${key}.description`)}
+                    {t(`mechanism.${key}.description`)}
                   </p>
                 </div>
               ))}
@@ -111,69 +109,45 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* CREATOR FEATURE */}
-        <section className="px-6 sm:px-12 py-20 sm:py-28" style={{ backgroundColor:"var(--color-brand-dark)" }}>
-          <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <div className="relative h-[420px] sm:h-[480px] rounded-3xl overflow-hidden">
-              <Image src="/akeli/couple-phone.jpg" fill className="object-cover object-top" alt="Createurs Akeli" />
-            </div>
-            <div>
-              <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color:"var(--color-brand-amber)" }}>
-                Pour les createurs de contenu
-              </p>
-              <h2 className="text-4xl sm:text-5xl font-bold leading-[1.05] mb-6"
-                style={{ fontFamily:"var(--font-display)", color:"#F7F2EA" }}>
-                Creez.<br/>Partagez.<br/>Gagnez.
-              </h2>
-              <p className="text-base leading-relaxed mb-8" style={{ color:"rgba(247,242,234,0.75)" }}>
-                Rejoignez la plateforme dediee aux createurs culinaires de la diaspora africaine.
-                Publiez vos recettes, constituez votre communaute et monetisez votre passion.
-              </p>
-              <div className="space-y-4 mb-10">
-                {["Publiez vos recettes en quelques minutes",
-                  "Gagnez sur chaque abonnement de fan",
-                  "Analytics et insights en temps reel"].map((feat) => (
-                  <div key={feat} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                      style={{ backgroundColor:"var(--color-brand-green)" }}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    </div>
-                    <p className="text-sm" style={{ color:"rgba(247,242,234,0.8)" }}>{feat}</p>
-                  </div>
-                ))}
-              </div>
-              <Link href="/become-creator"
-                className="inline-flex items-center gap-2 rounded-xl px-7 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
-                style={{ backgroundColor:"var(--color-brand-amber)", color:"var(--color-brand-dark)" }}>
-                {t("hero.ctaCreator")}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </Link>
-            </div>
+        {/* CREATOR TEASER */}
+        <section className="px-6 sm:px-12 py-16" style={{ backgroundColor:"var(--color-brand-dark)" }}>
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color:"var(--color-brand-amber)" }}>
+              {t("creatorTeaser.eyebrow")}
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6"
+              style={{ fontFamily:"var(--font-display)", color:"#F7F2EA" }}>
+              {t("creatorTeaser.headline")}
+            </h2>
+            <Link href="/become-creator"
+              className="inline-flex items-center gap-2 rounded-xl px-7 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
+              style={{ backgroundColor:"var(--color-brand-amber)", color:"var(--color-brand-dark)" }}>
+              {t("creatorTeaser.cta")}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </Link>
           </div>
         </section>
 
-        {/* FOOD QUOTE */}
+        {/* EMOTIONAL PAYOFF */}
         <section className="relative h-[420px] sm:h-[520px] overflow-hidden">
           <Image src="/akeli/feast-table.jpg" fill className="object-cover object-center" alt="La table africaine" />
           <div className="absolute inset-0 flex items-center justify-center text-center px-6"
             style={{ backgroundColor:"rgba(28,43,28,0.65)" }}>
             <div>
               <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color:"var(--color-brand-amber)" }}>
-                Notre raison d&apos;être
+                {t("payoff.eyebrow")}
               </p>
               <h2 className="text-3xl sm:text-5xl font-bold text-white max-w-3xl mx-auto leading-tight"
                 style={{ fontFamily:"var(--font-display)" }}>
-                &ldquo;La cuisine africaine, racontee par ceux qui la vivent.&rdquo;
+                {t("payoff.headline")}
               </h2>
             </div>
           </div>
         </section>
 
-        {/* COMMUNITY */}
+        {/* PROOF */}
         <section className="relative overflow-hidden">
           <div className="absolute inset-0">
             <Image src="/akeli/friends-meal.jpg" fill className="object-cover object-top" alt="Communaute Akeli" />
@@ -182,26 +156,24 @@ export default function LandingPage() {
           <div className="relative px-6 sm:px-12 py-20 sm:py-28 max-w-5xl mx-auto">
             <div className="text-center mb-14">
               <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color:"var(--color-brand-amber)" }}>
-                La communaute grandit
+                {t("proof.eyebrow")}
               </p>
               <h2 className="text-4xl sm:text-5xl font-bold text-white"
                 style={{ fontFamily:"var(--font-display)" }}>
-                Une famille qui partage
+                {t("proof.title")}
               </h2>
             </div>
             <div className="grid grid-cols-3 gap-4 sm:gap-8 text-center">
-              {[
-                { number: "500+", label: "Recettes publiees" },
-                { number: "12", label: "Regions africaines" },
-                { number: "100%", label: "Fait avec passion" },
-              ].map(({ number, label }) => (
-                <div key={label} className="p-4 sm:p-6 rounded-2xl"
+              {(["recipes", "regions", "culture"] as const).map((k) => (
+                <div key={k} className="p-4 sm:p-6 rounded-2xl"
                   style={{ backgroundColor:"rgba(247,242,234,0.1)", backdropFilter:"blur(8px)" }}>
                   <p className="text-3xl sm:text-5xl font-bold mb-2"
                     style={{ fontFamily:"var(--font-display)", color:"var(--color-brand-amber)" }}>
-                    {number}
+                    {t(`proof.stats.${k}.value`)}
                   </p>
-                  <p className="text-xs sm:text-sm font-medium" style={{ color:"rgba(247,242,234,0.75)" }}>{label}</p>
+                  <p className="text-xs sm:text-sm font-medium" style={{ color:"rgba(247,242,234,0.75)" }}>
+                    {t(`proof.stats.${k}.label`)}
+                  </p>
                 </div>
               ))}
             </div>
@@ -212,7 +184,7 @@ export default function LandingPage() {
         <section className="px-6 sm:px-12 py-20 sm:py-28" style={{ backgroundColor:"var(--color-brand-cream)" }}>
           <div className="max-w-lg mx-auto text-center">
             <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color:"var(--color-brand-green)" }}>
-              Tarif
+              {t("pricing.eyebrow")}
             </p>
             <h2 className="text-4xl sm:text-5xl font-bold mb-12"
               style={{ fontFamily:"var(--font-display)", color:"var(--color-brand-dark)" }}>
@@ -231,10 +203,7 @@ export default function LandingPage() {
                   {t("pricing.description")}
                 </p>
                 <div className="space-y-3 mb-8">
-                  {["Acces illimite a toutes les recettes",
-                    "Recettes des createurs de votre culture",
-                    "Nouvelles recettes chaque semaine",
-                    "Application mobile iOS et Android"].map((item) => (
+                  {pricingFeatures.map((item) => (
                     <div key={item} className="flex items-center gap-3">
                       <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
                         style={{ backgroundColor:"var(--color-brand-green)" }}>
@@ -248,7 +217,7 @@ export default function LandingPage() {
                 </div>
                 <a href="#" className="block w-full text-center rounded-xl py-4 text-sm font-semibold transition-all hover:scale-[1.01]"
                   style={{ backgroundColor:"var(--color-brand-amber)", color:"var(--color-brand-dark)" }}>
-                  {t("hero.ctaDownload")}
+                  {t("pricing.cta")}
                 </a>
               </div>
             </div>
@@ -275,16 +244,16 @@ export default function LandingPage() {
             style={{ background:"linear-gradient(135deg, rgba(28,43,28,0.88) 0%, rgba(28,43,28,0.6) 100%)" }} />
           <div className="relative px-6 sm:px-12 w-full max-w-3xl mx-auto text-center">
             <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color:"var(--color-brand-amber)" }}>
-              Pret a commencer ?
+              {t("finalCta.eyebrow")}
             </p>
             <h2 className="text-4xl sm:text-6xl font-bold text-white mb-8"
               style={{ fontFamily:"var(--font-display)" }}>
-              Mangez comme vous &ecirc;tes.
+              {t("finalCta.title")}
             </h2>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a href="#" className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
                 style={{ backgroundColor:"var(--color-brand-amber)", color:"var(--color-brand-dark)" }}>
-                {t("hero.ctaDownload")}
+                {t("finalCta.ctaDownload")}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
@@ -292,7 +261,7 @@ export default function LandingPage() {
               <Link href="/become-creator"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border-2 px-8 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
                 style={{ borderColor:"rgba(247,242,234,0.5)", color:"#F7F2EA" }}>
-                {t("hero.ctaCreator")}
+                {t("finalCta.ctaCreator")}
               </Link>
             </div>
           </div>

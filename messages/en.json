@@ -23,33 +23,85 @@
       "ctaDownload": "Download the app",
       "ctaCreator": "Become a creator"
     },
-    "howItWorks": {
-      "title": "How it works",
+    "ticker": {
+      "items": [
+        "La cuisine que vous aimez",
+        "Faite pour vous",
+        "Mangez à votre faim",
+        "Vos plats, repensés",
+        "Retrouvez votre énergie",
+        "Chez vous, partout"
+      ]
+    },
+    "mechanism": {
+      "eyebrow": "Votre cuisine, repensée pour vous",
+      "title": "Comment Akeli vous accompagne",
       "step1": {
-        "title": "Discover creators",
-        "description": "Creators from your culture share their recipes."
+        "title": "Vos plats, repensés",
+        "description": "Vos plats préférés, repensés pour vous faire du bien — le goût reste entier."
       },
       "step2": {
-        "title": "Cook with the app",
-        "description": "Access full recipes in the application."
+        "title": "Mangez à votre faim",
+        "description": "Des recettes généreuses qui rassasient vraiment. Le plaisir reste, la satiété aussi."
       },
       "step3": {
-        "title": "Share your meals",
-        "description": "Build your cooking routine with your community."
+        "title": "Un plan qui part de vous",
+        "description": "Un accompagnement construit à partir de votre cuisine, de vos habitudes et de votre profil."
       }
     },
-    "pricing": {
-      "title": "Simple pricing",
-      "price": "â‚¬3/month",
-      "description": "Access to all recipes on the platform."
+    "payoff": {
+      "eyebrow": "Votre raison d'y croire",
+      "headline": "Retrouvez votre corps. Restez vous-même."
     },
-    "faqTitle": "Frequently asked questions",
+    "proof": {
+      "eyebrow": "La communauté grandit",
+      "title": "Une cuisine qui vous ressemble",
+      "stats": {
+        "recipes": {
+          "value": "100+",
+          "label": "recettes pour commencer"
+        },
+        "regions": {
+          "value": "12",
+          "label": "régions de cuisine"
+        },
+        "culture": {
+          "value": "100%",
+          "label": "cuisine de chez vous"
+        }
+      }
+    },
+    "creatorTeaser": {
+      "eyebrow": "Pour celles et ceux qui cuisinent",
+      "headline": "Votre cuisine peut vous nourrir en retour.",
+      "cta": "Devenir créateur"
+    },
+    "pricing": {
+      "eyebrow": "Tarif",
+      "title": "Un abonnement simple",
+      "price": "2,99 €/mois",
+      "description": "Toutes les recettes, et un accompagnement fait pour vous.",
+      "features": [
+        "Toutes les recettes de la plateforme",
+        "Un plan construit à partir de votre cuisine",
+        "De nouvelles recettes chaque semaine",
+        "Sur iOS et Android"
+      ],
+      "cta": "Télécharger l'app"
+    },
+    "faqTitle": "Questions fréquentes",
+    "finalCta": {
+      "eyebrow": "On commence ?",
+      "title": "Mangez comme vous êtes.",
+      "ctaDownload": "Télécharger l'app",
+      "ctaCreator": "Devenir créateur"
+    },
     "footer": {
-      "about": "About",
-      "becomeCreator": "Become a creator",
-      "terms": "Terms",
-      "privacy": "Privacy",
-      "legal": "Legal notice"
+      "about": "À propos",
+      "becomeCreator": "Devenir créateur",
+      "terms": "CGU",
+      "privacy": "Confidentialité",
+      "legal": "Mentions légales"
     }
   },
   "creators": {
