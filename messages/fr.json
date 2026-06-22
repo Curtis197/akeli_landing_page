@@ -95,6 +95,92 @@
       "legal": "Mentions légales"
     }
   },
+  "becomeCreator": {
+    "hero": {
+      "title": "Votre cuisine vaut plus qu'un like.",
+      "subtitle": "Ce que vous savez cuisiner peut vous nourrir en retour. Touchez une audience qui mange vos recettes, et gagnez au résultat réel.",
+      "ctaJoin": "Rejoindre gratuitement",
+      "ctaFaq": "Questions fréquentes"
+    },
+    "stats": [
+      { "value": "30 min", "label": "pour publier une recette" },
+      { "value": "8", "label": "langues automatiques" },
+      { "value": "1€", "label": "pour 90 consommations" },
+      { "value": "0%", "label": "de commission Akeli" }
+    ],
+    "steps": {
+      "eyebrow": "Simple & guidé",
+      "title": "Démarrer en 4 étapes",
+      "step1": { "title": "Créez votre compte", "description": "Inscription gratuite en 2 minutes. Aucune carte bancaire requise." },
+      "step2": { "title": "Publiez vos premières recettes", "description": "Un wizard guidé en 6 étapes. L'IA traduit automatiquement dans 8 langues." },
+      "step3": { "title": "Partagez avec votre audience", "description": "Votre profil public et vos recettes sont accessibles depuis l'app mobile." },
+      "step4": { "title": "Percevez vos revenus", "description": "1€ par tranche de 90 consommations. Paiement le 5 de chaque mois via Stripe." }
+    },
+    "belief": {
+      "eyebrow": "Le talent est partout",
+      "headline": "Vos recettes comptent par leurs résultats, pas par votre nombre d'abonnés.",
+      "body": "Sur Akeli, ce qui compte, c'est ce que vos recettes apportent vraiment aux gens. Le talent vient de partout — et il se mesure aux résultats réels."
+    },
+    "model": {
+      "eyebrow": "Deux sources de revenus",
+      "title": "Sans commission. Sans algorithme.",
+      "body": "Akeli ne prend aucune commission sur vos revenus. Vous gagnez sur chaque consommation et sur chaque fan fidèle.",
+      "badge": "1€/fan garanti chaque mois",
+      "standard": { "label": "Mode standard", "value": "1€", "desc": "par tranche de 90 consommations — elles s'accumulent d'un mois à l'autre." },
+      "fan": { "label": "Mode Fan", "badge": "dès 30 recettes", "value": "1€/fan/mois", "desc": "100 fans = 100€/mois garantis, indépendamment des consommations." }
+    },
+    "faqTitle": "Questions fréquentes",
+    "finalCta": {
+      "eyebrow": "Prêt à commencer ?",
+      "title": "Partagez votre cuisine avec le monde.",
+      "body": "Inscription gratuite. Aucun engagement. Vos premières recettes en ligne en moins d'une heure.",
+      "cta": "Créer mon compte créateur"
+    },
+    "footer": {
+      "backHome": "← Retour à l'accueil",
+      "terms": "CGU",
+      "privacy": "Confidentialité",
+      "contact": "Contact créateurs"
+    },
+    "meta": {
+      "title": "Devenir créateur Akeli — Votre cuisine vaut plus qu'un like",
+      "description": "Publiez vos recettes de la diaspora africaine, touchez une audience qui les cuisine, et gagnez au résultat réel — sans commission, sans algorithme."
+    }
+  },
+  "about": {
+    "intro": {
+      "title": "À propos d'Akeli",
+      "lead": "Akeli réadapte la cuisine africaine à la vie moderne, avec les outils de la modernité. Pas un régime — une remise en phase entre une cuisine et un mode de vie.",
+      "genesis": "Akeli a commencé avec une femme, pas avec une étude de marché. Une femme qui voulait retrouver son corps en continuant à manger la cuisine qu'elle aime. C'est d'elle que tout est parti."
+    },
+    "pillar1": {
+      "title": "Le réalignement",
+      "body": "Nos vies ont changé ; notre cuisine, elle, mérite de rester la nôtre. Akeli réadapte les plats de chez vous à votre quotidien — vos habitudes, votre énergie, votre profil. La transformation du corps en est la conséquence naturelle, jamais une punition."
+    },
+    "pillar2": {
+      "title": "Le talent est partout",
+      "body": "La bonne solution peut venir de n'importe qui. Akeli fait confiance au collectif et aux résultats réels : des créateurs de tous milieux créent des recettes qui marchent vraiment, et les retours des utilisateurs révèlent ce qui fonctionne, profil par profil. Les nutritionnistes et diététiciens y ont toute leur place — une voix dans le collectif, parmi d'autres."
+    },
+    "pillar3": {
+      "title": "Combattre la modernité par la modernité",
+      "body": "La désynchronisation entre nos cuisines et nos modes de vie touche toutes les cultures. Akeli commence avec la diaspora africaine — là où la pertinence est la plus forte — et porte une logique universelle : redonner à chaque culture une cuisine en phase avec sa vie d'aujourd'hui."
+    },
+    "cta": {
+      "title": "Rejoignez le mouvement",
+      "ctaCreator": "Devenir créateur",
+      "ctaUser": "Découvrir l'app"
+    },
+    "contact": "Une question, une idée, un partenariat ? hello@akeli.app",
+    "footer": {
+      "terms": "CGU",
+      "privacy": "Confidentialité",
+      "legal": "Mentions légales"
+    },
+    "meta": {
+      "title": "À propos — Akeli",
+      "description": "La voie Akeli : réadapter la cuisine africaine à la vie moderne. Le réalignement, le talent partout, et une vision universelle."
+    }
+  },
   "creators": {
     "pageTitle": "Créateurs Akeli",
     "subtitle": "Découvrez les créateurs culinaires de la diaspora africaine.",
