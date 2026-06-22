@@ -147,7 +147,7 @@ Write in French. Include every block below verbatim in substance (the « … » 
    ou « Retrouvez votre corps avec les plats de chez vous. »
 3. Mécanisme : vos propres plats africains, repensés et faits pour vous ;
    mangez à votre faim, le goût reste.
-4. Validation (avec parcimonie) : « Vous n'étiez pas le problème. »
+4. Validation (avec parcimonie) : « Vous méritiez une méthode faite pour vous. »
 5. Paie émotionnelle : reprendre le contrôle de son corps ; se sentir à nouveau
    soi-même ; apaiser l'angoisse du matin ; sortir du yo-yo.
 6. Preuves : recettes repensées · personnalisation · ce qui marche pour des profils

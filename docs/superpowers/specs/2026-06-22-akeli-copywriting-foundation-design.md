@@ -123,8 +123,9 @@ The copywriting bible. Sections:
    *« Retrouvez votre corps avec les plats de chez vous. »*
 3. **Mechanism (B):** vos propres plats africains, repensés et **faits pour vous** ; mangez à
    votre faim, le goût reste. (Proof: fermented-cabbage fufu, light seasoned soups.)
-4. **Validation (used sparingly):** *vous n'étiez pas le problème* — the punishing diet
-   experience was. Never the lead; always within the no-trigger rules.
+4. **Validation (used sparingly):** *« Vous méritiez une méthode faite pour vous. »* —
+   affirmative, forward-looking, ties to the mechanism. Never the lead; always within the
+   no-trigger rules.
 5. **Emotional payoff:** reprendre le contrôle de son corps ; se sentir à nouveau soi-même ;
    apaiser l'angoisse du matin ; sortir du yo-yo.
 6. **Proof points:** recettes repensées · personnalisation (un plan à partir de *votre*
