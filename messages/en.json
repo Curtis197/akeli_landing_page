@@ -19,89 +19,89 @@
   "landing": {
     "hero": {
       "title": "Eat as you are.",
-      "subtitle": "Recipes created by creators from your culture, adapted to your life today.",
+      "subtitle": "Get your body back, with the dishes from home.",
       "ctaDownload": "Download the app",
       "ctaCreator": "Become a creator"
     },
     "ticker": {
       "items": [
-        "La cuisine que vous aimez",
-        "Faite pour vous",
-        "Mangez à votre faim",
-        "Vos plats, repensés",
-        "Retrouvez votre énergie",
-        "Chez vous, partout"
+        "The food you love",
+        "Made for you",
+        "Eat your fill",
+        "Your dishes, reimagined",
+        "Get your energy back",
+        "Home, everywhere"
       ]
     },
     "mechanism": {
-      "eyebrow": "Votre cuisine, repensée pour vous",
-      "title": "Comment Akeli vous accompagne",
+      "eyebrow": "Your cuisine, reimagined for you",
+      "title": "How Akeli supports you",
       "step1": {
-        "title": "Vos plats, repensés",
-        "description": "Vos plats préférés, repensés pour vous faire du bien — le goût reste entier."
+        "title": "Your dishes, reimagined",
+        "description": "Your favorite dishes, reimagined to make you feel good — the taste stays whole."
       },
       "step2": {
-        "title": "Mangez à votre faim",
-        "description": "Des recettes généreuses qui rassasient vraiment. Le plaisir reste, la satiété aussi."
+        "title": "Eat your fill",
+        "description": "Generous recipes that truly satisfy. The pleasure stays, and so does the fullness."
       },
       "step3": {
-        "title": "Un plan qui part de vous",
-        "description": "Un accompagnement construit à partir de votre cuisine, de vos habitudes et de votre profil."
+        "title": "A plan that starts with you",
+        "description": "Guidance built from your own cuisine, your habits and your profile."
       }
     },
     "payoff": {
-      "eyebrow": "Votre raison d'y croire",
-      "headline": "Retrouvez votre corps. Restez vous-même."
+      "eyebrow": "Your reason to believe",
+      "headline": "Get your body back. Stay yourself."
     },
     "proof": {
-      "eyebrow": "La communauté grandit",
-      "title": "Une cuisine qui vous ressemble",
+      "eyebrow": "The community is growing",
+      "title": "A cuisine that looks like you",
       "stats": {
         "recipes": {
           "value": "100+",
-          "label": "recettes pour commencer"
+          "label": "recipes to start"
         },
         "regions": {
           "value": "12",
-          "label": "régions de cuisine"
+          "label": "culinary regions"
         },
         "culture": {
           "value": "100%",
-          "label": "cuisine de chez vous"
+          "label": "food from home"
         }
       }
     },
     "creatorTeaser": {
-      "eyebrow": "Pour celles et ceux qui cuisinent",
-      "headline": "Votre cuisine peut vous nourrir en retour.",
-      "cta": "Devenir créateur"
+      "eyebrow": "For those who cook",
+      "headline": "Your cooking can feed you back.",
+      "cta": "Become a creator"
     },
     "pricing": {
-      "eyebrow": "Tarif",
-      "title": "Un abonnement simple",
-      "price": "2,99 €/mois",
-      "description": "Toutes les recettes, et un accompagnement fait pour vous.",
+      "eyebrow": "Pricing",
+      "title": "One simple subscription",
+      "price": "€2.99/month",
+      "description": "Every recipe, plus guidance made for you.",
       "features": [
-        "Toutes les recettes de la plateforme",
-        "Un plan construit à partir de votre cuisine",
-        "De nouvelles recettes chaque semaine",
-        "Sur iOS et Android"
+        "Every recipe on the platform",
+        "A plan built from your own cuisine",
+        "New recipes every week",
+        "On iOS and Android"
       ],
-      "cta": "Télécharger l'app"
+      "cta": "Download the app"
     },
-    "faqTitle": "Questions fréquentes",
+    "faqTitle": "Frequently asked questions",
     "finalCta": {
-      "eyebrow": "On commence ?",
-      "title": "Mangez comme vous êtes.",
-      "ctaDownload": "Télécharger l'app",
-      "ctaCreator": "Devenir créateur"
+      "eyebrow": "Shall we start?",
+      "title": "Eat as you are.",
+      "ctaDownload": "Download the app",
+      "ctaCreator": "Become a creator"
     },
     "footer": {
-      "about": "À propos",
-      "becomeCreator": "Devenir créateur",
-      "terms": "CGU",
-      "privacy": "Confidentialité",
-      "legal": "Mentions légales"
+      "about": "About",
+      "becomeCreator": "Become a creator",
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "legal": "Legal notice"
     }
   },
   "creators": {
