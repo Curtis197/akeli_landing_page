@@ -32,14 +32,8 @@ export default function AboutPage() {
             >
               {t("intro.title")}
             </h1>
-            <p className="text-lg sm:text-xl leading-relaxed mb-6" style={{ color: "var(--color-brand-dark)" }}>
+            <p className="text-lg sm:text-xl leading-relaxed" style={{ color: "var(--color-brand-dark)" }}>
               {t("intro.lead")}
-            </p>
-            <p
-              className="text-base leading-relaxed border-l-2 pl-5"
-              style={{ color: "var(--color-brand-forest)", borderColor: "var(--color-brand-amber)" }}
-            >
-              {t("intro.genesis")}
             </p>
           </div>
         </section>

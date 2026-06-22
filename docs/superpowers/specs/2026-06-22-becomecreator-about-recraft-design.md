@@ -121,13 +121,13 @@ about.meta.{title,description}
 ### FR
 - **intro.title:** « À propos d'Akeli »
 - **intro.lead:** « Akeli réadapte la cuisine africaine à la vie moderne, avec les outils de la modernité. Pas un régime — une remise en phase entre une cuisine et un mode de vie. »
-- **intro.genesis:** « Akeli a commencé avec une femme, pas avec une étude de marché. Une femme qui voulait retrouver son corps en continuant à manger la cuisine qu'elle aime. C'est d'elle que tout est parti. »
+- **intro.genesis:** *(removed from the public page — the genesis stays internal, see `AKELI_GENESE_PERSONA.md`)*
 - **pillar1.title:** « Le réalignement »
   **pillar1.body:** « Nos vies ont changé ; notre cuisine, elle, mérite de rester la nôtre. Akeli réadapte les plats de chez vous à votre quotidien — vos habitudes, votre énergie, votre profil. La transformation du corps en est la conséquence naturelle, jamais une punition. »
 - **pillar2.title:** « Le talent est partout »
-  **pillar2.body:** « La bonne solution peut venir de n'importe qui. Akeli fait confiance au collectif et aux résultats réels : des créateurs de tous milieux créent des recettes qui marchent vraiment, et les retours des utilisateurs révèlent ce qui fonctionne, profil par profil. Les nutritionnistes et diététiciens y ont toute leur place — une voix dans le collectif, parmi d'autres. »
+  **pillar2.body:** « La bonne solution peut venir de n'importe qui. Akeli fait confiance au collectif et aux résultats réels : des créateurs de tous milieux créent des recettes qui marchent vraiment, et les retours des utilisateurs révèlent ce qui fonctionne, profil par profil. » *(the nutritionists/dietitians line stays internal)*
 - **pillar3.title:** « Combattre la modernité par la modernité »
-  **pillar3.body:** « La désynchronisation entre nos cuisines et nos modes de vie touche toutes les cultures. Akeli commence avec la diaspora africaine — là où la pertinence est la plus forte — et porte une logique universelle : redonner à chaque culture une cuisine en phase avec sa vie d'aujourd'hui. »
+  **pillar3.body:** « La vie moderne — sédentaire, urbaine, pressée — a éloigné nos cuisines de nos corps. Akeli combat ce décalage avec les outils mêmes de la modernité : algorithmes, données réelles, personnalisation. La technologie remet notre héritage culinaire en phase avec la vie d'aujourd'hui — au service de notre culture, jamais contre elle. »
 - **cta.title:** « Rejoignez le mouvement » · **cta.ctaCreator:** « Devenir créateur » · **cta.ctaUser:** « Découvrir l'app »
 - **contact:** « Une question, une idée, un partenariat ? hello@akeli.app »
 - **footer:** terms « CGU » · privacy « Confidentialité » · legal « Mentions légales »
@@ -137,13 +137,13 @@ about.meta.{title,description}
 ### EN
 - **intro.title:** "About Akeli"
 - **intro.lead:** "Akeli realigns African cuisine with modern life, using the tools of modernity. Not a diet — a way to bring a cuisine and a lifestyle back in sync."
-- **intro.genesis:** "Akeli began with a woman, not a market study. A woman who wanted to get her body back while still eating the food she loves. Everything started with her."
+- **intro.genesis:** *(removed from the public page — internal only)*
 - **pillar1.title:** "Realignment"
   **body:** "Our lives have changed; our cuisine deserves to stay ours. Akeli adapts the dishes from home to your everyday — your habits, your energy, your profile. The change in your body follows naturally, never as a punishment."
 - **pillar2.title:** "Talent is everywhere"
-  **body:** "The right solution can come from anyone. Akeli trusts the collective and real results: creators of every background create recipes that genuinely work, and user feedback reveals what works, profile by profile. Nutritionists and dietitians have their place here too — one voice in the collective, among others."
+  **body:** "The right solution can come from anyone. Akeli trusts the collective and real results: creators of every background create recipes that genuinely work, and user feedback reveals what works, profile by profile."
 - **pillar3.title:** "Fighting modernity with modernity"
-  **body:** "The gap between our cuisines and our lifestyles touches every culture. Akeli starts with the African diaspora — where it matters most — and carries a universal idea: give every culture a cuisine in sync with life today."
+  **body:** "Modern life — sedentary, urban, fast — pulled our cuisines away from our bodies. Akeli answers that gap with the very tools of modernity: algorithms, real-world data, personalization. Technology brings our culinary heritage back in sync with life today — serving our culture, never working against it."
 - **cta.title:** "Join the movement" · **ctaCreator:** "Become a creator" · **ctaUser:** "Discover the app"
 - **contact:** "A question, an idea, a partnership? hello@akeli.app"
 - **footer:** "Terms" · "Privacy" · "Legal notice"
