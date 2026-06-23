@@ -24,6 +24,7 @@ export const ingredientItemSchema = z.object({
   sort_order: z.number().int(),
   is_section_header: z.boolean().default(false),
   title: z.string().optional(),
+  swappable_ingredients: z.array(z.object({ id: z.string(), name: z.string() })).default([]),
   // Nutritional data from catalog (not persisted to recipe_ingredient, used for Step 4)
   calories_per_100g: z.number().nullable().optional(),
   protein_per_100g: z.number().nullable().optional(),

@@ -170,6 +170,7 @@ export default function RecipeWizard({
           sort_order: ing.sort_order,
           is_section_header: ing.is_section_header,
           title: ing.is_section_header ? ing.title : null,
+          swappable_ingredient_ids: ing.is_section_header ? [] : (ing.swappable_ingredients?.map(s => s.id) || []),
         }))
       );
     },

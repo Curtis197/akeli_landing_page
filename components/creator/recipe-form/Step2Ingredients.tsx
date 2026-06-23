@@ -47,6 +47,7 @@ const EMPTY_DRAFT = (): Omit<IngredientItem, "sort_order"> => ({
   protein_per_100g: null,
   carbs_per_100g: null,
   fat_per_100g: null,
+  swappable_ingredients: [],
 });
 
 export default function Step2Ingredients({
@@ -58,6 +59,7 @@ export default function Step2Ingredients({
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState(EMPTY_DRAFT());
   const [submitModalQuery, setSubmitModalQuery] = useState<string | null>(null);
+  const [swappingForId, setSwappingForId] = useState<string | null>(null);
   const [isMetricUser, setIsMetricUser] = useState(true);
   const dndId = useId();
 
@@ -109,6 +111,7 @@ export default function Step2Ingredients({
       sort_order: ingredients.length,
       is_section_header: true,
       title: "Nouvelle section",
+      swappable_ingredients: [],
     };
     updateIngredients([...ingredients, section]);
   };
@@ -161,9 +164,81 @@ export default function Step2Ingredients({
           initialName={submitModalQuery}
           onClose={() => {
             setSubmitModalQuery(null);
-            setDraft(EMPTY_DRAFT());
+            if (!swappingForId) setDraft(EMPTY_DRAFT());
           }}
         />
+      )}
+
+      {swappingForId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-card rounded-xl border border-border shadow-lg p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-foreground">
+              Alternatives pour {ingredients.find(i => i.id === swappingForId)?.name}
+            </h3>
+            
+            <div className="space-y-2">
+              {ingredients.find(i => i.id === swappingForId)?.swappable_ingredients?.map((swap, idx) => (
+                <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-secondary/50 border border-border">
+                  <span className="text-sm font-medium text-foreground">{swap.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateIngredients(
+                        ingredients.map((i) =>
+                          i.id === swappingForId
+                            ? {
+                                ...i,
+                                swappable_ingredients: i.swappable_ingredients?.filter((s) => s.id !== swap.id) || [],
+                              }
+                            : i
+                        )
+                      )
+                    }}
+                    className="p-1 text-muted-foreground hover:text-destructive"
+                  >✕</button>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2">
+              <p className="text-sm text-muted-foreground mb-2">Ajouter une alternative :</p>
+              <IngredientSearch
+                isMetricUser={isMetricUser}
+                onSelect={(ingredient) => {
+                  const key = `name_${locale}` as keyof IngredientResult;
+                  const locName = (ingredient[key] as string) || ingredient.name_fr;
+                  updateIngredients(
+                    ingredients.map((i) =>
+                      i.id === swappingForId
+                        ? {
+                            ...i,
+                            swappable_ingredients: [
+                              ...(i.swappable_ingredients || []),
+                              { id: ingredient.id, name: locName }
+                            ],
+                          }
+                        : i
+                    )
+                  );
+                }}
+                onSubmitNew={(q) => {
+                  setSubmitModalQuery(q);
+                  setSwappingForId(null);
+                }}
+              />
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <button
+                type="button"
+                onClick={() => setSwappingForId(null)}
+                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium"
+              >
+                Terminer
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="flex items-center justify-between">
@@ -226,6 +301,7 @@ export default function Step2Ingredients({
                             )
                           )
                         }
+                        onSwapClick={setSwappingForId}
                       />
                     )
                   )}
@@ -284,6 +360,19 @@ export default function Step2Ingredients({
                       {ing.is_optional && " · optionnel"}
                     </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setSwappingForId(ing.id)}
+                    className="p-1 text-muted-foreground hover:text-primary relative"
+                    title="Alternatives"
+                  >
+                    ⇄
+                    {ing.swappable_ingredients?.length ? (
+                      <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary text-[10px] leading-none">
+                        {ing.swappable_ingredients.length}
+                      </span>
+                    ) : null}
+                  </button>
                   <button
                     type="button"
                     onClick={() => removeItem(ing.id)}
@@ -416,6 +505,7 @@ function SortableIngredientRow({
   onQuantityChange,
   onUnitChange,
   onOptionalChange,
+  onSwapClick,
 }: {
   ingredient: IngredientItem;
   units: MeasurementUnit[];
@@ -423,6 +513,7 @@ function SortableIngredientRow({
   onQuantityChange: (id: string, q: number) => void;
   onUnitChange: (id: string, u: string) => void;
   onOptionalChange: (id: string, v: boolean) => void;
+  onSwapClick: (id: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: ingredient.id });
@@ -473,6 +564,19 @@ function SortableIngredientRow({
         />
         opt.
       </label>
+      <button
+        type="button"
+        onClick={() => onSwapClick(ingredient.id)}
+        className="p-1 text-muted-foreground hover:text-primary relative"
+        title="Alternatives"
+      >
+        ⇄
+        {ingredient.swappable_ingredients?.length ? (
+          <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary text-[10px] leading-none">
+            {ingredient.swappable_ingredients.length}
+          </span>
+        ) : null}
+      </button>
       <button
         type="button"
         onClick={() => onRemove(ingredient.id)}

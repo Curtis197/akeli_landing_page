@@ -26,7 +26,7 @@ export default function EditRecipePage() {
           cover_image_url, is_pork_free, is_private, show_on_website, allergen_tags,
           recipe_ingredient (
             id, ingredient_id, quantity, unit, is_optional, sort_order,
-            is_section_header, title,
+            is_section_header, title, swappable_ingredient_ids,
             ingredient:ingredient_id ( name_fr, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g )
           ),
           recipe_step (
@@ -43,6 +43,28 @@ export default function EditRecipePage() {
         setError("Recette introuvable ou accès refusé.");
         setLoading(false);
         return;
+      }
+
+      const allSwappableIds = new Set<string>();
+      (data as any).recipe_ingredient?.forEach((ing: any) => {
+        if (ing.swappable_ingredient_ids) {
+          ing.swappable_ingredient_ids.forEach((id: string) => allSwappableIds.add(id));
+        }
+      });
+      
+      let swappableNamesMap: Record<string, string> = {};
+      if (allSwappableIds.size > 0) {
+        const { data: swapData } = await supabase
+          .from("ingredient")
+          .select("id, name_fr")
+          .in("id", Array.from(allSwappableIds));
+          
+        if (swapData) {
+          swappableNamesMap = swapData.reduce((acc: any, curr: any) => {
+            acc[curr.id] = curr.name_fr;
+            return acc;
+          }, {});
+        }
       }
 
       const mapped: Partial<RecipeFormState> = {
@@ -66,6 +88,10 @@ export default function EditRecipePage() {
             sort_order: ing.sort_order,
             is_section_header: ing.is_section_header ?? false,
             title: ing.title ?? undefined,
+            swappable_ingredients: (ing.swappable_ingredient_ids ?? []).map((swapId: string) => ({
+              id: swapId,
+              name: swappableNamesMap[swapId] ?? "Inconnu",
+            })),
           })),
         steps: ((data as any).recipe_step ?? [])
           .sort((a: any, b: any) => a.sort_order - b.sort_order)
