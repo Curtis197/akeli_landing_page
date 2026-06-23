@@ -51,12 +51,9 @@ async function verifyServiceRole(authHeader: string | null): Promise<boolean> {
     }
   }
 
-  // 3. Fallback for the known legacy service key from triggers
-  const legacyTriggerKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qenFjZnRqenNrd2NwZm9yd3pmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjQ4NDMzNywiZXhwIjoyMDg4MDYwMzM3fQ.zUzuJ9yE0OiICESauNb7p_4nSTGlbFykeROoYpsIdD4';
-  if (token === legacyTriggerKey) {
-    return true;
-  }
-
+  // Hardcoded legacy service-key fallback removed: that key was leaked and rotated.
+  // Trigger/admin calls must present a service_role JWT signed by the current
+  // SUPABASE_JWT_SECRET (verified above). No secret is embedded in source.
   return false;
 }
 

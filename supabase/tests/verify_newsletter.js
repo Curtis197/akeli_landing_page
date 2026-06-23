@@ -1,6 +1,6 @@
 // supabase/tests/verify_newsletter.js
 const SUPABASE_URL = 'https://njzqcftjzskwcpforwzf.supabase.co';
-const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qenFjZnRqenNrd2NwZm9yd3pmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjQ4NDMzNywiZXhwIjoyMDg4MDYwMzM3fQ.zUzuJ9yE0OiICESauNb7p_4nSTGlbFykeROoYpsIdD4';
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
 const CREATOR_ID = '1a1b225a-1328-4d58-976f-253574410c6f'; // Existing creator
 
