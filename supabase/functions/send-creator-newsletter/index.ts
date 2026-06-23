@@ -39,21 +39,19 @@ async function verifyServiceRole(authHeader: string | null): Promise<boolean> {
     return true;
   }
 
-  // 2. Decode and verify role claim via JWT signature
-  const jwtSecret = Deno.env.get('SUPABASE_JWT_SECRET');
+  // 2. Scoped trigger JWT signed with VISITOR_JWT_SECRET (DB webhook triggers).
+  //    The trigger mints a short-lived { scope: 'newsletter_trigger' } token from Vault;
+  //    no service key is hardcoded in source, the DB, or sent over the wire.
+  const jwtSecret = Deno.env.get('VISITOR_JWT_SECRET');
   if (jwtSecret) {
     try {
-      const secret = new TextEncoder().encode(jwtSecret);
-      const { payload } = await jwtVerify(token, secret);
-      return payload.role === 'service_role';
+      const { payload } = await jwtVerify(token, new TextEncoder().encode(jwtSecret));
+      if (payload.scope === 'newsletter_trigger') return true;
     } catch (err) {
-      console.warn('[verifyServiceRole] JWT signature verification failed:', err);
+      console.warn('[verifyServiceRole] trigger JWT verification failed:', err);
     }
   }
 
-  // Hardcoded legacy service-key fallback removed: that key was leaked and rotated.
-  // Trigger/admin calls must present a service_role JWT signed by the current
-  // SUPABASE_JWT_SECRET (verified above). No secret is embedded in source.
   return false;
 }
 
