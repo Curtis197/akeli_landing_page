@@ -1,19 +1,20 @@
 -- Secure the creator-newsletter webhook triggers.
 --
--- The previous triggers (add_recipe_newsletter_trigger / create_blog_system) called the
--- edge function via supabase_functions.http_request with a HARDCODED service_role JWT in the
+-- The previous triggers (add_recipe_newsletter_trigger / create_blog_system) called the edge
+-- function via supabase_functions.http_request with a HARDCODED service_role JWT in the
 -- Authorization header. That key was leaked (public repo) and has been rotated/disabled.
 --
--- New design: a SECURITY DEFINER trigger function mints a short-lived, scoped JWT
--- ({ scope: 'newsletter_trigger' }) signed with the VISITOR_JWT_SECRET read from Vault, and
--- calls the edge function via pg_net. No secret is stored in this migration or in any trigger
--- definition. The edge function authorizes the call by verifying that JWT with the same secret.
+-- New design: a SECURITY DEFINER trigger function reads the CURRENT service key from Vault and
+-- calls the edge function via pg_net. No secret lives in this migration or in any trigger
+-- definition. The edge function authorizes the call by matching the key against its
+-- SUPABASE_SERVICE_ROLE_KEY env var (verifyServiceRole). (pgjwt is not enabled on this project,
+-- so JWT minting in SQL is avoided; the key is read from Vault and sent over the internal
+-- HTTPS call only.)
 --
--- ── ONE-TIME PREREQUISITE (run manually in the SQL editor — DO NOT commit the value) ──
---   select vault.create_secret('<VISITOR_JWT_SECRET value>', 'visitor_jwt_secret');
--- (Skip if a Vault secret named 'visitor_jwt_secret' already exists.)
+-- ── ONE-TIME PREREQUISITES (run manually — DO NOT commit the value) ──
+--   select vault.create_secret('<new sb_secret… service key>', 'newsletter_service_key');
+--   -- and set the SAME key as SUPABASE_SERVICE_ROLE_KEY on the send-creator-newsletter function.
 
--- Drop the old insecure webhook triggers.
 DROP TRIGGER IF EXISTS on_recipe_published_newsletter ON public.recipe;
 DROP TRIGGER IF EXISTS on_blog_post_published_newsletter ON public.blog_post;
 
@@ -24,33 +25,24 @@ SECURITY DEFINER
 SET search_path = public, extensions
 AS $$
 DECLARE
-  v_secret text;
-  v_token  text;
-  v_now    int := floor(extract(epoch FROM now()))::int;
+  v_key text;
 BEGIN
-  SELECT decrypted_secret INTO v_secret
+  SELECT decrypted_secret INTO v_key
   FROM vault.decrypted_secrets
-  WHERE name = 'visitor_jwt_secret'
+  WHERE name = 'newsletter_service_key'
   LIMIT 1;
 
-  IF v_secret IS NULL THEN
-    RAISE WARNING 'notify_creator_newsletter: vault secret "visitor_jwt_secret" missing; skipping newsletter dispatch';
+  IF v_key IS NULL THEN
+    RAISE WARNING 'notify_creator_newsletter: vault secret "newsletter_service_key" missing; skipping newsletter dispatch';
     RETURN NEW;
   END IF;
 
-  -- Short-lived (120s) scoped token — only the edge function accepts scope=newsletter_trigger.
-  v_token := extensions.sign(
-    json_build_object('scope', 'newsletter_trigger', 'iat', v_now, 'exp', v_now + 120),
-    v_secret,
-    'HS256'
-  );
-
-  -- Mirror the Supabase webhook payload shape the function expects: { type, table, record, old_record }.
+  -- Mirror the Supabase webhook payload the edge function expects: { type, table, record, old_record }.
   PERFORM net.http_post(
     url     := 'https://njzqcftjzskwcpforwzf.supabase.co/functions/v1/send-creator-newsletter',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || v_token
+      'Authorization', 'Bearer ' || v_key
     ),
     body    := jsonb_build_object(
       'type', TG_OP,
