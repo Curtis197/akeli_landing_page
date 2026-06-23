@@ -57,9 +57,18 @@
       "eyebrow": "La communauté grandit",
       "title": "Une cuisine qui vous ressemble",
       "stats": {
-        "recipes": { "value": "100+", "label": "recettes pour commencer" },
-        "regions": { "value": "12", "label": "régions de cuisine" },
-        "culture": { "value": "100%", "label": "cuisine de chez vous" }
+        "recipes": {
+          "value": "100+",
+          "label": "recettes pour commencer"
+        },
+        "regions": {
+          "value": "12",
+          "label": "régions de cuisine"
+        },
+        "culture": {
+          "value": "100%",
+          "label": "cuisine de chez vous"
+        }
       }
     },
     "creatorTeaser": {
@@ -103,18 +112,42 @@
       "ctaFaq": "Questions fréquentes"
     },
     "stats": [
-      { "value": "30 min", "label": "pour publier une recette" },
-      { "value": "8", "label": "langues automatiques" },
-      { "value": "1€", "label": "pour 90 consommations" },
-      { "value": "0%", "label": "de commission Akeli" }
+      {
+        "value": "30 min",
+        "label": "pour publier une recette"
+      },
+      {
+        "value": "8",
+        "label": "langues automatiques"
+      },
+      {
+        "value": "1€",
+        "label": "pour 90 consommations"
+      },
+      {
+        "value": "0%",
+        "label": "de commission Akeli"
+      }
     ],
     "steps": {
       "eyebrow": "Simple & guidé",
       "title": "Démarrer en 4 étapes",
-      "step1": { "title": "Créez votre compte", "description": "Inscription gratuite en 2 minutes. Aucune carte bancaire requise." },
-      "step2": { "title": "Publiez vos premières recettes", "description": "Un wizard guidé en 6 étapes. L'IA traduit automatiquement dans 8 langues." },
-      "step3": { "title": "Partagez avec votre audience", "description": "Votre profil public et vos recettes sont accessibles depuis l'app mobile." },
-      "step4": { "title": "Percevez vos revenus", "description": "1€ par tranche de 90 consommations. Paiement le 5 de chaque mois via Stripe." }
+      "step1": {
+        "title": "Créez votre compte",
+        "description": "Inscription gratuite en 2 minutes. Aucune carte bancaire requise."
+      },
+      "step2": {
+        "title": "Publiez vos premières recettes",
+        "description": "Un wizard guidé en 6 étapes. L'IA traduit automatiquement dans 8 langues."
+      },
+      "step3": {
+        "title": "Partagez avec votre audience",
+        "description": "Votre profil public et vos recettes sont accessibles depuis l'app mobile."
+      },
+      "step4": {
+        "title": "Percevez vos revenus",
+        "description": "1€ par tranche de 90 consommations. Paiement le 5 de chaque mois via Stripe."
+      }
     },
     "belief": {
       "eyebrow": "Le talent est partout",
@@ -126,8 +159,17 @@
       "title": "Sans commission. Sans algorithme.",
       "body": "Akeli ne prend aucune commission sur vos revenus. Vous gagnez sur chaque consommation et sur chaque fan fidèle.",
       "badge": "1€/fan garanti chaque mois",
-      "standard": { "label": "Mode standard", "value": "1€", "desc": "par tranche de 90 consommations — elles s'accumulent d'un mois à l'autre." },
-      "fan": { "label": "Mode Fan", "badge": "dès 30 recettes", "value": "1€/fan/mois", "desc": "100 fans = 100€/mois garantis, indépendamment des consommations." }
+      "standard": {
+        "label": "Mode standard",
+        "value": "1€",
+        "desc": "par tranche de 90 consommations — elles s'accumulent d'un mois à l'autre."
+      },
+      "fan": {
+        "label": "Mode Fan",
+        "badge": "dès 30 recettes",
+        "value": "1€/fan/mois",
+        "desc": "100 fans = 100€/mois garantis, indépendamment des consommations."
+      }
     },
     "faqTitle": "Questions fréquentes",
     "finalCta": {
@@ -190,7 +232,7 @@
     "notFoundCreator": "Créateur introuvable",
     "noRecipes": "Aucune recette publiée pour l'instant.",
     "defaultName": "Créateur Akeli",
-    "backToCatalog": "� � Retour au catalogue",
+    "backToCatalog": "← Retour au catalogue",
     "recipesBy": "Recettes de",
     "ctaTitle": "Accède aux recettes complètes dans l'app Akeli",
     "ctaSubtitle": "Ingrédients détaillés, étapes pas-à-pas et bien plus dans l'application mobile.",
@@ -210,12 +252,12 @@
   "recipes": {
     "pageTitle": "Catalogue Recettes",
     "subtitle": "Explorez les recettes des créateurs de la diaspora africaine. Accédez aux recettes complètes dans l'app Akeli.",
-    "searchPlaceholder": "Rechercher une recette⬦",
+    "searchPlaceholder": "Rechercher une recette…",
     "allRegions": "Toutes les régions",
     "allDifficulties": "Toute difficulté",
     "notFound": "Aucune recette trouvée",
     "ctaTitle": "Accède aux recettes complètes",
-    "ctaSubtitle": "Ingrédients détaillés et étapes pas-à-pas dans l'app Akeli à 3€/mois.",
+    "ctaSubtitle": "Ingrédients détaillés et étapes pas-à-pas dans l'app Akeli à 2,99€/mois.",
     "count": "{count, plural, one {recette} other {recettes}}",
     "difficulty": {
       "easy": "Facile",
@@ -242,7 +284,7 @@
     "carbs": "Glucides",
     "fats": "Lipides",
     "appOnlyTitle": "Recette disponible dans l'app Akeli",
-    "appOnlySubtitle": "Accède aux ingrédients complets et aux étapes de préparation détaillées dans l'application mobile à 3€/mois seulement.",
+    "appOnlySubtitle": "Accède aux ingrédients complets et aux étapes de préparation détaillées dans l'application mobile à 2,99€/mois seulement.",
     "appPromotionTitle": "Envie d'aller plus loin ?",
     "appPromotionSubtitle": "Pour un meilleur suivi, une adaptation de la recette à vos besoins et des conseils personnalisés, téléchargez l'application Akeli.",
     "platforms": "Disponible sur iOS et Android",
@@ -264,7 +306,7 @@
       "emailPlaceholder": "ton@email.com",
       "password": "Mot de passe",
       "submit": "Se connecter",
-      "loading": "Connexion⬦",
+      "loading": "Connexion…",
       "error": "Email ou mot de passe incorrect.",
       "noAccount": "Pas encore créateur ?",
       "signup": "Rejoindre Akeli"
@@ -279,7 +321,7 @@
       "password": "Mot de passe",
       "passwordPlaceholder": "8 caractères minimum",
       "submit": "Créer mon compte",
-      "loading": "Création du compte⬦",
+      "loading": "Création du compte…",
       "hasAccount": "Déjà un compte ?",
       "login": "Se connecter",
       "checkEmail": "Vérifie ta boite mail",
@@ -373,7 +415,7 @@
     "steps": {
       "basic": "Infos de base",
       "ingredients": "Ingrédients",
-      "steps": "�0tapes",
+      "steps": "Étapes",
       "nutrition": "Nutrition",
       "images": "Images",
       "publish": "Tags & Publication"
@@ -424,15 +466,15 @@
     "seafood": "Poisson & Fruits de mer",
     "vegetable": "Légume",
     "fruit": "Fruit",
-    "dairy": "Laitage & Ruf",
-    "grain": "C�r�ale & P�te",
-    "spice": "�pice",
+    "dairy": "Laitage & Œuf",
+    "grain": "Céréale & Pâte",
+    "spice": "Épice",
     "herb": "Herbe",
     "condiment": "Condiment",
     "baking": "Boulangerie",
     "nut": "Noix & Graine",
-    "legume": "L�gumineuse",
-    "sweetener": "Sucre & �dulcorant",
+    "legume": "Légumineuse",
+    "sweetener": "Sucre & Édulcorant",
     "alcohol": "Alcool",
     "other": "Autre"
   }

@@ -112,18 +112,42 @@
       "ctaFaq": "FAQ"
     },
     "stats": [
-      { "value": "30 min", "label": "to publish a recipe" },
-      { "value": "8", "label": "automatic languages" },
-      { "value": "€1", "label": "per 90 servings" },
-      { "value": "0%", "label": "Akeli commission" }
+      {
+        "value": "30 min",
+        "label": "to publish a recipe"
+      },
+      {
+        "value": "8",
+        "label": "automatic languages"
+      },
+      {
+        "value": "€1",
+        "label": "per 90 servings"
+      },
+      {
+        "value": "0%",
+        "label": "Akeli commission"
+      }
     ],
     "steps": {
       "eyebrow": "Simple & guided",
       "title": "Start in 4 steps",
-      "step1": { "title": "Create your account", "description": "Free sign-up in 2 minutes. No credit card required." },
-      "step2": { "title": "Publish your first recipes", "description": "A guided 6-step wizard. AI translates automatically into 8 languages." },
-      "step3": { "title": "Share with your audience", "description": "Your public profile and recipes are available in the mobile app." },
-      "step4": { "title": "Get paid", "description": "€1 per 90 servings. Paid on the 5th of each month via Stripe." }
+      "step1": {
+        "title": "Create your account",
+        "description": "Free sign-up in 2 minutes. No credit card required."
+      },
+      "step2": {
+        "title": "Publish your first recipes",
+        "description": "A guided 6-step wizard. AI translates automatically into 8 languages."
+      },
+      "step3": {
+        "title": "Share with your audience",
+        "description": "Your public profile and recipes are available in the mobile app."
+      },
+      "step4": {
+        "title": "Get paid",
+        "description": "€1 per 90 servings. Paid on the 5th of each month via Stripe."
+      }
     },
     "belief": {
       "eyebrow": "Talent is everywhere",
@@ -135,8 +159,17 @@
       "title": "No commission. No algorithm.",
       "body": "Akeli takes no commission on your earnings. You earn on every serving and every loyal fan.",
       "badge": "€1/fan guaranteed every month",
-      "standard": { "label": "Standard mode", "value": "€1", "desc": "per 90 servings — they carry over month to month." },
-      "fan": { "label": "Fan Mode", "badge": "from 30 recipes", "value": "€1/fan/month", "desc": "100 fans = €100/month guaranteed, regardless of servings." }
+      "standard": {
+        "label": "Standard mode",
+        "value": "€1",
+        "desc": "per 90 servings — they carry over month to month."
+      },
+      "fan": {
+        "label": "Fan Mode",
+        "badge": "from 30 recipes",
+        "value": "€1/fan/month",
+        "desc": "100 fans = €100/month guaranteed, regardless of servings."
+      }
     },
     "faqTitle": "Frequently asked questions",
     "finalCta": {
@@ -192,14 +225,14 @@
   "creators": {
     "pageTitle": "Akeli Creators",
     "subtitle": "Discover culinary creators from the African diaspora.",
-    "searchPlaceholder": "Search a creatorâ€¦",
+    "searchPlaceholder": "Search a creator…",
     "allRegions": "All regions",
     "allSpecialties": "All specialties",
     "notFound": "No creator found",
     "notFoundCreator": "Creator not found",
     "noRecipes": "No published recipes yet.",
     "defaultName": "Akeli Creator",
-    "backToCatalog": "â† Back to catalog",
+    "backToCatalog": "← Back to catalog",
     "recipesBy": "Recipes by",
     "ctaTitle": "Access full recipes in the Akeli app",
     "ctaSubtitle": "Detailed ingredients, step-by-step instructions and more in the mobile app.",
@@ -219,12 +252,12 @@
   "recipes": {
     "pageTitle": "Recipe Catalog",
     "subtitle": "Explore recipes from creators of the African diaspora. Access full recipes in the Akeli app.",
-    "searchPlaceholder": "Search a recipeâ€¦",
+    "searchPlaceholder": "Search a recipe…",
     "allRegions": "All regions",
     "allDifficulties": "Any difficulty",
     "notFound": "No recipe found",
     "ctaTitle": "Access full recipes",
-    "ctaSubtitle": "Detailed ingredients and step-by-step instructions in the Akeli app â€” â‚¬3/month.",
+    "ctaSubtitle": "Detailed ingredients and step-by-step instructions in the Akeli app — €2.99/month.",
     "count": "{count, plural, one {recipe} other {recipes}}",
     "difficulty": {
       "easy": "Easy",
@@ -244,7 +277,7 @@
     "mainIngredients": "Main ingredients",
     "moreIngredients": "and {{count}} more ingredients",
     "notFound": "Recipe not found",
-    "backToCatalog": "â† Back to catalog",
+    "backToCatalog": "← Back to catalog",
     "porkFree": "Pork-free",
     "nutritionTitle": "Nutritional values",
     "proteins": "Proteins",
@@ -273,7 +306,7 @@
       "emailPlaceholder": "your@email.com",
       "password": "Password",
       "submit": "Log in",
-      "loading": "Logging inâ€¦",
+      "loading": "Logging in…",
       "error": "Incorrect email or password.",
       "noAccount": "Not a creator yet?",
       "signup": "Join Akeli"
@@ -288,7 +321,7 @@
       "password": "Password",
       "passwordPlaceholder": "8 characters minimum",
       "submit": "Create my account",
-      "loading": "Creating accountâ€¦",
+      "loading": "Creating account…",
       "hasAccount": "Already have an account?",
       "login": "Log in",
       "checkEmail": "Check your inbox",
@@ -303,19 +336,19 @@
     "recipesPublished": "published recipes",
     "remaining": "{count, plural, one {recipe remaining} other {recipes remaining}} before unlock.",
     "createRecipe": "+ Create a recipe",
-    "active": "Active â­",
+    "active": "Active ⭐",
     "activeFans": "Active fans",
     "revenueThisMonth": "Fan revenue this month",
     "revenueLastMonth": "Fan revenue last month",
     "vsPrevMonth": "vs previous month",
-    "chart": "Fan revenue â€” last 6 months",
+    "chart": "Fan revenue — last 6 months",
     "fanList": "Fan list",
     "noFans": "No fans yet.",
     "fanName": "Fan",
     "subscribedAt": "Subscribed on",
     "status": "Status",
     "benefits": {
-      "0": "Monthly subscription for your fans from â‚¬3/month",
+      "0": "Monthly subscription for your fans from €3/month",
       "1": "Recurring and predictable revenue",
       "2": "\"Fan Mode\" badge on your public profile",
       "3": "Access to advanced fan statistics"
@@ -420,7 +453,7 @@
     "draft": "Draft",
     "published": "Published",
     "search": "Search...",
-    "reset": "âœ• Reset",
+    "reset": "✕ Reset",
     "tryOtherFilters": "Try other filters.",
     "defaultCreator": "Akeli Creator"
   },

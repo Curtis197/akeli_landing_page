@@ -7,7 +7,7 @@ export const faqData: FAQItem[] = [
     id: "user-disponibilite",
     question: "L'app est disponible sur iOS et Android ?",
     answer:
-      "Oui. Akeli est disponible sur l'App Store et Google Play. Le téléchargement est gratuit — l'abonnement Akeli Premium (3€/mois) se souscrit directement depuis l'app.",
+      "Oui. Akeli est disponible sur l'App Store et Google Play. Le téléchargement est gratuit — l'abonnement Akeli Premium (2,99€/mois) se souscrit directement depuis l'app.",
     audience: "user",
     placement: "landing",
     category: "Application",
@@ -16,7 +16,7 @@ export const faqData: FAQItem[] = [
     id: "user-prix",
     question: "Combien coûte Akeli ?",
     answer:
-      "Akeli Premium coûte 3€/mois. C'est sans engagement — vous pouvez annuler à tout moment depuis l'app en un clic.",
+      "Akeli Premium coûte 2,99€/mois. C'est sans engagement — vous pouvez annuler à tout moment depuis l'app en un clic.",
     audience: "user",
     placement: "landing",
     category: "Abonnement",
