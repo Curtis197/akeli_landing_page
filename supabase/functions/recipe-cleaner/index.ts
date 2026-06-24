@@ -218,43 +218,21 @@ Ensure the output is valid JSON, and matches all the database check constraints 
     let commitResult = null;
 
     if (commit && Array.isArray(result.steps) && result.steps.length > 0) {
-      // NOTE: delete + insert are not atomic. The length check above prevents wiping a
-      // recipe's steps when there is nothing valid to insert; a mid-insert failure can still
-      // leave a partial state — move this to a transactional RPC for full safety (follow-up).
-      // Delete existing steps
-      const { error: deleteError } = await adminClient
-        .from('recipe_step')
-        .delete()
-        .eq('recipe_id', recipe_id);
+      // Atomic replace: delete + insert run in one transaction inside the RPC, so a
+      // mid-insert failure (e.g. a check-constraint violation) rolls back and leaves the
+      // recipe's original steps intact. The RPC is service_role-only (see migration).
+      const { data: stepsCount, error: rpcError } = await adminClient.rpc('replace_recipe_steps', {
+        p_recipe_id: recipe_id,
+        p_steps: result.steps
+      });
 
-      if (deleteError) {
-        throw new Error(`Failed to delete old recipe steps: ${deleteError.message}`);
-      }
-
-      // Format steps for insertion
-      const stepsToInsert = result.steps.map((step: any) => ({
-        recipe_id,
-        step_number: step.step_number,
-        sort_order: step.sort_order,
-        title: step.title || null,
-        content: step.content || null,
-        timer_seconds: step.timer_seconds || null,
-        is_section_header: step.is_section_header || false
-      }));
-
-      // Insert new steps
-      const { data: insertedSteps, error: insertError } = await adminClient
-        .from('recipe_step')
-        .insert(stepsToInsert)
-        .select();
-
-      if (insertError) {
-        throw new Error(`Failed to insert new recipe steps: ${insertError.message}`);
+      if (rpcError) {
+        throw new Error(`Failed to replace recipe steps: ${rpcError.message}`);
       }
 
       commitResult = {
         committed: true,
-        steps_count: insertedSteps.length
+        steps_count: stepsCount
       };
     }
 
