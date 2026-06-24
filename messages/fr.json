@@ -158,7 +158,7 @@
       "eyebrow": "Deux sources de revenus",
       "title": "Sans commission. Sans algorithme.",
       "body": "Akeli ne prend aucune commission sur vos revenus. Vous gagnez sur chaque consommation et sur chaque fan fidèle.",
-      "badge": "1€/fan garanti chaque mois",
+      "badge": "Un revenu récurrent, dès 30 recettes",
       "standard": {
         "label": "Mode standard",
         "value": "1€",
@@ -167,8 +167,8 @@
       "fan": {
         "label": "Mode Fan",
         "badge": "dès 30 recettes",
-        "value": "1€/fan/mois",
-        "desc": "100 fans = 100€/mois garantis, indépendamment des consommations."
+        "value": "Soutien récurrent",
+        "desc": "Dès 30 recettes, vos abonnés les plus fidèles débloquent tout votre catalogue et vous soutiennent chaque mois."
       }
     },
     "faqTitle": "Questions fréquentes",
@@ -331,7 +331,7 @@
   },
   "fanMode": {
     "lockedTitle": "Débloque le Mode Fan",
-    "lockedDescription": "Le Mode Fan te permet d'activer un abonnement mensuel pour tes fans les plus fidèles. Génère des revenus récurrents en publiant au moins {count} recettes.",
+    "lockedDescription": "Le Mode Fan permet à tes abonnés les plus fidèles de débloquer toutes tes recettes via un abonnement mensuel. Génère des revenus récurrents en publiant au moins {count} recettes.",
     "progress": "Progression",
     "recipesPublished": "recettes publiées",
     "remaining": "{count, plural, one {recette restante} other {recettes restantes}} avant le déblocage.",
@@ -348,7 +348,7 @@
     "subscribedAt": "Abonné le",
     "status": "Statut",
     "benefits": {
-      "0": "Abonnement mensuel pour tes fans à partir de 3€/mois",
+      "0": "Tes abonnés les plus fidèles débloquent toutes tes recettes",
       "1": "Revenus récurrents et prévisibles",
       "2": "Badge « Mode Fan » sur ton profil public",
       "3": "Accès à des statistiques fans avancées"

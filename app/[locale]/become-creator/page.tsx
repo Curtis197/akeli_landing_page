@@ -145,7 +145,7 @@ export default function BecomeCreatorPage() {
             <div className="relative h-[380px] sm:h-[440px] rounded-3xl overflow-hidden">
               <Image src="/akeli/diaspora-couple.jpg" fill alt="Créateurs Akeli" className="object-cover object-center" />
               <div className="absolute bottom-6 left-6 rounded-2xl px-5 py-4" style={{ backgroundColor: "rgba(245,165,35,0.95)", color: "var(--color-brand-dark)" }}>
-                <p className="text-3xl font-bold leading-none" style={{ fontFamily: "var(--font-display)" }}>1€/fan</p>
+                <p className="text-3xl font-bold leading-none" style={{ fontFamily: "var(--font-display)" }}>Mode Fan</p>
                 <p className="text-xs font-semibold mt-1">{t("model.badge")}</p>
               </div>
             </div>

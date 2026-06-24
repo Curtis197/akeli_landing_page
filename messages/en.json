@@ -158,7 +158,7 @@
       "eyebrow": "Two income streams",
       "title": "No commission. No algorithm.",
       "body": "Akeli takes no commission on your earnings. You earn on every serving and every loyal fan.",
-      "badge": "€1/fan guaranteed every month",
+      "badge": "Recurring income, from 30 recipes",
       "standard": {
         "label": "Standard mode",
         "value": "€1",
@@ -167,8 +167,8 @@
       "fan": {
         "label": "Fan Mode",
         "badge": "from 30 recipes",
-        "value": "€1/fan/month",
-        "desc": "100 fans = €100/month guaranteed, regardless of servings."
+        "value": "Recurring support",
+        "desc": "From 30 recipes, your most loyal followers unlock your whole catalog and support you every month."
       }
     },
     "faqTitle": "Frequently asked questions",
@@ -331,7 +331,7 @@
   },
   "fanMode": {
     "lockedTitle": "Unlock Fan Mode",
-    "lockedDescription": "Fan Mode lets you activate a monthly subscription for your most loyal fans. Generate recurring revenue by publishing at least {count} recipes.",
+    "lockedDescription": "Fan Mode lets your most loyal followers unlock all your recipes via a monthly subscription. Generate recurring revenue by publishing at least {count} recipes.",
     "progress": "Progress",
     "recipesPublished": "published recipes",
     "remaining": "{count, plural, one {recipe remaining} other {recipes remaining}} before unlock.",
@@ -348,7 +348,7 @@
     "subscribedAt": "Subscribed on",
     "status": "Status",
     "benefits": {
-      "0": "Monthly subscription for your fans from €3/month",
+      "0": "Your most loyal followers unlock all your recipes",
       "1": "Recurring and predictable revenue",
       "2": "\"Fan Mode\" badge on your public profile",
       "3": "Access to advanced fan statistics"

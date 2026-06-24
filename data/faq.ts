@@ -66,7 +66,7 @@ export const faqData: FAQItem[] = [
     id: "creator-revenus-realiste",
     question: "Combien puis-je gagner réalistement ?",
     answer:
-      "Cela dépend du nombre d'utilisateurs actifs qui consomment vos recettes. Un créateur avec 100 utilisateurs actifs réguliers peut espérer 50 à 100€/mois en mode standard. En Mode Fan (disponible dès 30 recettes publiées), chaque fan vous rapporte 1€/mois garanti — 100 fans = 100€/mois stables, indépendamment des consommations.",
+      "Cela dépend du nombre d'utilisateurs actifs qui consomment vos recettes. Un créateur avec 100 utilisateurs actifs réguliers peut espérer 50 à 100€/mois en mode standard. En Mode Fan (disponible dès 30 recettes publiées), vos abonnés les plus fidèles s'abonnent pour débloquer toutes vos recettes — un revenu récurrent et prévisible, indépendant des consommations.",
     audience: "prospect_creator",
     placement: "creator_page",
     category: "Revenus",
@@ -140,7 +140,7 @@ export const faqData: FAQItem[] = [
     id: "creator-mode-fan-intro",
     question: "C'est quoi le Mode Fan ?",
     answer:
-      "Le Mode Fan permet à vos utilisateurs les plus fidèles de vous dédier leur abonnement complet. Chaque fan vous rapporte 1€/mois garanti, sans condition de consommation. Il est accessible dès que vous atteignez 30 recettes publiées.",
+      "Le Mode Fan permet à vos abonnés les plus fidèles de s'abonner pour débloquer l'ensemble de vos recettes. C'est un revenu récurrent, indépendant des consommations. Il est accessible dès que vous atteignez 30 recettes publiées.",
     audience: "prospect_creator",
     placement: "creator_page",
     category: "Mode Fan",
@@ -163,7 +163,7 @@ export const faqData: FAQItem[] = [
     id: "fan-revenu-garanti",
     question: "Le revenu Fan est-il vraiment garanti chaque mois ?",
     answer:
-      "Oui. Chaque utilisateur actif en Mode Fan vous alloue 1€/mois, quel que soit le nombre de vos recettes qu'il a consommées. Tant qu'il est actif sur Akeli au cours du mois, son 1€ vous est acquis.",
+      "Oui. Tant qu'un abonné Fan reste actif, vous percevez un revenu récurrent chaque mois — indépendamment du nombre de recettes qu'il consomme.",
     audience: "creator",
     placement: "dashboard",
     category: "Mode Fan",
@@ -185,7 +185,7 @@ export const faqData: FAQItem[] = [
     id: "fan-changement-createur",
     question: "Que se passe-t-il si un fan me quitte pour un autre créateur ?",
     answer:
-      "L'utilisateur peut changer de créateur Fan à tout moment, mais le changement est effectif au premier jour du mois suivant. Vous conservez son 1€ pour le mois en cours, même s'il a initié le changement en milieu de mois.",
+      "L'utilisateur peut changer de créateur Fan à tout moment, mais le changement est effectif au premier jour du mois suivant. Vous conservez son abonnement pour le mois en cours, même s'il a initié le changement en milieu de mois.",
     audience: "creator",
     placement: "dashboard",
     category: "Mode Fan",
