@@ -45,3 +45,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# local normalization scratch (data dumps + one-off debug scripts — not committed)
+/batch_normalization_report.json
+/fetched_recipes_data.json
+/query_db.js
+/generate_descriptions.py
