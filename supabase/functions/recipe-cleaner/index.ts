@@ -13,6 +13,44 @@ interface CleanRecipeRequest {
   commit?: boolean;
 }
 
+// Categorized error so the handler can return a non-sensitive error type to the caller.
+class CleanerError extends Error {
+  constructor(public category: string, message: string) {
+    super(message);
+    this.name = 'CleanerError';
+  }
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Call Gemini with exponential backoff on rate-limit (429) / server (5xx) / network errors.
+async function callGeminiWithRetry(url: string, payload: object, maxRetries = 3): Promise<Response> {
+  let lastErr = '';
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (resp.ok) return resp;
+      if ((resp.status === 429 || resp.status >= 500) && attempt < maxRetries) {
+        lastErr = `status ${resp.status}`;
+        await sleep(500 * 2 ** attempt + Math.floor(Math.random() * 250));
+        continue;
+      }
+      return resp; // non-retryable response — let the caller inspect it
+    } catch (e) {
+      lastErr = e instanceof Error ? e.message : String(e);
+      if (attempt < maxRetries) {
+        await sleep(500 * 2 ** attempt + Math.floor(Math.random() * 250));
+        continue;
+      }
+    }
+  }
+  throw new CleanerError('gemini_failed', `Gemini unreachable after ${maxRetries + 1} attempts: ${lastErr}`);
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -98,7 +136,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (recipeError || !recipe) {
-      return new Response(JSON.stringify({ error: 'Recipe not found', details: recipeError?.message }), {
+      return new Response(JSON.stringify({ error: 'Recipe not found' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -183,36 +221,45 @@ Return a strict JSON object (and absolutely nothing else, no markdown formatting
 Ensure the output is valid JSON, and matches all the database check constraints perfectly.`;
 
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY')!;
-    console.log("GEMINI_API_KEY loaded: length =", geminiApiKey ? geminiApiKey.length : "undefined");
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiApiKey}`;
 
-    const geminiResponse = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 16384,
-          responseMimeType: 'application/json'
-        }
-      })
+    const geminiResponse = await callGeminiWithRetry(geminiUrl, {
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 16384,
+        responseMimeType: 'application/json'
+      }
     });
 
     if (!geminiResponse.ok) {
       const errText = await geminiResponse.text();
-      throw new Error(`Gemini API error: ${geminiResponse.status} ${geminiResponse.statusText} - ${errText}`);
+      console.error(`recipe-cleaner: Gemini API ${geminiResponse.status} ${geminiResponse.statusText} - ${errText}`);
+      throw new CleanerError('gemini_failed', `Gemini API returned ${geminiResponse.status}`);
     }
 
     const geminiData = await geminiResponse.json();
-    const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}';
+    const candidate = geminiData.candidates?.[0];
+    const finishReason = candidate?.finishReason;
+    // STOP = normal completion. MAX_TOKENS = truncated (output too long); SAFETY/RECITATION = blocked.
+    if (finishReason && finishReason !== 'STOP') {
+      console.error(`recipe-cleaner: Gemini finishReason=${finishReason}`);
+      throw new CleanerError('invalid_ai_output', `Gemini did not complete cleanly (${finishReason})`);
+    }
+
+    const rawText = candidate?.content?.parts?.[0]?.text ?? '';
 
     let result;
     try {
       const cleaned = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       result = JSON.parse(cleaned);
     } catch {
-      throw new Error(`Failed to parse JSON response from Gemini: ${rawText}`);
+      console.error('recipe-cleaner: unparseable Gemini output:', rawText.slice(0, 500));
+      throw new CleanerError('invalid_ai_output', 'Gemini returned unparseable output');
+    }
+
+    if (!result || typeof result !== 'object' || !Array.isArray(result.steps)) {
+      throw new CleanerError('invalid_ai_output', 'Gemini output is missing a valid steps array');
     }
 
     let commitResult = null;
@@ -227,7 +274,8 @@ Ensure the output is valid JSON, and matches all the database check constraints 
       });
 
       if (rpcError) {
-        throw new Error(`Failed to replace recipe steps: ${rpcError.message}`);
+        console.error('recipe-cleaner: replace_recipe_steps failed:', rpcError.message);
+        throw new CleanerError('db_failed', 'Failed to persist cleaned steps');
       }
 
       commitResult = {
@@ -246,10 +294,11 @@ Ensure the output is valid JSON, and matches all the database check constraints 
 
   } catch (err) {
     console.error('recipe-cleaner error:', err);
-    return new Response(JSON.stringify({
-      error: 'internal_server_error'
-    }), {
-      status: 500,
+    const category = err instanceof CleanerError ? err.category : 'internal_server_error';
+    // 502 for upstream AI issues, 500 for our own failures. No internal details leak to the caller.
+    const status = (category === 'gemini_failed' || category === 'invalid_ai_output') ? 502 : 500;
+    return new Response(JSON.stringify({ error: category }), {
+      status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
