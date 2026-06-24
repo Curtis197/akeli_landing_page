@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-bypass-key',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
@@ -19,13 +19,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const bypassKey = req.headers.get('x-bypass-key');
-    const expectedBypassKey = Deno.env.get('CLEANER_BYPASS_KEY');
-    // Bypass only works when CLEANER_BYPASS_KEY is explicitly configured — no hardcoded fallback.
-    const isBypassed = expectedBypassKey != null && bypassKey !== null && bypassKey === expectedBypassKey;
-
+    // Creator-only: require an authenticated creator. No bypass key, no admin backdoor.
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader && !isBypassed) {
+    if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -40,40 +36,32 @@ Deno.serve(async (req) => {
     // Client using service role for db operations
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    let userEmail = '';
-    let creatorId = '';
+    // Verify the caller's session and resolve their creator account.
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
 
-    if (!isBypassed) {
-      // Client using user's auth token
-      const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-        global: { headers: { Authorization: authHeader! } }
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
-
-      // Get user and verify session
-      const { data: { user }, error: authError } = await userClient.auth.getUser();
-      if (authError || !user) {
-        return new Response(JSON.stringify({ error: 'Unauthorized', details: authError?.message }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-      userEmail = user.email || '';
-
-      // Fetch creator ID corresponding to user
-      const { data: creator, error: creatorError } = await adminClient
-        .from('creator')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (creatorError || !creator) {
-        return new Response(JSON.stringify({ error: 'Creator account not found' }), {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-      creatorId = creator.id;
     }
+
+    const { data: creator, error: creatorError } = await adminClient
+      .from('creator')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (creatorError || !creator) {
+      return new Response(JSON.stringify({ error: 'Creator account not found' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    const creatorId = creator.id;
 
     // Parse request body
     const body: CleanRecipeRequest = await req.json();
@@ -116,17 +104,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Verify ownership if not bypassed
-    if (!isBypassed) {
-      const isOwner = recipe.creator_id === creatorId;
-      const isSupport = userEmail?.endsWith('@a-keli.com') || creatorId === '1a1b225a-1328-4d58-976f-253574410c6f'; // Curtis ID
-      
-      if (!isOwner && !isSupport) {
-        return new Response(JSON.stringify({ error: 'Unauthorized: this recipe does not belong to you' }), {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
+    // Ownership: a creator may only clean their own recipes.
+    if (recipe.creator_id !== creatorId) {
+      return new Response(JSON.stringify({ error: 'Unauthorized: this recipe does not belong to you' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // Sort existing ingredients and steps
@@ -234,8 +217,10 @@ Ensure the output is valid JSON, and matches all the database check constraints 
 
     let commitResult = null;
 
-    if (commit && result.steps && Array.isArray(result.steps)) {
-      // Begin database replacement in a transaction-like way
+    if (commit && Array.isArray(result.steps) && result.steps.length > 0) {
+      // NOTE: delete + insert are not atomic. The length check above prevents wiping a
+      // recipe's steps when there is nothing valid to insert; a mid-insert failure can still
+      // leave a partial state — move this to a transactional RPC for full safety (follow-up).
       // Delete existing steps
       const { error: deleteError } = await adminClient
         .from('recipe_step')
@@ -282,12 +267,9 @@ Ensure the output is valid JSON, and matches all the database check constraints 
     });
 
   } catch (err) {
-    const key = Deno.env.get('GEMINI_API_KEY');
-    const keyInfo = key ? `key length: ${key.length}, prefix: ${key.substring(0, 5)}...` : 'key is undefined';
     console.error('recipe-cleaner error:', err);
     return new Response(JSON.stringify({
-      error: 'internal_server_error',
-      message: `${err instanceof Error ? err.message : 'Unknown error'} (Debug: ${keyInfo})`
+      error: 'internal_server_error'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
