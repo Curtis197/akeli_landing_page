@@ -1,22 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { Link, useRouter } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  flow_state_already_used:
+    "Ce lien de connexion a déjà été utilisé. Merci de réessayer.",
+  flow_state_expired:
+    "Ce lien de connexion a expiré. Merci de réessayer.",
+  otp_expired:
+    "Ce code de vérification a expiré. Merci de réessayer.",
+  invalid_request:
+    "Une erreur est survenue lors de la connexion. Merci de réessayer.",
+  auth_error:
+    "Une erreur est survenue lors de la connexion. Merci de réessayer.",
+};
+
 export default function LoginPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = (params.locale as string) ?? "fr";
   const supabase = createClient();
   const { setUser } = useAuthStore();
 
+  const errorCode = searchParams.get("error") ?? "";
+  const urlError = AUTH_ERROR_MESSAGES[errorCode] ?? null;
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(urlError);
 
   async function handleGoogleLogin() {
     setLoading(true);
