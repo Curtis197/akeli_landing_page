@@ -8,6 +8,8 @@ const CREATOR_PATHS = [
   "/profile",
   "/fan-mode",
   "/settings",
+  "/recipes/new",
+  "/help",
 ];
 
 const intlMiddleware = createIntlMiddleware(routing);
@@ -20,17 +22,29 @@ function hasSupabaseSession(request: NextRequest): boolean {
 }
 
 export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
+
+  // Supabase redirects auth errors (flow_state_already_used, otp_expired, etc.)
+  // to the site URL with ?error=...&error_code=... params. Forward the user to
+  // the login page with the error code so they get a readable message.
+  const errorCode = searchParams.get("error_code");
+  if (errorCode && searchParams.get("error")) {
+    const locale = pathname.startsWith("/en") ? "en" : "fr";
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}/auth/login`;
+    url.search = `?error=${errorCode}`;
+    return NextResponse.redirect(url);
+  }
 
   // Strip locale prefix to get the actual path
-  const pathWithoutLocale = pathname.replace(/^\/(fr|en|ar)(\/|$)/, "/") || "/";
+  const pathWithoutLocale = pathname.replace(/^\/(fr|en)(\/|$)/, "/") || "/";
 
   // Auth guard: redirect unauthenticated users away from creator routes
   const isCreatorRoute = CREATOR_PATHS.some((p) =>
     pathWithoutLocale.startsWith(p)
   );
   if (!hasSupabaseSession(request) && isCreatorRoute) {
-    const locale = pathname.startsWith("/en") ? "en" : pathname.startsWith("/ar") ? "ar" : "fr";
+    const locale = pathname.startsWith("/en") ? "en" : "fr";
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/auth/login`;
     url.searchParams.set("redirect", pathname);
