@@ -124,6 +124,7 @@ Deno.serve(async (req) => {
         title,
         description,
         creator_id,
+        language,
         recipe_ingredient (
           id, quantity, unit, is_optional, is_section_header, title,
           ingredient:ingredient_id (name_fr, name_en)
@@ -265,6 +266,18 @@ Ensure the output is valid JSON, and matches all the database check constraints 
     let commitResult = null;
 
     if (commit && Array.isArray(result.steps) && result.steps.length > 0) {
+      // Capture the recipe's existing step-translation locales BEFORE the commit wipes them
+      // (recipe_step_translation.step_id CASCADEs when the old steps are deleted).
+      const currentStepIds = ((recipe.recipe_step ?? []) as Array<{ id: string }>).map((s) => s.id);
+      let priorLocales: string[] = [];
+      if (currentStepIds.length > 0) {
+        const { data: priorRows } = await adminClient
+          .from('recipe_step_translation')
+          .select('locale')
+          .in('step_id', currentStepIds);
+        priorLocales = [...new Set((priorRows ?? []).map((r: { locale: string }) => r.locale))];
+      }
+
       // Atomic replace: delete + insert run in one transaction inside the RPC, so a
       // mid-insert failure (e.g. a check-constraint violation) rolls back and leaves the
       // recipe's original steps intact. The RPC is service_role-only (see migration).
@@ -282,6 +295,19 @@ Ensure the output is valid JSON, and matches all the database check constraints 
         committed: true,
         steps_count: stepsCount
       };
+
+      // Regenerate the step translations the commit just wiped — only the locales the recipe
+      // already had — in the background, so the clean response is not delayed. Best-effort:
+      // if it fails, the recipe page falls back to source-locale step text.
+      if (priorLocales.length > 0 && recipe.language) {
+        const trigger = fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/translate-recipe-steps`, {
+          method: 'POST',
+          headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recipe_id, source_locale: recipe.language, target_locales: priorLocales })
+        }).catch((e) => console.error('recipe-cleaner: step re-translation trigger failed:', e));
+        const ert = (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } }).EdgeRuntime;
+        if (ert?.waitUntil) ert.waitUntil(trigger); else await trigger;
+      }
     }
 
     return new Response(JSON.stringify({
