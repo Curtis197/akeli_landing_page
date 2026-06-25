@@ -51,3 +51,4 @@ next-env.d.ts
 /fetched_recipes_data.json
 /query_db.js
 /generate_descriptions.py
+/batch_translate_steps.js
