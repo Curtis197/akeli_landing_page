@@ -106,13 +106,26 @@ Deno.serve(async (req) => {
     const { recipe_id, commit = false } = body;
 
 
-
-
-
     if (!recipe_id) {
       return new Response(JSON.stringify({ error: 'recipe_id is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Rate-limit: 200 calls/creator/24h. Checked before the Gemini call so we
+    // don't burn tokens on callers over quota.
+    const { data: allowed, error: rlError } = await adminClient.rpc(
+      'check_and_record_cleaner_call', { p_creator_id: creatorId }
+    );
+    if (rlError) {
+      console.error('recipe-cleaner: rate-limit RPC error:', rlError.message);
+      throw new CleanerError('internal', 'Rate-limit check failed');
+    }
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: 'rate_limit_exceeded' }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '3600' }
       });
     }
 
