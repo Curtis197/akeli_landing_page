@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Navbar from "@/components/layout/Navbar";
 
 export const metadata: Metadata = {
   title: "Mentions légales — Akeli",
@@ -6,6 +7,8 @@ export const metadata: Metadata = {
 
 export default function MentionsPage() {
   return (
+    <>
+    <Navbar />
     <main className="min-h-screen bg-background px-4 py-16">
       <div className="max-w-2xl mx-auto space-y-8">
         <h1 className="text-3xl font-bold text-foreground">Mentions légales</h1>
@@ -60,5 +63,6 @@ export default function MentionsPage() {
         </section>
       </div>
     </main>
+    </>
   );
 }

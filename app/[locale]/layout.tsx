@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/lib/i18n/routing";
 import { Providers } from "@/components/providers";
 import type { Locale } from "@/lib/i18n/routing";
-import { Playfair_Display, DM_Sans, Noto_Naskh_Arabic } from "next/font/google";
+import { Playfair_Display, DM_Sans } from "next/font/google";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -16,12 +16,6 @@ const playfair = Playfair_Display({
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
-  display: "swap",
-});
-
-const notoArabic = Noto_Naskh_Arabic({
-  subsets: ["arabic"],
-  variable: "--font-arabic",
   display: "swap",
 });
 
@@ -48,7 +42,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} className={`${playfair.variable} ${dmSans.variable} ${locale === "ar" ? notoArabic.variable : ""}`} suppressHydrationWarning>
+    <html lang={locale} dir="ltr" className={`${playfair.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <body className="antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>{children}</Providers>

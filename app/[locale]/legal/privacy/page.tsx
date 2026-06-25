@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Navbar from "@/components/layout/Navbar";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité — Akeli",
@@ -6,10 +7,12 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
+    <>
+    <Navbar />
     <main className="min-h-screen bg-background px-4 py-16">
       <div className="max-w-2xl mx-auto space-y-8">
         <h1 className="text-3xl font-bold text-foreground">Politique de confidentialité</h1>
-        <p className="text-sm text-muted-foreground">Dernière mise à jour : mars 2025</p>
+        <p className="text-sm text-muted-foreground">Dernière mise à jour : juin 2025</p>
 
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">1. Données collectées</h2>
@@ -66,5 +69,6 @@ export default function PrivacyPage() {
         </section>
       </div>
     </main>
+    </>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Navbar from "@/components/layout/Navbar";
 
 export const metadata: Metadata = {
   title: "Conditions d'utilisation — Akeli",
@@ -6,17 +7,19 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
+    <>
+    <Navbar />
     <main className="min-h-screen bg-background px-4 py-16">
       <div className="max-w-2xl mx-auto space-y-8">
         <h1 className="text-3xl font-bold text-foreground">Conditions générales d'utilisation</h1>
-        <p className="text-sm text-muted-foreground">Dernière mise à jour : mars 2025</p>
+        <p className="text-sm text-muted-foreground">Dernière mise à jour : juin 2025</p>
 
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">1. Objet</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
             Les présentes conditions générales d'utilisation (CGU) régissent l'accès et
             l'utilisation de la plateforme Akeli, accessible via l'application mobile et le
-            site web akeli.app.
+            site web a-keli.com.
           </p>
         </section>
 
@@ -65,5 +68,6 @@ export default function TermsPage() {
         </section>
       </div>
     </main>
+    </>
   );
 }

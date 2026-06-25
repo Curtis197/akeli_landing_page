@@ -104,13 +104,13 @@ export default function RecipeDetailPage() {
           id, slug, title, description, cover_image_url, region, difficulty,
           prep_time_min, cook_time_min, servings, is_pork_free, creator_id, language,
           show_on_website,
-          food_region:region ( name_fr, name_en, name_ar ),
+          food_region:region ( name_fr, name_en ),
           recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ),
           recipe_tag ( tag ( name ) ),
           creator:creator_id ( display_name, profile_image_url, heritage_region ),
           recipe_ingredient (
             id, quantity, unit, is_optional, sort_order, is_section_header, title,
-            ingredient:ingredient_id ( id, name_fr, name_en, name_ar ),
+            ingredient:ingredient_id ( id, name_fr, name_en ),
             recipe_ingredient_translation ( quantity, unit, title, locale )
           ),
           recipe_step (
@@ -137,7 +137,7 @@ export default function RecipeDetailPage() {
         .eq("locale", locale)
         .maybeSingle();
 
-      const nameKey = `name_${locale}` as "name_fr" | "name_en" | "name_ar";
+      const nameKey = `name_${locale}` as "name_fr" | "name_en";
       const fr = raw.food_region as any;
       const macro = Array.isArray(raw.recipe_macro) ? raw.recipe_macro[0] : raw.recipe_macro;
       const c = Array.isArray(raw.creator) ? raw.creator[0] : raw.creator;

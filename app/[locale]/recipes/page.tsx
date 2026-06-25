@@ -48,7 +48,7 @@ export default function RecipesPage() {
         .select(`
           id, slug, title, cover_image_url, region, difficulty,
           prep_time_min, cook_time_min, creator_id,
-          food_region:region ( name_fr, name_en, name_ar ),
+          food_region:region ( name_fr, name_en ),
           creator:creator_id ( display_name, profile_image_url )
         `)
         .eq("is_published", true)
@@ -72,7 +72,7 @@ export default function RecipesPage() {
         (translations ?? []).map((t: any) => [t.recipe_id, t.title])
       );
 
-      const nameKey = `name_${locale}` as "name_fr" | "name_en" | "name_ar";
+      const nameKey = `name_${locale}` as "name_fr" | "name_en";
 
       setRecipes(
         data.map((r: any) => {
