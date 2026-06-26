@@ -103,6 +103,7 @@ export default function RecipeWizard({
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [titleConflict, setTitleConflict] = useState(false);
   const [units, setUnits] = useState<MeasurementUnit[]>([]);
   const [unitConversions, setUnitConversions] = useState<UnitConversion[]>([]);
   const isDirtyRef = useRef(false);
@@ -284,8 +285,11 @@ export default function RecipeWizard({
     isDirtyRef.current = true;
   }, []);
 
+  const handleTitleConflict = useCallback((isDup: boolean) => setTitleConflict(isDup), []);
+
   // ── Navigation ─────────────────────────────────────────────────────────────
   const handleNext = async () => {
+    if (currentStep === 1 && titleConflict) return;
     await saveDraft(formState, currentStep);
     if (currentStep < 6) setCurrentStep((s) => s + 1);
   };
@@ -358,7 +362,13 @@ export default function RecipeWizard({
 
       <div className="mt-8">
         {currentStep === 1 && (
-          <Step1Basic data={formState} onChange={updateForm} />
+          <Step1Basic
+            data={formState}
+            onChange={updateForm}
+            creatorId={creator?.id}
+            draftId={draftId}
+            onDuplicateTitle={handleTitleConflict}
+          />
         )}
         {currentStep === 2 && (
           <Step2Ingredients
@@ -410,7 +420,8 @@ export default function RecipeWizard({
         {currentStep < 6 && (
           <button
             onClick={handleNext}
-            className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            disabled={currentStep === 1 && titleConflict}
+            className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Suivant {"→"}
           </button>

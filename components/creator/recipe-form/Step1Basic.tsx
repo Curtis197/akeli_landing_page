@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { step1Schema, MEAL_TYPES, PREFERRED_MEAL_TYPES, DIFFICULTY_OPTIONS } from "@/lib/validations/recipe.schema";
@@ -11,10 +11,16 @@ import { createClient } from "@/lib/supabase/client";
 interface Step1Props {
   data: RecipeFormState;
   onChange: (patch: Partial<RecipeFormState>) => void;
+  creatorId?: string;
+  draftId?: string | null;
+  onDuplicateTitle?: (isDuplicate: boolean) => void;
 }
 
-export default function Step1Basic({ data, onChange }: Step1Props) {
+export default function Step1Basic({ data, onChange, creatorId, draftId, onDuplicateTitle }: Step1Props) {
   const [regions, setRegions] = useState<{ code: string; name_fr: string }[]>([]);
+  const [titleConflict, setTitleConflict] = useState(false);
+  const onDuplicateTitleRef = useRef(onDuplicateTitle);
+  onDuplicateTitleRef.current = onDuplicateTitle;
 
   const {
     register,
@@ -53,6 +59,29 @@ export default function Step1Basic({ data, onChange }: Step1Props) {
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Debounced duplicate title check per creator
+  useEffect(() => {
+    if (!creatorId || !title || title.length < 3) {
+      setTitleConflict(false);
+      onDuplicateTitleRef.current?.(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      let query = createClient()
+        .from("recipe")
+        .select("id")
+        .eq("creator_id", creatorId)
+        .ilike("title", title)
+        .limit(1);
+      if (draftId) query = query.neq("id", draftId);
+      const { data: rows } = await query;
+      const isDup = !!(rows && rows.length > 0);
+      setTitleConflict(isDup);
+      onDuplicateTitleRef.current?.(isDup);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [title, creatorId, draftId]);
 
   // Sync form changes up to parent
   useEffect(() => {
@@ -105,6 +134,9 @@ export default function Step1Basic({ data, onChange }: Step1Props) {
         />
         {errors.title && (
           <p className="text-xs text-destructive">{errors.title.message}</p>
+        )}
+        {!errors.title && titleConflict && (
+          <p className="text-xs text-destructive">Tu as déjà une recette avec ce nom.</p>
         )}
       </div>
 

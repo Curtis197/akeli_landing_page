@@ -98,7 +98,7 @@ export default function Step5Images({ data, onChange, draftId }: Step5Props) {
       {/* Cover image */}
       <div className="space-y-3">
         <label className="text-sm font-medium text-foreground">
-          Photo de couverture <span className="text-destructive">*</span>
+          Photo de couverture
         </label>
 
         {data.cover_image_url ? (

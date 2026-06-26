@@ -82,7 +82,7 @@ export const step3Schema = z.object({
 });
 
 export const step5Schema = z.object({
-  cover_image_url: z.string().min(1, "Image de couverture requise"),
+  cover_image_url: z.string().optional().default(""),
   gallery_urls: z.array(z.string()).max(5).default([]),
 });
 
