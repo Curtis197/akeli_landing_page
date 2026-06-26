@@ -40,15 +40,21 @@ export default function LoginPage() {
     setError(null);
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin;
+    const redirectTo = `${siteUrl}/${locale}/auth/callback`;
+    console.log("[auth] Google login started");
+    console.log("[auth] redirectTo:", redirectTo);
+    console.log("[auth] NEXT_PUBLIC_SITE_URL:", process.env.NEXT_PUBLIC_SITE_URL ?? "(not set — using window.location.origin)");
+
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${siteUrl}/${locale}/auth/callback`,
-      },
+      options: { redirectTo },
     });
 
     if (authError) {
+      console.error("[auth] signInWithOAuth error:", authError.message, authError);
       setError(authError.message || "Une erreur est survenue avec Google.");
+    } else {
+      console.log("[auth] signInWithOAuth OK — redirecting to Google…");
     }
     setLoading(false);
   }

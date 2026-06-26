@@ -42,9 +42,11 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Initial session check
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log("[auth] initial session:", session ? `user=${session.user.email}` : "none");
       setUser(session?.user ?? null);
       if (session?.user) {
         const creator = await fetchCreator(session.user.id, session.access_token);
+        console.log("[auth] initial creator row:", creator ? creator.id : "not found");
         setCreator(creator);
       }
       setLoading(false);
@@ -54,11 +56,13 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("[auth] onAuthStateChange:", event, session ? `user=${session.user.email}` : "no session");
       setUser(session?.user ?? null);
       if (session?.user) {
         // Use raw fetch to avoid deadlock: supabase.from() inside onAuthStateChange
         // triggers an internal auth.getUser() call that deadlocks the auth event queue.
         const creator = await fetchCreator(session.user.id, session.access_token);
+        console.log("[auth] creator row after event:", creator ? creator.id : "not found");
         setCreator(creator);
       } else {
         setCreator(null);
