@@ -33,8 +33,7 @@ export async function GET(
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
-      // The code may have already been exchanged (e.g. browser retry or double
-      // click). If the session is still valid, just redirect to dashboard.
+      // If the session is already valid (e.g. browser retry), go to dashboard.
       const {
         data: { user: existingUser },
       } = await supabase.auth.getUser();
@@ -43,6 +42,11 @@ export async function GET(
           new URL(`/${locale}/dashboard`, request.url)
         );
       }
+      // Temporary: surface the real error code for diagnosis.
+      const errCode = encodeURIComponent(error.code ?? error.message ?? "unknown");
+      return NextResponse.redirect(
+        new URL(`/${locale}/auth/login?error=auth_error&debug=${errCode}`, request.url)
+      );
     }
 
     if (!error) {
