@@ -12,19 +12,10 @@ export async function GET(
 
   if (code) {
     const cookieStore = await cookies();
-    const allCookies = cookieStore.getAll();
-    const verifierCookie = allCookies.find((c) =>
-      c.name.includes("code-verifier")
-    );
-    console.log("[callback] code received:", code.slice(0, 8) + "...");
-    console.log("[callback] cookies present:", allCookies.map((c) => c.name).join(", ") || "NONE");
-    console.log("[callback] verifier cookie:", verifierCookie ? verifierCookie.name : "MISSING");
-    console.log("[callback] request URL:", request.url);
-    console.log("[callback] SUPABASE_URL set:", !!process.env.NEXT_PUBLIC_SUPABASE_URL);
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)!,
       {
         cookies: {
           getAll() {
@@ -40,7 +31,6 @@ export async function GET(
     );
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    console.log("[callback] exchangeCodeForSession error:", error ? JSON.stringify({ code: error.code, message: error.message, status: error.status }) : "null (success)");
 
     if (error) {
       // If the session is already valid (e.g. browser retry), go to dashboard.
@@ -48,16 +38,10 @@ export async function GET(
         data: { user: existingUser },
       } = await supabase.auth.getUser();
       if (existingUser) {
-        console.log("[callback] existing session found → redirecting to dashboard");
         return NextResponse.redirect(
           new URL(`/${locale}/dashboard`, request.url)
         );
       }
-      const errCode = encodeURIComponent(error.code ?? error.message ?? "unknown");
-      console.log("[callback] no session, redirecting to login with debug:", errCode);
-      return NextResponse.redirect(
-        new URL(`/${locale}/auth/login?error=auth_error&debug=${errCode}`, request.url)
-      );
     }
 
     if (!error) {
