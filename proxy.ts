@@ -14,10 +14,12 @@ const CREATOR_PATHS = [
 
 const intlMiddleware = createIntlMiddleware(routing);
 
-/** Cookie-only session check — safe for Edge runtime (no @supabase/ssr). */
+/** Cookie-only session check — safe for Edge runtime (no @supabase/ssr).
+ *  Matches both the plain cookie (sb-*-auth-token) and the chunked format
+ *  written by @supabase/ssr (sb-*-auth-token.0, .1, …). */
 function hasSupabaseSession(request: NextRequest): boolean {
-  return request.cookies.getAll().some(
-    (c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token")
+  return request.cookies.getAll().some((c) =>
+    /^sb-.+-auth-token(\.\d+)?$/.test(c.name)
   );
 }
 
