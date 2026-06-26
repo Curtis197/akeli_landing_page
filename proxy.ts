@@ -36,6 +36,18 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Supabase auth emails (magic links, invites, password resets) use the site
+  // URL as the redirect base, landing as /?code=<pkce-code>. Forward the code
+  // to the callback route so it can be exchanged for a session.
+  const code = searchParams.get("code");
+  if (code && (pathname === "/" || pathname === "/fr" || pathname === "/en")) {
+    const locale = pathname.startsWith("/en") ? "en" : "fr";
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}/auth/callback`;
+    url.search = `?code=${code}`;
+    return NextResponse.redirect(url);
+  }
+
   // Strip locale prefix to get the actual path
   const pathWithoutLocale = pathname.replace(/^\/(fr|en)(\/|$)/, "/") || "/";
 
