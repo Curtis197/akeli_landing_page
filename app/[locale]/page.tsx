@@ -37,11 +37,11 @@ export default function LandingPage() {
               {t("hero.subtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mb-12" style={{ animation: "fadeInUp 0.65s 0.3s ease both" }}>
-              <a href="#" className="inline-flex items-center justify-center gap-2 rounded-xl px-7 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
+              <Link href="/test-onboarding" className="inline-flex items-center justify-center gap-2 rounded-xl px-7 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
                 style={{ backgroundColor: "var(--color-brand-dark)", color: "#fff" }}>
-                {t("hero.ctaDownload")}
+                {t("hero.ctaAssessment")}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </a>
+              </Link>
               <Link href="/become-creator"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border-2 px-7 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
                 style={{ borderColor: "var(--color-brand-green)", color: "var(--color-brand-green)" }}>
