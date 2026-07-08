@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS public.onboarding_lead (
   protein_g numeric NOT NULL,
   carb_g numeric NOT NULL,
   fat_g numeric NOT NULL,
+  target_weight_kg numeric,
+  remaining_weeks integer,
   created_at timestamp with time zone DEFAULT now()
 );
 

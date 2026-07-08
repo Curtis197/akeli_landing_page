@@ -5,7 +5,7 @@ import { Resend } from "resend";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, calorie_goal, protein_g, carb_g, fat_g, region } = body;
+    const { email, calorie_goal, protein_g, carb_g, fat_g, region, target_weight_kg, remaining_weeks } = body;
 
     if (!email || !calorie_goal || !protein_g || !carb_g || !fat_g) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -32,6 +32,8 @@ export async function POST(request: NextRequest) {
         protein_g: Number(protein_g),
         carb_g: Number(carb_g),
         fat_g: Number(fat_g),
+        target_weight_kg: target_weight_kg ? Number(target_weight_kg) : null,
+        remaining_weeks: remaining_weeks ? Number(remaining_weeks) : null,
       });
 
     if (insertError) {

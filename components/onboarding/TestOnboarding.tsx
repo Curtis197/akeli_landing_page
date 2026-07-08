@@ -345,7 +345,9 @@ export default function TestOnboarding() {
           protein_g: currentMacros.protein,
           carb_g: currentMacros.carbs,
           fat_g: currentMacros.fat,
-          region: selectedRegion
+          region: selectedRegion,
+          target_weight_kg: goal === "maintenance" ? null : targetWeight,
+          remaining_weeks: goal === "maintenance" ? null : remainingWeeks
         })
       });
 
