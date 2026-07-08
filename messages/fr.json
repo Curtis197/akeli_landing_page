@@ -21,9 +21,10 @@
       "title": "Mangez comme vous êtes.",
       "subtitle": "Retrouvez votre corps avec les plats de chez vous.",
       "ctaDownload": "Télécharger l'app",
-      "ctaCreator": "Devenir créateur",
-      "ctaAssessment": "Calculer mes besoins"
+      "ctaTry": "Essayer l'onboarding"
     },
+    "tryTitle": "Essayez par vous-même",
+    "trySubtitle": "Calculez vos besoins nutritionnels et découvrez comment Akeli adapte vos portions de recettes culturelles en temps réel.",
     "ticker": {
       "items": [
         "La cuisine que vous aimez",

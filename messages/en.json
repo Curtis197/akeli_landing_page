@@ -21,9 +21,10 @@
       "title": "Eat as you are.",
       "subtitle": "Get your body back, with the dishes from home.",
       "ctaDownload": "Download the app",
-      "ctaCreator": "Become a creator",
-      "ctaAssessment": "Calculate my needs"
+      "ctaTry": "Try the onboarding"
     },
+    "tryTitle": "Try it yourself",
+    "trySubtitle": "Calculate your nutrition needs and discover how Akeli scales your favorite traditional recipes in real-time.",
     "ticker": {
       "items": [
         "The food you love",
