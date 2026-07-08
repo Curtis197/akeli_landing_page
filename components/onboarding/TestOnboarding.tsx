@@ -94,6 +94,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     label_height: "Taille (cm)",
     label_weight: "Poids actuel (kg)",
     label_target_weight: "Poids cible (kg)",
+    label_target_weeks: "Durée estimée (semaines)",
     error_fields: "Veuillez remplir correctement tous les champs.",
     error_email: "Veuillez entrer un e-mail valide."
   },
@@ -145,6 +146,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     label_height: "Height (cm)",
     label_weight: "Current Weight (kg)",
     label_target_weight: "Target Weight (kg)",
+    label_target_weeks: "Target duration (weeks)",
     error_fields: "Please fill out all fields correctly.",
     error_email: "Please enter a valid email."
   }
@@ -167,6 +169,7 @@ export default function TestOnboarding() {
   const [height, setHeight] = useState<number>(168);
   const [weight, setWeight] = useState<number>(68);
   const [targetWeight, setTargetWeight] = useState<number>(60);
+  const [remainingWeeks, setRemainingWeeks] = useState<number>(12);
   
   // Processing Animation
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);
@@ -232,8 +235,14 @@ export default function TestOnboarding() {
     let pace_c = 0.5; // default 0.5 kg/week
     if (goal_c === "weight_loss") {
       pace_c = delta_c >= 0 ? 0 : 0.5;
+      if (remainingWeeks) {
+        pace_c = Math.min(Math.abs(delta_c) / Math.max(remainingWeeks, 1), 1.0);
+      }
     } else if (goal_c === "muscle_gain") {
       pace_c = delta_c <= 0 ? 0 : 0.25;
+      if (remainingWeeks) {
+        pace_c = Math.min(Math.abs(delta_c) / Math.max(remainingWeeks, 1), 0.5);
+      }
     }
 
     let calories = computedTdee;
@@ -355,7 +364,7 @@ export default function TestOnboarding() {
   const handleNextStep = () => {
     setUiError("");
     if (step === 3) {
-      if (!age || !height || !weight || (goal !== "maintenance" && !targetWeight)) {
+      if (!age || !height || !weight || (goal !== "maintenance" && (!targetWeight || !remainingWeeks))) {
         setUiError(t.error_fields);
         return;
       }
@@ -555,15 +564,24 @@ export default function TestOnboarding() {
                   className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#3bb78f] text-black" />
               </div>
 
-              {/* Target Weight (if loss/gain) */}
+              {/* Target Weight & Time duration (if loss/gain) */}
               {goal !== "maintenance" && (
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-semibold mb-2" style={{ color: "var(--color-brand-dark)" }}>
-                    {t.label_target_weight} :
-                  </label>
-                  <input type="number" min="30" max="300" value={targetWeight || ""} onChange={e => setTargetWeight(Number(e.target.value))}
-                    className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#3bb78f] text-black" />
-                </div>
+                <>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2" style={{ color: "var(--color-brand-dark)" }}>
+                      {t.label_target_weight} :
+                    </label>
+                    <input type="number" min="30" max="300" value={targetWeight || ""} onChange={e => setTargetWeight(Number(e.target.value))}
+                      className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#3bb78f] text-black" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2" style={{ color: "var(--color-brand-dark)" }}>
+                      {t.label_target_weeks} :
+                    </label>
+                    <input type="number" min="1" max="100" value={remainingWeeks || ""} onChange={e => setRemainingWeeks(Number(e.target.value))}
+                      className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#3bb78f] text-black" />
+                  </div>
+                </>
               )}
             </div>
           </div>
