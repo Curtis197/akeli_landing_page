@@ -283,7 +283,7 @@ export default function TestOnboarding() {
       setBaseTargets(assessment);
       setSliderCalories(assessment.calorie_goal);
 
-      const res = await fetch(`/api/onboarding-recipes?region=${selectedRegion}`);
+      const res = await fetch(`/api/onboarding-recipes?region=${selectedRegion}&protein_g=${assessment.protein_g}&carb_g=${assessment.carb_g}&fat_g=${assessment.fat_g}`);
       const payload = await res.json();
 
       if (payload.data) {

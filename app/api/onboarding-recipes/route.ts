@@ -24,6 +24,12 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const region = searchParams.get("region") || "west_africa";
+    
+    // Parse target macros for visitor similarity matching
+    const targetProtein = Number(searchParams.get("protein_g")) || 0;
+    const targetCarbs = Number(searchParams.get("carb_g")) || 0;
+    const targetFat = Number(searchParams.get("fat_g")) || 0;
+    const hasTargetMacros = targetProtein > 0 || targetCarbs > 0 || targetFat > 0;
 
     const cookieStore = await cookies();
     const supabase = createServerClient(
@@ -75,58 +81,86 @@ export async function GET(request: NextRequest) {
 
     const regionRecipes = (regionData || []) as unknown as DBRecipe[];
 
-    // Helper to find a recipe for a specific meal type
-    const findRecipeForMealType = (recipes: DBRecipe[], mealType: string) => {
-      // First choice: exact match on preferred_meal_type
-      let match = recipes.find(r => r.preferred_meal_type === mealType);
-      if (!match) {
-        // Second choice: fits within meal_types array
-        match = recipes.find(r => r.meal_types?.includes(mealType));
-      }
-      return match;
+    // 2. Fetch fallbacks if any meal type is missing
+    let fallbackRecipes: DBRecipe[] = [];
+    const { data: fallbackData } = await supabase
+      .from("recipe")
+      .select(`
+        id,
+        title,
+        description,
+        region,
+        cover_image_url,
+        meal_types,
+        preferred_meal_type,
+        recipe_macro (
+          calories,
+          protein_g,
+          carbs_g,
+          fat_g
+        )
+      `)
+      .eq("is_published", true)
+      .eq("region", "west_africa"); // West Africa is the primary fallback
+
+    fallbackRecipes = (fallbackData || []) as unknown as DBRecipe[];
+
+    // Helper to calculate cosine similarity between user macro target and recipe macros
+    const getCosineSimilarity = (r: DBRecipe) => {
+      const macrosObj = Array.isArray(r.recipe_macro) ? r.recipe_macro[0] : r.recipe_macro;
+      if (!macrosObj) return 0.5;
+
+      const rProt = Number(macrosObj.protein_g) || 0;
+      const rCarb = Number(macrosObj.carbs_g) || 0;
+      const rFat = Number(macrosObj.fat_g) || 0;
+
+      // Avoid division by zero
+      if (rProt === 0 && rCarb === 0 && rFat === 0) return 0;
+
+      const dotProduct = (targetProtein * rProt) + (targetCarbs * rCarb) + (targetFat * rFat);
+      const normA = Math.sqrt((targetProtein * targetProtein) + (targetCarbs * targetCarbs) + (targetFat * targetFat));
+      const normB = Math.sqrt((rProt * rProt) + (rCarb * rCarb) + (rFat * rFat));
+
+      return dotProduct / (normA * normB);
     };
 
-    let breakfast = findRecipeForMealType(regionRecipes, "breakfast");
-    let lunch = findRecipeForMealType(regionRecipes, "lunch");
-    let dinner = findRecipeForMealType(regionRecipes, "dinner");
+    // Helper to find and rank recipes for a specific meal type
+    const findRecipesForMealType = (recipes: DBRecipe[], mealType: string) => {
+      const matches = recipes.filter(r => r.preferred_meal_type === mealType || r.meal_types?.includes(mealType));
+      
+      if (matches.length === 0) return [];
 
-    // 2. Fetch fallbacks if any meal type is missing
-    const needsFallback = !breakfast || !lunch || !dinner;
-    let fallbackRecipes: DBRecipe[] = [];
+      // Sort by cosine similarity if targets are provided, otherwise by ID
+      return matches.sort((a, b) => {
+        if (hasTargetMacros) {
+          return getCosineSimilarity(b) - getCosineSimilarity(a);
+        }
+        return 0; // retain database order
+      });
+    };
 
-    if (needsFallback) {
-      const { data: fallbackData } = await supabase
-        .from("recipe")
-        .select(`
-          id,
-          title,
-          description,
-          region,
-          cover_image_url,
-          meal_types,
-          preferred_meal_type,
-          recipe_macro (
-            calories,
-            protein_g,
-            carbs_g,
-            fat_g
-          )
-        `)
-        .eq("is_published", true)
-        .eq("region", "west_africa"); // West Africa is the primary fallback
+    const getBestMatch = (mealType: string) => {
+      // Look in region first
+      const regionMatches = findRecipesForMealType(regionRecipes, mealType);
+      if (regionMatches.length > 0) return regionMatches[0];
 
-      fallbackRecipes = (fallbackData || []) as unknown as DBRecipe[];
+      // Fallback to West Africa if missing
+      const fallbackMatches = findRecipesForMealType(fallbackRecipes, mealType);
+      if (fallbackMatches.length > 0) return fallbackMatches[0];
 
-      if (!breakfast) {
-        breakfast = findRecipeForMealType(fallbackRecipes, "breakfast");
-      }
-      if (!lunch) {
-        // If lunch is missing, look for a dinner recipe and use it as lunch, or pull from fallback
-        lunch = findRecipeForMealType(fallbackRecipes, "lunch") || findRecipeForMealType(regionRecipes, "dinner");
-      }
-      if (!dinner) {
-        dinner = findRecipeForMealType(fallbackRecipes, "dinner") || findRecipeForMealType(regionRecipes, "lunch");
-      }
+      return null;
+    };
+
+    let breakfast = getBestMatch("breakfast");
+    let lunch = getBestMatch("lunch");
+    let dinner = getBestMatch("dinner");
+
+    // If lunch or dinner is still missing, try swapping
+    if (!lunch) {
+      lunch = getBestMatch("dinner") || getBestMatch("breakfast");
+    }
+    if (!dinner) {
+      dinner = getBestMatch("lunch") || getBestMatch("breakfast");
     }
 
     const selectedRecipes = [breakfast, lunch, dinner].filter(Boolean) as DBRecipe[];
