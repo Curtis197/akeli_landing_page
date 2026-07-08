@@ -51,14 +51,12 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     subtitle: "Découvrez vos portions de recettes idéales pour atteindre vos objectifs sans abandonner vos saveurs culturelles.",
     step1_title: "Sélectionnez votre région culinaire",
     step1_desc: "Akeli adapte vos plats préférés sans en altérer les saveurs authentiques.",
-    step2_title: "Votre objectif & activité",
-    step2_desc: "Ces paramètres guident le calcul de vos dépenses énergétiques.",
-    step3_title: "Vos données corporelles",
-    step3_desc: "Des informations précises pour un bilan métabolique sur-mesure.",
-    step4_loading: "Calcul métabolique en cours...",
-    step4_bmr: "Analyse de votre métabolisme de base (BMR)...",
-    step4_tdee: "Calcul de vos dépenses journalières (TDEE)...",
-    step4_recipes: "Ajustement des portions de recettes...",
+    step2_title: "Vos informations métaboliques",
+    step2_desc: "Des informations précises pour un bilan sur-mesure.",
+    step3_loading: "Calcul métabolique en cours...",
+    step3_bmr: "Analyse de votre métabolisme de base (BMR)...",
+    step3_tdee: "Calcul de vos dépenses journalières (TDEE)...",
+    step3_recipes: "Ajustement des portions de recettes...",
     results_title: "Votre Profil Nutritionnel",
     results_desc: "Akeli ajuste automatiquement vos recettes. Utilisez le curseur ci-dessous pour modifier vos calories.",
     calorie_slider: "Ajuster l'apport calorique quotidien :",
@@ -79,9 +77,6 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     btn_next: "Suivant",
     btn_prev: "Retour",
     btn_finish: "Calculer mon profil",
-    goal_loss: "Perdre du poids",
-    goal_maintenance: "Maintenir mon poids & manger sainement",
-    goal_gain: "Prendre du muscle",
     act_sedentary: "Sédentaire (Activité faible)",
     act_light: "Activité légère (1-3 séances / semaine)",
     act_moderate: "Activité modérée (3-5 séances / semaine)",
@@ -93,7 +88,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     label_age: "Âge",
     label_height: "Taille (cm)",
     label_weight: "Poids actuel (kg)",
-    label_target_weight: "Poids cible (kg)",
+    label_activity: "Niveau d'activité",
     error_fields: "Veuillez remplir correctement tous les champs.",
     error_email: "Veuillez entrer un e-mail valide."
   },
@@ -102,14 +97,12 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     subtitle: "Discover your ideal recipe portions to reach your goals without losing your cultural flavors.",
     step1_title: "Select your culinary region",
     step1_desc: "Akeli scales your favorite dishes without altering their authentic taste.",
-    step2_title: "Your goal & activity level",
-    step2_desc: "These parameters guide the calculation of your energy expenditure.",
-    step3_title: "Your physical profile",
-    step3_desc: "Accurate information for a tailored metabolic report.",
-    step4_loading: "Calculating your metabolism...",
-    step4_bmr: "Analyzing your Basal Metabolic Rate (BMR)...",
-    step4_tdee: "Computing your Daily Energy Expenditure (TDEE)...",
-    step4_recipes: "Scaling recipe portions...",
+    step2_title: "Your metabolic profile",
+    step2_desc: "Accurate details for a tailored report.",
+    step3_loading: "Calculating your metabolism...",
+    step3_bmr: "Analyzing your Basal Metabolic Rate (BMR)...",
+    step3_tdee: "Computing your Daily Energy Expenditure (TDEE)...",
+    step3_recipes: "Scaling recipe portions...",
     results_title: "Your Nutrition Profile",
     results_desc: "Akeli automatically adapts your recipes. Use the slider below to tweak your calories.",
     calorie_slider: "Adjust daily calorie intake:",
@@ -130,9 +123,6 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     btn_next: "Next",
     btn_prev: "Back",
     btn_finish: "Calculate my profile",
-    goal_loss: "Lose weight",
-    goal_maintenance: "Maintain weight & eat healthy",
-    goal_gain: "Build muscle",
     act_sedentary: "Sedentary (Little to no activity)",
     act_light: "Light activity (1-3 sessions / week)",
     act_moderate: "Moderate activity (3-5 sessions / week)",
@@ -144,7 +134,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     label_age: "Age",
     label_height: "Height (cm)",
     label_weight: "Current Weight (kg)",
-    label_target_weight: "Target Weight (kg)",
+    label_activity: "Activity level",
     error_fields: "Please fill out all fields correctly.",
     error_email: "Please enter a valid email."
   }
@@ -157,8 +147,8 @@ export default function TestOnboarding() {
   const [step, setStep] = useState(1);
   const [selectedRegion, setSelectedRegion] = useState("west_africa");
   
-  // Goal & Activity
-  const [goal, setGoal] = useState<"weight_loss" | "maintenance" | "muscle_gain">("maintenance");
+  // Goal is constant (maintenance for baseline calculation)
+  const goal = "maintenance";
   const [activity, setActivity] = useState<"sedentary" | "light" | "moderate" | "active" | "very_active">("moderate");
   
   // Physical Metrics
@@ -166,7 +156,6 @@ export default function TestOnboarding() {
   const [age, setAge] = useState<number>(28);
   const [height, setHeight] = useState<number>(168);
   const [weight, setWeight] = useState<number>(68);
-  const [targetWeight, setTargetWeight] = useState<number>(60);
   
   // Processing Animation
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);
@@ -192,17 +181,17 @@ export default function TestOnboarding() {
   const [submittingLead, setSubmittingLead] = useState(false);
   const [uiError, setUiError] = useState("");
 
-  // Loading text cycles
+  // Loading text cycles (Step 3 is the loading step)
   useEffect(() => {
-    if (step === 4) {
-      const texts = [t.step4_bmr, t.step4_tdee, t.step4_recipes];
+    if (step === 3) {
+      const texts = [t.step3_bmr, t.step3_tdee, t.step3_recipes];
       const timer = setInterval(() => {
         setLoadingTextIndex(prev => {
           if (prev < texts.length - 1) {
             return prev + 1;
           } else {
             clearInterval(timer);
-            // Finished calculations -> Fetch recipes and transit
+            // Finished calculations -> Fetch recipes and transit to Step 4 (Results)
             fetchRecipesAndCalculate();
             return prev;
           }
@@ -225,33 +214,15 @@ export default function TestOnboarding() {
     };
     let computedTdee = computedBmr * (multipliers[activity] || 1.2);
 
-    const goal_c = goal;
-    const target = goal_c === "maintenance" ? weight : targetWeight;
-    const delta_c = target - weight;
-    
-    let pace_c = 0.5; // default 0.5 kg/week
-    if (goal_c === "weight_loss") {
-      pace_c = delta_c >= 0 ? 0 : 0.5;
-    } else if (goal_c === "muscle_gain") {
-      pace_c = delta_c <= 0 ? 0 : 0.25;
-    }
-
-    let calories = computedTdee;
-    if (goal_c === "weight_loss") {
-      calories = Math.max(computedTdee - pace_c * 1100, computedBmr);
-    } else if (goal_c === "muscle_gain") {
-      calories = computedTdee + Math.min(pace_c * 1100, 0.20 * computedTdee);
-    }
+    let calories = computedTdee; // Since goal is constant maintenance
 
     // Macros Ratios
     // Protein g/kg based on muscle goal (gain = 2.2, loss = 1.2, maint = 1.6)
-    const muscleGoal = goal_c === "muscle_gain" ? "gain" : (goal_c === "weight_loss" ? "loss" : "maintenance");
-    const proteinWeightRef = (goal_c === "weight_loss") ? Math.min(weight, target) : weight;
-    const proteinMultiplier = muscleGoal === "gain" ? 2.2 : (muscleGoal === "loss" ? 1.2 : 1.6);
-    let protein_g = Math.min(proteinWeightRef * proteinMultiplier, (0.35 * calories) / 4.0);
+    const proteinMultiplier = 1.6;
+    let protein_g = Math.min(weight * proteinMultiplier, (0.35 * calories) / 4.0);
     
-    // Fat % (gain = 20%, loss = 30%, maint = 25%)
-    const fatPct = muscleGoal === "gain" ? 0.20 : (muscleGoal === "loss" ? 0.30 : 0.25);
+    // Fat %
+    const fatPct = 0.25;
     let fat_g = (fatPct * calories) / 9.0;
 
     // Carbs fills the remainder
@@ -280,7 +251,7 @@ export default function TestOnboarding() {
       if (payload.data) {
         setRecipes(payload.data);
       }
-      setStep(5);
+      setStep(4); // step 4 is results
     } catch (e) {
       console.error(e);
     } finally {
@@ -354,13 +325,13 @@ export default function TestOnboarding() {
 
   const handleNextStep = () => {
     setUiError("");
-    if (step === 3) {
-      if (!age || !height || !weight || (goal !== "maintenance" && !targetWeight)) {
+    if (step === 2) {
+      if (!age || !height || !weight) {
         setUiError(t.error_fields);
         return;
       }
       setLoadingTextIndex(0);
-      setStep(4);
+      setStep(3);
     } else {
       setStep(prev => prev + 1);
     }
@@ -383,13 +354,13 @@ export default function TestOnboarding() {
         style={{ backgroundColor: "rgba(247,242,234,0.8)", backdropFilter: "blur(12px)", borderColor: "rgba(28,43,28,0.08)" }}>
         
         {/* Step Indicator */}
-        {step <= 3 && (
+        {step <= 2 && (
           <div className="flex justify-between items-center mb-8">
             <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-brand-green)" }}>
-              Étape {step} sur 3
+              Étape {step} sur 2
             </span>
             <div className="flex gap-2">
-              {[1, 2, 3].map(i => (
+              {[1, 2].map(i => (
                 <div key={i} className="h-1.5 w-12 rounded-full transition-all duration-300"
                   style={{ backgroundColor: i <= step ? "var(--color-brand-green)" : "rgba(28,43,28,0.1)" }} />
               ))}
@@ -434,7 +405,7 @@ export default function TestOnboarding() {
           </div>
         )}
 
-        {/* STEP 2: Goal & Activity */}
+        {/* STEP 2: Physical Metrics & Activity */}
         {step === 2 && (
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: "var(--font-display)", color: "var(--color-brand-dark)" }}>
@@ -442,66 +413,6 @@ export default function TestOnboarding() {
             </h2>
             <p className="text-sm mb-8" style={{ color: "var(--color-brand-forest)" }}>
               {t.step2_desc}
-            </p>
-
-            <div className="mb-8">
-              <label className="block text-sm font-semibold mb-3" style={{ color: "var(--color-brand-dark)" }}>
-                Mon objectif principal :
-              </label>
-              <div className="flex flex-col gap-3">
-                {([
-                  { code: "weight_loss", text: t.goal_loss },
-                  { code: "maintenance", text: t.goal_maintenance },
-                  { code: "muscle_gain", text: t.goal_gain }
-                ] as const).map(item => (
-                  <button key={item.code} onClick={() => setGoal(item.code)}
-                    className="text-left p-4 rounded-xl border transition-all"
-                    style={{
-                      borderColor: goal === item.code ? "var(--color-brand-green)" : "rgba(28,43,28,0.1)",
-                      backgroundColor: goal === item.code ? "rgba(59,183,143,0.06)" : "#fff",
-                      fontWeight: goal === item.code ? "600" : "normal"
-                    }}>
-                    {item.text}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <label className="block text-sm font-semibold mb-3" style={{ color: "var(--color-brand-dark)" }}>
-                Mon niveau d'activité :
-              </label>
-              <div className="flex flex-col gap-3">
-                {([
-                  { code: "sedentary", text: t.act_sedentary },
-                  { code: "light", text: t.act_light },
-                  { code: "moderate", text: t.act_moderate },
-                  { code: "active", text: t.act_active },
-                  { code: "very_active", text: t.act_very_active }
-                ] as const).map(item => (
-                  <button key={item.code} onClick={() => setActivity(item.code)}
-                    className="text-left p-4 rounded-xl border transition-all"
-                    style={{
-                      borderColor: activity === item.code ? "var(--color-brand-green)" : "rgba(28,43,28,0.1)",
-                      backgroundColor: activity === item.code ? "rgba(59,183,143,0.06)" : "#fff",
-                      fontWeight: activity === item.code ? "600" : "normal"
-                    }}>
-                    {item.text}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: Physical Metrics */}
-        {step === 3 && (
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: "var(--font-display)", color: "var(--color-brand-dark)" }}>
-              {t.step3_title}
-            </h2>
-            <p className="text-sm mb-8" style={{ color: "var(--color-brand-forest)" }}>
-              {t.step3_desc}
             </p>
 
             <div className="grid sm:grid-cols-2 gap-6 mb-8">
@@ -555,22 +466,26 @@ export default function TestOnboarding() {
                   className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#3bb78f] text-black" />
               </div>
 
-              {/* Target Weight (if loss/gain) */}
-              {goal !== "maintenance" && (
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-semibold mb-2" style={{ color: "var(--color-brand-dark)" }}>
-                    {t.label_target_weight} :
-                  </label>
-                  <input type="number" min="30" max="300" value={targetWeight || ""} onChange={e => setTargetWeight(Number(e.target.value))}
-                    className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#3bb78f] text-black" />
-                </div>
-              )}
+              {/* Activity Level */}
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold mb-2" style={{ color: "var(--color-brand-dark)" }}>
+                  {t.label_activity} :
+                </label>
+                <select value={activity} onChange={e => setActivity(e.target.value as any)}
+                  className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#3bb78f] text-black bg-white">
+                  <option value="sedentary">{t.act_sedentary}</option>
+                  <option value="light">{t.act_light}</option>
+                  <option value="moderate">{t.act_moderate}</option>
+                  <option value="active">{t.act_active}</option>
+                  <option value="very_active">{t.act_very_active}</option>
+                </select>
+              </div>
             </div>
           </div>
         )}
 
-        {/* STEP 4: Processing / Loading */}
-        {step === 4 && (
+        {/* STEP 3: Processing / Loading */}
+        {step === 3 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="relative mb-8 w-24 h-24">
               <div className="absolute inset-0 rounded-full border-4 border-emerald-100 animate-pulse" />
@@ -578,19 +493,19 @@ export default function TestOnboarding() {
             </div>
             
             <h2 className="text-xl sm:text-2xl font-bold mb-3" style={{ fontFamily: "var(--font-display)", color: "var(--color-brand-dark)" }}>
-              {t.step4_loading}
+              {t.step3_loading}
             </h2>
             
             <p className="text-sm font-medium animate-fade" style={{ color: "var(--color-brand-forest)" }}>
-              {loadingTextIndex === 0 && t.step4_bmr}
-              {loadingTextIndex === 1 && t.step4_tdee}
-              {loadingTextIndex === 2 && t.step4_recipes}
+              {loadingTextIndex === 0 && t.step3_bmr}
+              {loadingTextIndex === 1 && t.step3_tdee}
+              {loadingTextIndex === 2 && t.step3_recipes}
             </p>
           </div>
         )}
 
-        {/* STEP 5: Results Dashboard */}
-        {step === 5 && baseTargets && (
+        {/* STEP 4: Results Dashboard */}
+        {step === 4 && baseTargets && (
           <div className="animate-fadeIn">
             {/* Dashboard Headers */}
             <div className="text-center mb-8 border-b pb-6" style={{ borderColor: "rgba(28,43,28,0.1)" }}>
@@ -813,7 +728,7 @@ export default function TestOnboarding() {
         )}
 
         {/* Wizard Controls */}
-        {step <= 3 && (
+        {step <= 2 && (
           <div className="flex justify-between items-center mt-10 border-t pt-6" style={{ borderColor: "rgba(28,43,28,0.1)" }}>
             <button onClick={() => setStep(prev => Math.max(1, prev - 1))} disabled={step === 1}
               className="px-6 py-3 rounded-xl border border-[#1c2b1c] text-sm font-semibold transition-all hover:bg-black/5 disabled:opacity-20">
@@ -823,7 +738,7 @@ export default function TestOnboarding() {
             <button onClick={handleNextStep}
               className="px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02]"
               style={{ backgroundColor: "var(--color-brand-green)" }}>
-              {step === 3 ? t.btn_finish : t.btn_next}
+              {step === 2 ? t.btn_finish : t.btn_next}
             </button>
           </div>
         )}
