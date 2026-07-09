@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useLocale } from "next-intl";
+import { trackLandingEvent, getLandingSessionId } from "@/lib/tracking/landing";
 
 interface Ingredient {
   name: string;
@@ -71,11 +72,12 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     lunch: "Déjeuner",
     dinner: "Dîner",
     ingredients: "Ingrédients requis",
-    email_title: "Recevoir mon bilan par e-mail",
-    email_desc: "Entrez votre adresse pour enregistrer votre profil et recevoir votre menu adapté avec la liste de courses.",
+    email_title: "Recevoir mon bilan + l'accès anticipé",
+    email_desc: "Entrez votre adresse pour recevoir votre bilan complet et faire partie des premiers à accéder à l'app Akeli — vos retours façonneront la suite.",
     email_placeholder: "Votre adresse e-mail...",
-    email_submit: "M'envoyer mes résultats",
-    email_success: "Résultats envoyés ! Vérifiez votre boîte de réception.",
+    email_submit: "Recevoir mon accès anticipé",
+    email_success: "Bilan envoyé ! Votre accès anticipé arrive par e-mail.",
+    email_success_sub: "Bientôt sur iOS & Android — vous serez parmi les premiers.",
     btn_next: "Suivant",
     btn_prev: "Retour",
     btn_finish: "Calculer mon profil",
@@ -123,11 +125,12 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     lunch: "Lunch",
     dinner: "Dinner",
     ingredients: "Required ingredients",
-    email_title: "Receive your report by email",
-    email_desc: "Enter your email to save your profile and receive your custom menu with the shopping list.",
+    email_title: "Get my report + early access",
+    email_desc: "Enter your email to receive your full report and be among the first to access the Akeli app — your feedback will shape what comes next.",
     email_placeholder: "Your email address...",
-    email_submit: "Email my results",
-    email_success: "Results sent! Check your inbox.",
+    email_submit: "Get my early access",
+    email_success: "Report sent! Your early access is on its way by email.",
+    email_success_sub: "Coming soon to iOS & Android — you'll be among the first.",
     btn_next: "Next",
     btn_prev: "Back",
     btn_finish: "Calculate my profile",
@@ -290,6 +293,7 @@ export default function TestOnboarding() {
         setRecipes(payload.data);
       }
       setStep(5);
+      trackLandingEvent("wizard_results");
     } catch (e) {
       console.error(e);
     } finally {
@@ -341,6 +345,7 @@ export default function TestOnboarding() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
+          session_id: getLandingSessionId(),
           calorie_goal: sliderCalories,
           protein_g: currentMacros.protein,
           carb_g: currentMacros.carbs,
@@ -352,6 +357,7 @@ export default function TestOnboarding() {
       });
 
       if (res.ok) {
+        trackLandingEvent("lead_submitted");
         setEmailSubmitted(true);
       } else {
         setUiError(t.error_fields);
@@ -370,9 +376,11 @@ export default function TestOnboarding() {
         setUiError(t.error_fields);
         return;
       }
+      trackLandingEvent("wizard_step", { step: 3 });
       setLoadingTextIndex(0);
       setStep(4);
     } else {
+      trackLandingEvent("wizard_step", { step });
       setStep(prev => prev + 1);
     }
   };
@@ -808,11 +816,16 @@ export default function TestOnboarding() {
                 </p>
 
                 {emailSubmitted ? (
-                  <div className="py-4 text-[#3bb78f] font-bold text-lg flex items-center justify-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                      <path d="M20 6L9 17l-5-5"/>
-                    </svg>
-                    {t.email_success}
+                  <div className="py-4">
+                    <div className="text-[#3bb78f] font-bold text-lg flex items-center justify-center gap-2">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <path d="M20 6L9 17l-5-5"/>
+                      </svg>
+                      {t.email_success}
+                    </div>
+                    <p className="text-xs sm:text-sm text-gray-300 mt-3">
+                      {t.email_success_sub}
+                    </p>
                   </div>
                 ) : (
                   <form onSubmit={handleSubmitLead} className="max-w-md mx-auto flex flex-col sm:flex-row gap-2">
