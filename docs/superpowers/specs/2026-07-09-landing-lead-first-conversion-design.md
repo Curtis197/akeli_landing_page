@@ -39,9 +39,10 @@ New/changed i18n keys added to **both** `fr.json` and `en.json`: `hero.ctaTry` (
 - **`data/faq.ts` — `user-disponibilite`:** question becomes "Quand l'app sera-t-elle disponible ?"; answer: launching very soon on the App Store and Google Play, do the free bilan and leave your email to be notified first at launch, download will be free.
 - **`data/faq.ts` — `user-prix`:** "coûtera 2,99€/mois au lancement" (future tense), rest unchanged.
 - **`components/onboarding/TestOnboarding.tsx` (FR + EN entries in its `TRANSLATIONS`):**
-  - `email_title` / `email_desc`: email delivers the bilan **and** a spot on the launch list ("vous serez prévenu·e dès que l'app sera disponible").
-  - Success state: "Bilan envoyé ! Vous êtes sur la liste de lancement." + a "Bientôt sur iOS & Android" line. No more dead end.
-- **`app/api/onboarding-lead/route.ts` (Resend email):** replace "téléchargez dès maintenant l'application mobile Akeli" with launch-list framing ("l'app arrive très bientôt sur iOS et Android — vous serez averti·e en premier"). Button links to a-keli.com. Swap the off-brand `#9c88ff` accents for brand green `#3bb78f`.
+  - `email_title` / `email_desc`: early-access framing — the email delivers the bilan **and** an "accès anticipé" invitation (never the word "test": for a non-tech audience it signals buggy; "accès anticipé" + "vos retours façonnent l'app" frames beta participation as privilege).
+  - Success state: "Bilan envoyé ! Votre accès anticipé arrive par e-mail." + a "Bientôt sur iOS & Android" line. No more dead end.
+- **`app/api/onboarding-lead/route.ts` (Resend email):** replace "téléchargez dès maintenant l'application mobile Akeli" with the early-access invitation. Beta links are **env-driven with graceful fallback** since neither exists until a build is uploaded: `TESTFLIGHT_PUBLIC_LINK` (TestFlight public link) and `PLAY_OPTIN_LINK` (Play closed-testing opt-in URL). If set → email shows the two "Accès anticipé" buttons; if unset → email says the early-access invite will follow shortly ("vous serez parmi les premiers"). Swap the off-brand `#9c88ff` accents for brand green `#3bb78f`.
+  - Rationale (validated 2026-07-09): Play requires 12 testers opted-in 14 consecutive days for personal dev accounts; leads with a fresh bilan are the ideal tester cohort. Self-serve links = zero API integration (V1); App Store Connect API / Workspace-group automation deferred to V2 if volume justifies it.
 
 ### 3.3 Funnel analytics
 
