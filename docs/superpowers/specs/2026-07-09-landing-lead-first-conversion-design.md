@@ -30,7 +30,7 @@ The mobile app V1 is **not yet submitted to the stores**. Until launch, the land
 | Hero secondary | "Télécharger l'app" → `#` | Static badge "Bientôt sur iOS & Android" (non-interactive) |
 | Pricing card CTA | "Télécharger l'app" → `#` | "Commencer mon bilan gratuit" → `#try-it-yourself`, plus note under price: "Disponible au lancement sur iOS et Android — sans engagement." |
 | Final CTA primary | "Télécharger l'app" → `#` | "Faire mon bilan gratuit" → `#try-it-yourself` |
-| Final CTA secondary | "Devenir créateur" | Unchanged (P1 scope) |
+| Final CTA secondary | "Devenir créateur" | Removed — the creator teaser now sits directly above (§3.4), so the last decision moment keeps a single ask |
 
 New/changed i18n keys added to **both** `fr.json` and `en.json`: `hero.ctaTry` (reworded), `hero.storeBadge` (new, replaces `ctaDownload` usage in hero), `pricing.cta` (reworded), `pricing.note` (new), `finalCta.ctaTry` (replaces `ctaDownload`).
 
@@ -76,9 +76,31 @@ ALTER TABLE public.onboarding_lead ADD COLUMN IF NOT EXISTS session_id text;
 
 Because `page.tsx` is a server component, the three tracked CTAs render through a small client component `components/tracking/TrackedLink.tsx` (renders `<a>`, fires `cta_click` on click). `TestOnboarding` is already client-side and calls the util directly; the lead POST also sends `session_id` so leads join to their funnel path.
 
+### 3.4 Section resequencing — the emotional journey
+
+The section order becomes the visitor's narrative arc (*recognition → pain → hope → proof-for-me → vision → belonging → risk removal → objections → resolve*). New order in `app/[locale]/page.tsx`:
+
+| # | Section | Emotional beat |
+|---|---|---|
+| 1 | Hero | Recognition — "this is for me" |
+| 2 | Ticker | Energy |
+| 3 | **Problem (new)** | Pain validation — names the enemy |
+| 4 | Mechanism | Hope — pushes against the named problem |
+| 5 | Wizard (`#try-it-yourself`) | Proof-for-me + ownership — lead capture at peak emotion |
+| 6 | Payoff | Vision — "restez vous-même", now earned |
+| 7 | Proof | Belonging (content rework stays P1) |
+| 8 | Pricing | Risk removal — cost after value |
+| 9 | FAQ | Objection clearing |
+| 10 | Creator teaser | Relocated — secondary audience, no longer interrupts |
+| 11 | Final CTA | Resolve — single ask, loops back to the wizard |
+
+Visitors who convert inside the wizard at #5 stop scrolling — that is success; sections 6–9 serve the skeptics who skipped it.
+
+**New Problem section:** dark background (`--color-brand-dark`), same visual language as Payoff (eyebrow + display headline + 2–3 short pain lines, no image required). New i18n namespace `landing.problem` in both `fr.json` and `en.json`. Draft FR copy (finalized at implementation): eyebrow "Le vrai problème"; headline "Les régimes classiques vous demandent de choisir entre votre santé et votre culture."; body "Des menus qui ignorent vos plats. Des portions pensées pour d'autres. Et l'impression que retrouver la forme, c'est renoncer à la cuisine de chez vous."
+
 ## 4. Non-goals (deliberately out of scope)
 
-Navbar CTA rework, social proof section, mobile sticky CTA (P1 — next iteration); wizard next-intl refactor and remaining hardcoded French (P2); ingredient-teasing policy on the results screen (needs product decision).
+Navbar CTA rework, social proof content (testimonials), mobile sticky CTA (P1 — next iteration); wizard next-intl refactor and remaining hardcoded French (P2); ingredient-teasing policy on the results screen (needs product decision).
 
 ## 5. Error handling
 
@@ -87,5 +109,5 @@ Tracking must never degrade UX: client util swallows all errors; route returns 2
 ## 6. Testing & verification
 
 - Vitest unit tests for `/api/track/event` payload validation (event whitelist, missing fields).
-- Manual walkthrough on `npm run dev` (FR + EN): every CTA scrolls to the wizard, no `href="#"` remains, wizard → results → email → launch-list success state, rows appear in `landing_event` and `onboarding_lead.session_id` populated.
+- Manual walkthrough on `npm run dev` (FR + EN): section order matches §3.4, every CTA scrolls to the wizard, no `href="#"` remains, wizard → results → email → launch-list success state, rows appear in `landing_event` and `onboarding_lead.session_id` populated.
 - Migration applied via Supabase CLI before the feature is exercised.
