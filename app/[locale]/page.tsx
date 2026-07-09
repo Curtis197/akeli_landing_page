@@ -7,6 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import { faqData } from "@/data/faq";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import TestOnboarding from "@/components/onboarding/TestOnboarding";
+import TrackedLink from "@/components/tracking/TrackedLink";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("landing.hero");
@@ -38,15 +39,16 @@ export default function LandingPage() {
               {t("hero.subtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mb-12" style={{ animation: "fadeInUp 0.65s 0.3s ease both" }}>
-              <a href="#try-it-yourself" className="inline-flex items-center justify-center gap-2 rounded-xl px-7 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
+              <TrackedLink href="#try-it-yourself" source="hero"
+                className="inline-flex items-center justify-center gap-2 rounded-xl px-7 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
                 style={{ backgroundColor: "var(--color-brand-dark)", color: "#fff" }}>
                 {t("hero.ctaTry")}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </a>
-              <a href="#" className="inline-flex items-center justify-center gap-2 rounded-xl border-2 px-7 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
-                style={{ borderColor: "var(--color-brand-green)", color: "var(--color-brand-green)" }}>
-                {t("hero.ctaDownload")}
-              </a>
+              </TrackedLink>
+              <span className="inline-flex items-center justify-center gap-2 rounded-xl border-2 px-7 py-4 text-sm font-semibold"
+                style={{ borderColor: "rgba(28,43,28,0.18)", color: "var(--color-brand-forest)" }}>
+                {t("hero.storeBadge")}
+              </span>
             </div>
           </div>
           <div className="relative min-h-[65vw] sm:min-h-[55vw] lg:min-h-0 order-1 lg:order-2 overflow-hidden"
@@ -68,6 +70,22 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
+
+        {/* PROBLEM */}
+        <section className="px-6 sm:px-12 py-20 sm:py-24" style={{ backgroundColor: "var(--color-brand-dark)" }}>
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: "var(--color-brand-amber)" }}>
+              {t("problem.eyebrow")}
+            </p>
+            <h2 className="text-3xl sm:text-5xl font-bold leading-tight mb-6"
+              style={{ fontFamily: "var(--font-display)", color: "#F7F2EA" }}>
+              {t("problem.headline")}
+            </h2>
+            <p className="text-base sm:text-lg leading-relaxed max-w-2xl mx-auto" style={{ color: "rgba(247,242,234,0.75)" }}>
+              {t("problem.body")}
+            </p>
+          </div>
+        </section>
 
         {/* MECHANISM */}
         <section className="px-6 sm:px-12 py-20 sm:py-28" style={{ backgroundColor: "var(--color-brand-cream)" }}>
@@ -109,24 +127,19 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* CREATOR TEASER */}
-        <section className="px-6 sm:px-12 py-16" style={{ backgroundColor:"var(--color-brand-dark)" }}>
-          <div className="max-w-3xl mx-auto text-center">
-            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color:"var(--color-brand-amber)" }}>
-              {t("creatorTeaser.eyebrow")}
-            </p>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-6"
-              style={{ fontFamily:"var(--font-display)", color:"#F7F2EA" }}>
-              {t("creatorTeaser.headline")}
-            </h2>
-            <Link href="/become-creator"
-              className="inline-flex items-center gap-2 rounded-xl px-7 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
-              style={{ backgroundColor:"var(--color-brand-amber)", color:"var(--color-brand-dark)" }}>
-              {t("creatorTeaser.cta")}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </Link>
+        {/* TRY IT YOURSELF */}
+        <section id="try-it-yourself" className="scroll-mt-20 px-6 sm:px-12 py-20 sm:py-28" style={{ backgroundColor:"var(--color-brand-cream)" }}>
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl sm:text-5xl font-bold mb-4"
+                style={{ fontFamily:"var(--font-display)", color:"var(--color-brand-dark)" }}>
+                {t("tryTitle")}
+              </h2>
+              <p className="text-base sm:text-lg max-w-2xl mx-auto" style={{ color:"var(--color-brand-forest)" }}>
+                {t("trySubtitle")}
+              </p>
+            </div>
+            <TestOnboarding />
           </div>
         </section>
 
@@ -215,28 +228,16 @@ export default function LandingPage() {
                     </div>
                   ))}
                 </div>
-                <a href="#" className="block w-full text-center rounded-xl py-4 text-sm font-semibold transition-all hover:scale-[1.01]"
+                <TrackedLink href="#try-it-yourself" source="pricing"
+                  className="block w-full text-center rounded-xl py-4 text-sm font-semibold transition-all hover:scale-[1.01]"
                   style={{ backgroundColor:"var(--color-brand-amber)", color:"var(--color-brand-dark)" }}>
                   {t("pricing.cta")}
-                </a>
+                </TrackedLink>
+                <p className="text-xs text-center mt-4" style={{ color:"rgba(247,242,234,0.5)" }}>
+                  {t("pricing.note")}
+                </p>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* TRY IT YOURSELF */}
-        <section id="try-it-yourself" className="scroll-mt-20 px-6 sm:px-12 py-20 sm:py-28" style={{ backgroundColor:"var(--color-brand-cream)" }}>
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl sm:text-5xl font-bold mb-4"
-                style={{ fontFamily:"var(--font-display)", color:"var(--color-brand-dark)" }}>
-                {t("tryTitle")}
-              </h2>
-              <p className="text-base sm:text-lg max-w-2xl mx-auto" style={{ color:"var(--color-brand-forest)" }}>
-                {t("trySubtitle")}
-              </p>
-            </div>
-            <TestOnboarding />
           </div>
         </section>
 
@@ -253,6 +254,27 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* CREATOR TEASER */}
+        <section className="px-6 sm:px-12 py-16" style={{ backgroundColor:"var(--color-brand-dark)" }}>
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color:"var(--color-brand-amber)" }}>
+              {t("creatorTeaser.eyebrow")}
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6"
+              style={{ fontFamily:"var(--font-display)", color:"#F7F2EA" }}>
+              {t("creatorTeaser.headline")}
+            </h2>
+            <Link href="/become-creator"
+              className="inline-flex items-center gap-2 rounded-xl px-7 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
+              style={{ backgroundColor:"var(--color-brand-amber)", color:"var(--color-brand-dark)" }}>
+              {t("creatorTeaser.cta")}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </Link>
+          </div>
+        </section>
+
         {/* CTA FINALE */}
         <section className="relative overflow-hidden flex items-center" style={{ height:"500px" }}>
           <Image src="/akeli/video-call-dinner.jpg" fill className="object-cover object-center" alt="Rejoindre Akeli" />
@@ -266,19 +288,15 @@ export default function LandingPage() {
               style={{ fontFamily:"var(--font-display)" }}>
               {t("finalCta.title")}
             </h2>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="#" className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
+            <div className="flex justify-center">
+              <TrackedLink href="#try-it-yourself" source="final"
+                className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
                 style={{ backgroundColor:"var(--color-brand-amber)", color:"var(--color-brand-dark)" }}>
-                {t("finalCta.ctaDownload")}
+                {t("finalCta.ctaTry")}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
-              </a>
-              <Link href="/become-creator"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border-2 px-8 py-4 text-sm font-semibold transition-all hover:scale-[1.02]"
-                style={{ borderColor:"rgba(247,242,234,0.5)", color:"#F7F2EA" }}>
-                {t("finalCta.ctaCreator")}
-              </Link>
+              </TrackedLink>
             </div>
           </div>
         </section>
