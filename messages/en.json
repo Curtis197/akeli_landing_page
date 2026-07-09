@@ -20,8 +20,8 @@
     "hero": {
       "title": "Eat as you are.",
       "subtitle": "Get your body back, with the dishes from home.",
-      "ctaDownload": "Download the app",
-      "ctaTry": "Try the onboarding"
+      "ctaTry": "Get my free assessment",
+      "storeBadge": "Coming soon to iOS & Android"
     },
     "tryTitle": "Try it yourself",
     "trySubtitle": "Calculate your nutrition needs and discover how Akeli scales your favorite traditional recipes in real-time.",
@@ -34,6 +34,11 @@
         "Get your energy back",
         "Home, everywhere"
       ]
+    },
+    "problem": {
+      "eyebrow": "The real problem",
+      "headline": "Classic diets ask you to choose between your health and your culture.",
+      "body": "Meal plans that ignore your dishes. Portions designed for someone else. And the feeling that getting in shape means giving up the food from home."
     },
     "mechanism": {
       "eyebrow": "Your cuisine, reimagined for you",
@@ -89,14 +94,14 @@
         "New recipes every week",
         "On iOS and Android"
       ],
-      "cta": "Download the app"
+      "cta": "Start my free assessment",
+      "note": "Available at launch on iOS and Android — no commitment."
     },
     "faqTitle": "Frequently asked questions",
     "finalCta": {
       "eyebrow": "Shall we start?",
       "title": "Eat as you are.",
-      "ctaDownload": "Download the app",
-      "ctaCreator": "Become a creator"
+      "ctaTry": "Get my free assessment"
     },
     "footer": {
       "about": "About",

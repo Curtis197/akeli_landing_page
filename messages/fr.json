@@ -20,8 +20,8 @@
     "hero": {
       "title": "Mangez comme vous êtes.",
       "subtitle": "Retrouvez votre corps avec les plats de chez vous.",
-      "ctaDownload": "Télécharger l'app",
-      "ctaTry": "Essayer l'onboarding"
+      "ctaTry": "Faire mon bilan gratuit",
+      "storeBadge": "Bientôt sur iOS & Android"
     },
     "tryTitle": "Essayez par vous-même",
     "trySubtitle": "Calculez vos besoins nutritionnels et découvrez comment Akeli adapte vos portions de recettes culturelles en temps réel.",
@@ -34,6 +34,11 @@
         "Retrouvez votre énergie",
         "Chez vous, partout"
       ]
+    },
+    "problem": {
+      "eyebrow": "Le vrai problème",
+      "headline": "Les régimes classiques vous demandent de choisir entre votre santé et votre culture.",
+      "body": "Des menus qui ignorent vos plats. Des portions pensées pour d'autres. Et l'impression que retrouver la forme, c'est renoncer à la cuisine de chez vous."
     },
     "mechanism": {
       "eyebrow": "Votre cuisine, repensée pour vous",
@@ -89,14 +94,14 @@
         "De nouvelles recettes chaque semaine",
         "Sur iOS et Android"
       ],
-      "cta": "Télécharger l'app"
+      "cta": "Commencer mon bilan gratuit",
+      "note": "Disponible au lancement sur iOS et Android — sans engagement."
     },
     "faqTitle": "Questions fréquentes",
     "finalCta": {
       "eyebrow": "On commence ?",
       "title": "Mangez comme vous êtes.",
-      "ctaDownload": "Télécharger l'app",
-      "ctaCreator": "Devenir créateur"
+      "ctaTry": "Faire mon bilan gratuit"
     },
     "footer": {
       "about": "À propos",
