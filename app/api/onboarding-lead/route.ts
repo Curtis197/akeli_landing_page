@@ -5,7 +5,7 @@ import { Resend } from "resend";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, calorie_goal, protein_g, carb_g, fat_g, region, target_weight_kg, remaining_weeks } = body;
+    const { email, calorie_goal, protein_g, carb_g, fat_g, region, target_weight_kg, remaining_weeks, session_id } = body;
 
     if (!email || !calorie_goal || !protein_g || !carb_g || !fat_g) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
         fat_g: Number(fat_g),
         target_weight_kg: target_weight_kg ? Number(target_weight_kg) : null,
         remaining_weeks: remaining_weeks ? Number(remaining_weeks) : null,
+        session_id: typeof session_id === "string" && session_id ? session_id : null,
       });
 
     if (insertError) {
@@ -46,28 +47,37 @@ export async function POST(request: NextRequest) {
     if (resendApiKey) {
       const resend = new Resend(resendApiKey);
       try {
+        const testflightLink = process.env.TESTFLIGHT_PUBLIC_LINK;
+        const playLink = process.env.PLAY_OPTIN_LINK;
+
+        const accessBlock = (testflightLink || playLink)
+          ? `
+            <p><strong>Votre accès anticipé est prêt.</strong> Installez l'app dès maintenant et faites partie des premiers — vos retours façonneront la suite :</p>
+            <div style="text-align: center; margin: 24px 0;">
+              ${testflightLink ? `<a href="${testflightLink}" style="background: #1c2b1c; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; margin: 4px;">Accès anticipé iPhone</a>` : ""}
+              ${playLink ? `<a href="${playLink}" style="background: #3bb78f; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; margin: 4px;">Accès anticipé Android</a>` : ""}
+            </div>`
+          : `
+            <p><strong>Vous êtes sur la liste d'accès anticipé.</strong> L'app Akeli arrive très bientôt sur iOS et Android — vous serez parmi les premiers à la recevoir, avec vos recettes adaptées à ce bilan.</p>`;
+
         await resend.emails.send({
           from: "Akeli Nutrition <onboarding@a-keli.com>",
           to: email,
-          subject: "Vos résultats d'onboarding nutritionnel - Akeli",
+          subject: "Votre bilan nutritionnel Akeli + votre accès anticipé",
           html: `
             <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px;">
-              <h2 style="color: #9c88ff; margin-bottom: 20px; text-align: center;">Vos résultats personnalisés 🎉</h2>
+              <h2 style="color: #1c2b1c; margin-bottom: 20px; text-align: center;">Votre bilan personnalisé 🎉</h2>
               <p>Bonjour,</p>
               <p>Voici le bilan de votre analyse nutritionnelle gratuite effectuée sur le site d'Akeli :</p>
-              
-              <div style="background: #f7f2ea; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #9c88ff;">
+
+              <div style="background: #f7f2ea; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3bb78f;">
                 <p style="margin: 5px 0;"><strong>Objectif Calorique :</strong> ${calorie_goal} kcal / jour</p>
                 <p style="margin: 5px 0;"><strong>Protéines :</strong> ${protein_g}g</p>
                 <p style="margin: 5px 0;"><strong>Glucides :</strong> ${carb_g}g</p>
                 <p style="margin: 5px 0;"><strong>Lipides :</strong> ${fat_g}g</p>
               </div>
 
-              <p>Pour adapter vos recettes traditionnelles en temps réel, ajuster vos portions au gramme près, et suivre votre progression au quotidien, téléchargez dès maintenant l'application mobile Akeli.</p>
-              
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="https://a-keli.com" style="background: #3bb78f; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Découvrir l'Application</a>
-              </div>
+              ${accessBlock}
 
               <p style="font-size: 12px; color: #888; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
                 Cet e-mail vous a été envoyé automatiquement suite à votre demande d'analyse gratuite sur le site a-keli.com.
