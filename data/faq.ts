@@ -5,9 +5,9 @@ export const faqData: FAQItem[] = [
 
   {
     id: "user-disponibilite",
-    question: "L'app est disponible sur iOS et Android ?",
+    question: "Quand l'app sera-t-elle disponible ?",
     answer:
-      "Oui. Akeli est disponible sur l'App Store et Google Play. Le téléchargement est gratuit — l'abonnement Akeli Premium (2,99€/mois) se souscrit directement depuis l'app.",
+      "Très bientôt. Akeli arrive sur l'App Store et Google Play. En attendant, faites votre bilan nutritionnel gratuit et laissez votre e-mail : vous ferez partie des premiers à recevoir l'accès anticipé à l'app. Le téléchargement sera gratuit.",
     audience: "user",
     placement: "landing",
     category: "Application",
@@ -16,7 +16,7 @@ export const faqData: FAQItem[] = [
     id: "user-prix",
     question: "Combien coûte Akeli ?",
     answer:
-      "Akeli Premium coûte 2,99€/mois. C'est sans engagement — vous pouvez annuler à tout moment depuis l'app en un clic.",
+      "Akeli Premium coûtera 2,99€/mois au lancement. C'est sans engagement — vous pourrez annuler à tout moment depuis l'app en un clic.",
     audience: "user",
     placement: "landing",
     category: "Abonnement",
