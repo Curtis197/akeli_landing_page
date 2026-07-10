@@ -1,0 +1,46 @@
+/* ============================================================
+   AKELI — Typography Tokens
+   Plus Jakarta Sans = display / headline (geometric confidence)
+   Inter = body / label (utilitarian clarity)
+   Source: lib/core/theme.dart + Organic Editorial spec
+   ============================================================ */
+
+:root {
+  /* ---- Families ---- */
+  --akeli-font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --akeli-font-body:    'Inter', system-ui, sans-serif;
+
+  /* ---- Weights ---- */
+  --akeli-weight-regular:  400;
+  --akeli-weight-medium:   500;
+  --akeli-weight-semibold: 600;
+  --akeli-weight-bold:     700;
+  --akeli-weight-extra:    800;
+
+  /* ---- Type scale (px) ---- */
+  --akeli-display-lg: 56px;  /* Plus Jakarta 800, ls -0.02em — hero */
+  --akeli-display-md: 40px;  /* Plus Jakarta 800 */
+  --akeli-display-sm: 28px;  /* Plus Jakarta 700 */
+  --akeli-headline-lg: 32px; /* Plus Jakarta 700 */
+  --akeli-headline-md: 24px; /* Plus Jakarta 700 — section headers */
+  --akeli-headline-sm: 20px; /* Plus Jakarta 700 */
+  --akeli-title-lg: 22px;    /* Inter 600 — card titles */
+  --akeli-title-md: 16px;    /* Inter 600 */
+  --akeli-title-sm: 14px;    /* Inter 500 */
+  --akeli-body-lg: 16px;     /* Inter 400, line-height 1.6 */
+  --akeli-body-md: 14px;     /* Inter 400 */
+  --akeli-body-sm: 13px;     /* Inter 400 */
+  --akeli-label-lg: 14px;    /* Inter 600, ls 0.05em */
+  --akeli-label-md: 12px;    /* Inter 600, ls 0.05em — chips / metadata */
+  --akeli-label-sm: 11px;    /* Inter 600, ls 0.08em — all-caps */
+
+  /* ---- Line heights ---- */
+  --akeli-leading-tight: 1.2;
+  --akeli-leading-snug:  1.4;
+  --akeli-leading-body:  1.6;
+
+  /* ---- Tracking ---- */
+  --akeli-tracking-display: -0.02em;  /* tighten large display */
+  --akeli-tracking-label:   0.05em;   /* track out metadata */
+  --akeli-tracking-caps:    0.08em;   /* all-caps labels */
+}

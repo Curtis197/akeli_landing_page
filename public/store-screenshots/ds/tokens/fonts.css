@@ -1,0 +1,12 @@
+/* ============================================================
+   AKELI — Webfonts
+   Plus Jakarta Sans (display / headline) + Inter (body / label)
+   Loaded from Google Fonts. If you self-host, replace the
+   @import below with local @font-face rules.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+/* Material Symbols Rounded — the app's iconography (Flutter Material Icons).
+   Use with <span class="material-symbols-rounded">icon_name</span>. */
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');

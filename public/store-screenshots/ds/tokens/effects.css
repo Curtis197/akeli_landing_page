@@ -1,0 +1,37 @@
+/* ============================================================
+   AKELI — Effects: radius, elevation, glass
+   Hierarchy is built from TONAL LAYERING, not shadows.
+   Shadows are reserved for elements that truly float.
+   Source: AkeliRadius / AkeliShadows + Organic Editorial spec
+   ============================================================ */
+
+:root {
+  /* ---- Radius — the 24px "Organic" standard ---- */
+  --akeli-radius-sm:   8px;    /* chips, inputs, small controls */
+  --akeli-radius-md:   12px;   /* standard cards, chat bubbles */
+  --akeli-radius-lg:   16px;   /* hero blocks */
+  --akeli-radius-xl:   24px;   /* organic cards + large buttons (signature) */
+  --akeli-radius-pill: 999px;
+
+  /* ---- Elevation ----
+     Ambient float shadows only. Shadow color is a tint of
+     on-surface (#1B1C16), never pure black. */
+  --akeli-shadow-sm:  0 1px 6px rgba(27,28,22,0.05);
+  --akeli-shadow-md:  0 4px 12px rgba(27,28,22,0.06);
+  --akeli-shadow-lg:  0 12px 28px rgba(27,28,22,0.08);
+  --akeli-shadow-float: 0 24px 48px rgba(27,28,22,0.06);  /* modals / sheets */
+  --akeli-shadow-cta: 0 8px 16px rgba(0,80,74,0.20);      /* teal-tinted CTA lift */
+
+  /* ---- Glass — the "frosted sanctuary" ---- */
+  --akeli-glass-bg: rgba(255,255,255,0.80);
+  --akeli-glass-blur: 20px;
+  /* Ghost border: felt, not seen */
+  --akeli-ghost-border: 1px solid rgba(190,201,198,0.15);
+
+  /* ---- Motion ----
+     Gentle, organic. Ease-out for entrances; short durations. */
+  --akeli-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --akeli-dur-fast: 150ms;
+  --akeli-dur-base: 220ms;
+  --akeli-dur-slow: 320ms;
+}

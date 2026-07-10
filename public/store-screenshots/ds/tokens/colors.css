@@ -1,0 +1,67 @@
+/* ============================================================
+   AKELI — Color Tokens
+   "Organic Editorial" — Deep Teal foundation, Warm Bone
+   neutrals, Vivid Amber accent. Source: lib/core/theme.dart
+   ============================================================ */
+
+:root {
+  /* ---- Brand ---------------------------------------------- */
+  --akeli-primary:            #00504A;  /* Deep teal — CTAs, active states, brand text */
+  --akeli-primary-container:  #006A63;  /* Mid teal — gradient end, headers */
+  --akeli-on-primary:         #FFFFFF;
+
+  --akeli-secondary:          #FF9F43;  /* Orange — secondary actions, calories */
+  --akeli-accent-amber:       #FF9F1C;  /* Vivid amber — high-conversion CTAs, pips */
+  --akeli-on-secondary:       #FFFFFF;
+
+  --akeli-secondary-container:   #C3EAE5;  /* Soft mint-teal — breathable structural blocks */
+  --akeli-on-secondary-container:#476B67;
+
+  /* Tertiary — warm amber fill (editorial chips) */
+  --akeli-tertiary-fixed:     #FFDCBC;
+  --akeli-on-tertiary-fixed:  #2C1700;
+
+  /* Transitional accent (kept from MVP for some macros/badges) */
+  --akeli-violet:             #8B7FD4;
+  --akeli-info:               #4D96FF;
+
+  /* ---- Surfaces — "The Organic Layer" --------------------- */
+  /* Warm-bone tonal ramp. Structure is built from tone shifts,
+     not borders (the "No-Line" rule). */
+  --akeli-surface:                    #FFFFFF;  /* pure white card */
+  --akeli-surface-container-lowest:   #FCFAEF;  /* warm bone — the canvas */
+  --akeli-surface-container-low:      #F6F4E9;
+  --akeli-surface-container:          #F0EEE3;
+  --akeli-surface-container-high:     #EAE8DE;
+  --akeli-surface-container-highest:  #E4E3D8;
+
+  /* ---- Text / on-surface ---------------------------------- */
+  --akeli-on-surface:          #1B1C16;  /* warm near-black — never pure #000 */
+  --akeli-on-surface-variant:  #3E4947;  /* secondary text */
+  --akeli-outline:             #6E7977;  /* muted text, placeholders */
+  --akeli-outline-variant:     #BEC9C6;  /* ghost borders (use at low opacity) */
+
+  /* ---- Semantic ------------------------------------------- */
+  --akeli-success:  #249689;
+  --akeli-warning:  #F9CF58;
+  --akeli-error:    #BA1A1A;
+
+  /* ---- Meal-type accents (dashboard / planner) ------------ */
+  --akeli-meal-breakfast:  #F59E0B;
+  --akeli-meal-lunch:      #22C55E;
+  --akeli-meal-dinner:     #6366F1;
+  --akeli-meal-snack:      #A855F7;
+
+  /* ---- Semantic aliases ----------------------------------- */
+  --akeli-bg:            var(--akeli-surface-container-lowest);
+  --akeli-text:          var(--akeli-on-surface);
+  --akeli-text-muted:    var(--akeli-on-surface-variant);
+  --akeli-card-bg:       var(--akeli-surface);
+  --akeli-kcal:          var(--akeli-secondary);
+  --akeli-protein:       var(--akeli-primary);
+  --akeli-carbs:         var(--akeli-violet);
+  --akeli-fat:           var(--akeli-warning);
+
+  /* Signature CTA gradient (135deg primary → primary-container) */
+  --akeli-gradient-brand: linear-gradient(135deg, var(--akeli-primary), var(--akeli-primary-container));
+}

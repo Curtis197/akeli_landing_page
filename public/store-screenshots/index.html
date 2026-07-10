@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Akeli — Captures pour les stores</title>
+<!--
+  Store-listing screenshot board (internal tool).
+  Implemented from the Claude Design project "Store screenshots preparation"
+  (Store Screenshots.dc.html), reworked for conversion:
+
+  - Each frame = headline + supporting subtext + floating chip + one centered
+    phone mockup of that frame's own screen (benefit-led narrative: outcome →
+    food fits goals → zero effort → depth → community → close).
+  - Frame 6 carries a value stack instead of store badges (App Store guideline
+    2.3.10 forbids referencing other platforms; badges are dead info in-store).
+
+  Options (query params, or use the floating toolbar):
+    ?store=apple|google   frame size 1290×2796 (App Store 6.9″) or 1080×1920 (Google Play)
+    ?lang=fr|en           copy language
+    ?labels=1|0           show/hide board chrome (title + frame numbers)
+
+  To export: DevTools → right-click a frame element ([data-frame]) →
+  "Capture node screenshot". Each frame is exactly the store's pixel size.
+-->
+<link rel="stylesheet" href="ds/tokens/fonts.css">
+<link rel="stylesheet" href="ds/tokens/colors.css">
+<link rel="stylesheet" href="ds/tokens/typography.css">
+<link rel="stylesheet" href="ds/tokens/spacing.css">
+<link rel="stylesheet" href="ds/tokens/effects.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  button { font: inherit; }
+
+  .toolbar {
+    position: fixed; right: 20px; bottom: 20px; z-index: 100;
+    display: flex; gap: 14px; align-items: center;
+    background: rgba(27,28,22,0.92); color: #fff;
+    border-radius: 14px; padding: 10px 14px;
+    font-family: var(--akeli-font-body); font-size: 13px;
+    box-shadow: 0 12px 32px rgba(27,28,22,0.35);
+  }
+  .toolbar .group { display: flex; gap: 4px; align-items: center; }
+  .toolbar .group-label { opacity: 0.55; margin-right: 2px; letter-spacing: 0.06em; text-transform: uppercase; font-size: 11px; }
+  .toolbar button {
+    border: none; cursor: pointer; border-radius: 8px; padding: 5px 10px;
+    background: rgba(255,255,255,0.12); color: #fff; font-weight: 600; font-size: 12px;
+  }
+  .toolbar button.active { background: var(--akeli-accent-amber); color: #1b1c16; }
+  @media print { .toolbar { display: none; } }
+</style>
+</head>
+<body>
+<div id="board"></div>
+<div class="toolbar" id="toolbar"></div>
+
+<script src="vendor/react.production.min.js"></script>
+<script src="vendor/react-dom.production.min.js"></script>
+<script src="ds/ds-bundle.js"></script>
+<!-- Screens must load AFTER ds-bundle.js: they destructure the component
+     namespace at load time, which the bundle only populates at its end. -->
+<script src="screens/HomeScreen.js"></script>
+<script src="screens/PlannerScreen.js"></script>
+<script src="screens/RecipesScreen.js"></script>
+<script src="screens/RecipeDetailScreen.js"></script>
+<script src="screens/CommunityScreen.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- Props (query params) ---------- */
+  var params = new URLSearchParams(location.search);
+  var store = params.get('store') === 'google' ? 'google' : 'apple';
+  var lang = params.get('lang') === 'en' ? 'en' : 'fr';
+  var showLabels = params.get('labels') !== '0';
+
+  /* ---------- Frame geometry ---------- */
+  var dims = store === 'google' ? { w: 1080, h: 1920 } : { w: 1290, h: 2796 };
+  var fit = +(dims.w / 1290).toFixed(4);
+  var ih = Math.round(dims.h / fit);
+
+  /* Phone anchor Y, scaled to canvas height. The 880 floor keeps the
+     Google (shorter) canvas clear of the text block. */
+  var PHONE_TOP = Math.max(Math.round(950 * ih / 2796), 880);
+  var PHONE_SCALE = +(2.35 * ih / 2796).toFixed(3);
+  var SHADOW = 'rgba(27,28,22,0.30)';
+
+  /* ---------- Copy — conversion narrative ----------
+     1 outcome hook → 2 your food fits your goals → 3 zero effort →
+     4 catalog depth (price justification) → 5 belonging/social proof → 6 close */
+  var L = {
+    fr: {
+      p1: { eyebrow: 'Akeli', main: 'Retrouvez votre corps,', accent: 'sans renoncer à votre cuisine',
+            sub: 'Suivi du poids, des calories et des macros — avec les plats que vous aimez déjà : mafé, foutou, sauce arachide.',
+            chipMain: '−1,2 kg', chipSub: 'Cette semaine' },
+      p2: { eyebrow: 'Chaque plat', main: 'Le goût de chez vous,', accent: 'les macros en plus',
+            sub: 'Chaque recette est calculée : calories, protéines, glucides, lipides. Mangez à votre faim, en toute confiance.',
+            chipMain: '520 kcal · 32 g prot.' },
+      p3: { eyebrow: 'Votre semaine', main: '7 jours prêts,', accent: 'courses comprises',
+            sub: 'Un planning adapté à vos objectifs, qui écrit votre liste de courses tout seul. Zéro charge mentale.',
+            chipMain: 'Liste de courses', chipSub: 'Automatique' },
+      p4: { eyebrow: 'Découvrir', main: 'Des centaines de recettes', accent: 'd’ici',
+            sub: 'Afrique de l’Ouest, plats familiaux, riche en protéines… Filtrez selon vos envies et vos objectifs.',
+            chipMain: 'Arachide · Foutou · Mafé' },
+      p5: { eyebrow: 'Ensemble', main: '« Je mange à ma faim,', accent: 'et ça marche »',
+            sub: 'Rejoignez une communauté qui cuisine comme vous, partage ses recettes et avance avec vous, chaque jour.',
+            chipMain: 'Awa', chipSub: 'Membre Akeli' },
+      cta: { main: 'Mangez comme', accent: 'vous êtes', sub: 'Akeli · Votre cuisine, vos objectifs',
+             values: [
+               ['restaurant_menu', 'Des centaines de recettes africaines'],
+               ['monitoring', 'Calories et macros calculées'],
+               ['calendar_month', 'Planning hebdo + liste de courses'],
+               ['groups', 'Une communauté qui vous ressemble']
+             ] }
+    },
+    en: {
+      p1: { eyebrow: 'Akeli', main: 'Find your body again,', accent: 'without giving up your cuisine',
+            sub: 'Track weight, calories and macros — with the dishes you already love: mafé, foutou, peanut sauce.',
+            chipMain: '−1.2 kg', chipSub: 'This week' },
+      p2: { eyebrow: 'Every dish', main: 'The taste of home,', accent: 'macros included',
+            sub: 'Every recipe is computed: calories, protein, carbs, fat. Eat your fill, with confidence.',
+            chipMain: '520 kcal · 32 g protein' },
+      p3: { eyebrow: 'Your week', main: '7 days ready,', accent: 'groceries included',
+            sub: 'A plan that adapts to your goals and writes your shopping list for you. Zero mental load.',
+            chipMain: 'Shopping list', chipSub: 'Automatic' },
+      p4: { eyebrow: 'Discover', main: 'Hundreds of recipes', accent: 'from home',
+            sub: 'West African classics, family meals, high-protein picks… Filter by cravings and goals.',
+            chipMain: 'Peanut sauce · Foutou · Mafé' },
+      p5: { eyebrow: 'Together', main: '“I eat my fill,', accent: 'and it works”',
+            sub: 'Join a community that cooks like you, shares its recipes and moves forward with you, every day.',
+            chipMain: 'Awa', chipSub: 'Akeli member' },
+      cta: { main: 'Eat like', accent: 'you are', sub: 'Akeli · Your cuisine, your goals',
+             values: [
+               ['restaurant_menu', 'Unlimited African recipes'],
+               ['monitoring', 'Calories & macros computed'],
+               ['calendar_month', 'Weekly plan + shopping list'],
+               ['groups', 'A community that feels like you']
+             ] }
+    }
+  };
+  var t = L[lang] || L.fr;
+
+  var storeLabel = store === 'google' ? 'Google Play' : 'App Store (iPhone 6.9″)';
+  var langLabel = lang === 'en' ? 'English' : 'Français';
+  var dimLabel = dims.w + ' × ' + dims.h + ' px';
+
+  var GRADIENT = 'linear-gradient(150deg, var(--akeli-primary) 0%, var(--akeli-primary-container) 100%)';
+
+  var frames = [
+    { no: '01', name: 'Accueil',    tone: 'gradient', accentColor: '#FF9F1C', t: t.p1, screen: 'HomeScreen',         chip: 'light' },
+    { no: '02', name: 'Recette',    tone: 'surface',  eyebrowColor: 'var(--akeli-secondary)', t: t.p2, screen: 'RecipeDetailScreen', chip: 'primary' },
+    { no: '03', name: 'Planning',   tone: 'gradient', accentColor: 'rgba(255,255,255,0.92)',  t: t.p3, screen: 'PlannerScreen',      chip: 'light' },
+    { no: '04', name: 'Recettes',   tone: 'surface',  eyebrowColor: 'var(--akeli-primary)',   t: t.p4, screen: 'RecipesScreen',      chip: 'primary' },
+    { no: '05', name: 'Communauté', tone: 'gradient', accentColor: 'rgba(255,255,255,0.92)',  t: t.p5, screen: 'CommunityScreen',    chip: 'light' }
+  ];
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function statusBar() {
+    return '<div style="height:46px; display:flex; align-items:flex-end; justify-content:space-between; padding:0 28px 6px; font-family:var(--akeli-font-body); font-size:13px; font-weight:700; color:var(--akeli-on-surface);">' +
+      '<span>9:41</span>' +
+      '<span style="display:flex; gap:6px; align-items:center;">' +
+        '<span class="material-symbols-rounded" style="font-size:16px;">signal_cellular_alt</span>' +
+        '<span class="material-symbols-rounded" style="font-size:16px;">wifi</span>' +
+        '<span class="material-symbols-rounded" style="font-size:17px;">battery_full</span>' +
+      '</span>' +
+    '</div>';
+  }
+
+  /* One phone, centered in its own frame (local x = 645 = midpoint of
+     the 1290-wide reference canvas). */
+  function phone(screenName) {
+    var left = 645;
+    return '<div style="position:absolute; top:' + PHONE_TOP + 'px; left:' + left + 'px; transform:translateX(-50%); z-index:1;">' +
+      '<div style="transform:scale(' + PHONE_SCALE + ') rotate(-6deg); transform-origin:top center; filter:drop-shadow(0 60px 90px ' + SHADOW + ');">' +
+        '<div style="width:390px; background:var(--akeli-surface-container-lowest); border-radius:52px; overflow:hidden; position:relative; box-shadow:0 0 0 11px #1b1c16, 0 0 0 13px #33352e;">' +
+          '<div style="position:absolute; top:0; left:50%; transform:translateX(-50%); width:132px; height:32px; background:#1b1c16; border-radius:0 0 20px 20px; z-index:60;"></div>' +
+          statusBar() +
+          '<div style="height:940px; overflow:hidden; position:relative;" data-screen="' + screenName + '"></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function chip(f) {
+    var chipShadow = f.tone === 'gradient' ? '0 26px 50px rgba(0,0,0,0.22)' : '0 26px 50px rgba(27,28,22,0.16)';
+    var inner;
+    var bg;
+    if (f.chip === 'primary') {
+      bg = 'var(--akeli-primary)';
+      inner = '<div style="font-family:var(--akeli-font-display); font-weight:800; font-size:44px; color:#ffffff;">' + esc(f.t.chipMain) + '</div>' +
+        (f.t.chipSub ? '<div style="font-family:var(--akeli-font-body); font-size:24px; letter-spacing:0.06em; text-transform:uppercase; color:rgba(255,255,255,0.72);">' + esc(f.t.chipSub) + '</div>' : '');
+    } else {
+      bg = '#ffffff';
+      inner = '<div style="font-family:var(--akeli-font-display); font-weight:800; font-size:44px; color:var(--akeli-primary);">' + esc(f.t.chipMain) + '</div>' +
+        (f.t.chipSub ? '<div style="font-family:var(--akeli-font-body); font-size:24px; letter-spacing:0.06em; text-transform:uppercase; color:var(--akeli-on-surface-variant);">' + esc(f.t.chipSub) + '</div>' : '');
+    }
+    return '<div style="position:absolute; top:' + (PHONE_TOP - 30) + 'px; left:7%; transform:rotate(-3deg); background:' + bg + '; border-radius:24px; padding:26px 36px; box-shadow:' + chipShadow + '; z-index:3;">' + inner + '</div>';
+  }
+
+  function frameLabel(no, name) {
+    if (!showLabels) return '';
+    return '<div style="font-family:var(--akeli-font-body); font-size:26px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:#5f6a67;">' + no + ' · ' + esc(name) + '</div>';
+  }
+
+  function screenFrame(f) {
+    var isGradient = f.tone === 'gradient';
+    var bg = isGradient ? GRADIENT : 'var(--akeli-surface)';
+    var eyebrowColor = isGradient ? 'rgba(255,255,255,0.6)' : f.eyebrowColor;
+    var h2Color = isGradient ? '#ffffff' : 'var(--akeli-on-surface)';
+    var accentColor = isGradient ? f.accentColor : 'var(--akeli-primary)';
+    var subColor = isGradient ? 'rgba(255,255,255,0.78)' : 'var(--akeli-on-surface-variant)';
+    return '<div style="display:flex; flex-direction:column; gap:34px; align-items:center;">' +
+      frameLabel(f.no, f.name) +
+      '<div data-frame="' + f.no + '" style="position:relative; width:' + dims.w + 'px; height:' + dims.h + 'px; overflow:hidden; border-radius:18px; flex-shrink:0; box-shadow:0 50px 130px rgba(27,28,22,0.16);">' +
+        '<div style="position:absolute; top:0; left:0; width:1290px; height:' + ih + 'px; transform:scale(' + fit + '); transform-origin:top left; background:' + bg + ';">' +
+          '<div style="padding:120px 100px 0; position:relative; z-index:2;">' +
+            '<div style="font-family:var(--akeli-font-body); font-weight:700; font-size:30px; letter-spacing:0.2em; text-transform:uppercase; color:' + eyebrowColor + ';">' + esc(f.t.eyebrow) + '</div>' +
+            '<h2 style="margin:26px 0 0; font-family:var(--akeli-font-display); font-weight:800; font-size:100px; line-height:1.08; letter-spacing:-0.02em; color:' + h2Color + '; max-width:1080px;">' + esc(f.t.main) + ' <span style="color:' + accentColor + ';">' + esc(f.t.accent) + '</span></h2>' +
+            '<p style="margin:42px 0 0; font-family:var(--akeli-font-body); font-weight:400; font-size:44px; line-height:1.45; color:' + subColor + '; max-width:1040px;">' + esc(f.t.sub) + '</p>' +
+          '</div>' +
+          chip(f) +
+          phone(f.screen) +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function ctaFrame() {
+    var valueRow = function (icon, label) {
+      return '<div style="display:flex; align-items:center; gap:26px; background:#1b1c16; border-radius:26px; padding:30px 42px; width:100%; box-sizing:border-box;">' +
+        '<span class="material-symbols-rounded" style="font-size:54px; color:var(--akeli-accent-amber); flex-shrink:0;">' + icon + '</span>' +
+        '<div style="text-align:left; font-family:var(--akeli-font-body); font-weight:600; font-size:34px; color:#fff;">' + esc(label) + '</div>' +
+      '</div>';
+    };
+    return '<div style="display:flex; flex-direction:column; gap:34px; align-items:center;">' +
+      frameLabel('06', 'Télécharger') +
+      '<div data-frame="06" style="position:relative; width:' + dims.w + 'px; height:' + dims.h + 'px; overflow:hidden; border-radius:18px; flex-shrink:0; box-shadow:0 50px 130px rgba(27,28,22,0.16);">' +
+        '<div style="position:absolute; top:0; left:0; width:1290px; height:' + ih + 'px; transform:scale(' + fit + '); transform-origin:top left; background:' + GRADIENT + ';">' +
+          '<div style="position:relative; z-index:2; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:0 130px; box-sizing:border-box;">' +
+            '<img src="assets/logo/Akeli_Logo.png" alt="Akeli" style="width:210px; height:210px; object-fit:contain; border-radius:48px;">' +
+            '<div style="margin-top:66px; font-family:var(--akeli-font-display); font-weight:800; font-size:84px; line-height:1.14; letter-spacing:-0.02em; color:#ffffff;">' + esc(t.cta.main) + ' <span style="color:#FF9F1C;">' + esc(t.cta.accent) + '</span></div>' +
+            '<div style="margin-top:38px; font-family:var(--akeli-font-body); font-size:34px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,0.72);">' + esc(t.cta.sub) + '</div>' +
+            '<div style="margin-top:90px; display:flex; flex-direction:column; gap:28px; width:100%; max-width:760px; align-items:center;">' +
+              t.cta.values.map(function (v) { return valueRow(v[0], v[1]); }).join('') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function boardHeader() {
+    if (!showLabels) return '';
+    var pill = function (text, style) {
+      return '<div style="border-radius:16px; padding:16px 26px; font-size:24px; font-weight:600; ' + style + '">' + esc(text) + '</div>';
+    };
+    return '<div style="display:flex; align-items:flex-end; justify-content:space-between; gap:40px; margin-bottom:72px; flex-wrap:wrap;">' +
+      '<div>' +
+        '<div style="font-family:var(--akeli-font-body); font-size:22px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--akeli-primary);">Akeli · Store listing</div>' +
+        '<div style="margin-top:14px; font-family:var(--akeli-font-display); font-weight:800; font-size:56px; letter-spacing:-0.02em; color:var(--akeli-on-surface);">Captures pour les stores</div>' +
+      '</div>' +
+      '<div style="display:flex; gap:14px; align-items:center;">' +
+        pill(storeLabel, 'background:#fff; color:var(--akeli-on-surface); box-shadow:0 8px 24px rgba(27,28,22,0.08);') +
+        pill(langLabel, 'background:var(--akeli-primary); color:#fff; box-shadow:0 8px 24px rgba(0,80,74,0.2);') +
+        pill(dimLabel, 'background:#fff; color:var(--akeli-on-surface-variant); box-shadow:0 8px 24px rgba(27,28,22,0.08);') +
+      '</div>' +
+    '</div>';
+  }
+
+  /* ---------- Render board ---------- */
+  document.getElementById('board').innerHTML =
+    '<div style="padding:96px 96px 140px; background:#D4D0C7; min-height:100vh; width:max-content; min-width:100%; box-sizing:border-box; font-family:var(--akeli-font-body);">' +
+      boardHeader() +
+      '<div style="display:flex; gap:96px; align-items:flex-start;">' +
+        frames.map(screenFrame).join('') +
+        ctaFrame() +
+      '</div>' +
+    '</div>';
+
+  /* ---------- Mount the app screens (React, from screens/*.js) ---------- */
+  var ds = window.AkeliNutritionApp_cbe5c2 || {};
+  if (ds.__errors && ds.__errors.length) console.warn('DS bundle errors:', ds.__errors);
+  var noop = function () {};
+  document.querySelectorAll('[data-screen]').forEach(function (el) {
+    var name = el.getAttribute('data-screen');
+    var Screen = window[name];
+    if (!Screen) { console.error('Screen not found:', name); return; }
+    var props = (name === 'RecipeDetailScreen' || name === 'CommunityScreen') ? {} : { onOpenRecipe: noop };
+    ReactDOM.createRoot(el).render(React.createElement(Screen, props));
+  });
+
+  /* ---------- Toolbar ---------- */
+  function setParam(key, value) {
+    var p = new URLSearchParams(location.search);
+    p.set(key, value);
+    location.search = p.toString();
+  }
+  var groups = [
+    { label: 'Store', key: 'store', value: store, options: [['apple', 'App Store'], ['google', 'Google Play']] },
+    { label: 'Langue', key: 'lang', value: lang, options: [['fr', 'FR'], ['en', 'EN']] },
+    { label: 'Labels', key: 'labels', value: showLabels ? '1' : '0', options: [['1', 'On'], ['0', 'Off']] }
+  ];
+  document.getElementById('toolbar').innerHTML = groups.map(function (g) {
+    return '<div class="group"><span class="group-label">' + g.label + '</span>' +
+      g.options.map(function (o) {
+        return '<button data-key="' + g.key + '" data-value="' + o[0] + '"' + (g.value === o[0] ? ' class="active"' : '') + '>' + o[1] + '</button>';
+      }).join('') +
+    '</div>';
+  }).join('');
+  document.getElementById('toolbar').addEventListener('click', function (e) {
+    var btn = e.target.closest('button');
+    if (btn) setParam(btn.getAttribute('data-key'), btn.getAttribute('data-value'));
+  });
+})();
+</script>
+</body>
+</html>

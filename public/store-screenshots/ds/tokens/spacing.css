@@ -1,0 +1,22 @@
+/* ============================================================
+   AKELI — Spacing Tokens
+   8px base grid. Larger editorial values for breathing room.
+   Source: AkeliSpacing (theme.dart) + Organic Editorial spec
+   ============================================================ */
+
+:root {
+  --akeli-space-xs:  4px;
+  --akeli-space-sm:  8px;
+  --akeli-space-md:  16px;
+  --akeli-space-lg:  24px;
+  --akeli-space-xl:  32px;
+  --akeli-space-2xl: 48px;
+
+  /* Editorial rhythm — generous section separation */
+  --akeli-space-editorial:  56px;  /* between content blocks */
+  --akeli-space-section:    80px;  /* between major sections */
+
+  /* Common inset for cards / sheets */
+  --akeli-inset-card:  16px;
+  --akeli-inset-roomy: 32px;  /* when a card feels tight, open it to this */
+}
