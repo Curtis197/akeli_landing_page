@@ -11,12 +11,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // 1. Create Supabase client using Service Role key to bypass RLS
+    // 1. Create Supabase client using the secret key (sb_secret_*) to bypass RLS.
+    //    Les clés legacy (service_role JWT) sont désactivées depuis le 2026-06-23.
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    
+    const supabaseServiceKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
     if (!supabaseServiceKey) {
-      console.error("[onboarding-lead] SUPABASE_SERVICE_ROLE_KEY is missing from environment variables.");
+      console.error("[onboarding-lead] SUPABASE_SECRET_KEY is missing from environment variables.");
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
