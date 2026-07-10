@@ -128,7 +128,7 @@ export default function LandingPage() {
         </section>
 
         {/* TRY IT YOURSELF */}
-        <section id="try-it-yourself" className="scroll-mt-20 px-6 sm:px-12 py-20 sm:py-28" style={{ backgroundColor:"var(--color-brand-cream)" }}>
+        <section id="try-it-yourself" className="scroll-mt-20 px-6 sm:px-12 py-20 sm:py-28" style={{ backgroundColor:"#fff" }}>
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-bold mb-4"

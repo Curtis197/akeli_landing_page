@@ -48,8 +48,6 @@ const REGIONS = [
 
 const TRANSLATIONS: Record<string, Record<string, string>> = {
   fr: {
-    title: "Bilan Nutritionnel Akeli",
-    subtitle: "Découvrez vos portions de recettes idéales pour atteindre vos objectifs sans abandonner vos saveurs culturelles.",
     step1_title: "Sélectionnez votre région culinaire",
     step1_desc: "Akeli adapte vos plats préférés sans en altérer les saveurs authentiques.",
     step2_title: "Votre objectif & activité",
@@ -101,8 +99,6 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     error_email: "Veuillez entrer un e-mail valide."
   },
   en: {
-    title: "Akeli Nutrition Assessment",
-    subtitle: "Discover your ideal recipe portions to reach your goals without losing your cultural flavors.",
     step1_title: "Select your culinary region",
     step1_desc: "Akeli scales your favorite dishes without altering their authentic taste.",
     step2_title: "Your goal & activity level",
@@ -386,18 +382,8 @@ export default function TestOnboarding() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-12">
-      {/* Title */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl sm:text-5xl font-bold mb-4" style={{ fontFamily: "var(--font-display)", color: "var(--color-brand-dark)" }}>
-          {t.title}
-        </h1>
-        <p className="text-base sm:text-lg max-w-2xl mx-auto" style={{ color: "var(--color-brand-forest)" }}>
-          {t.subtitle}
-        </p>
-      </div>
-
-      {/* Wizard Card */}
+    <div className="w-full max-w-4xl mx-auto">
+      {/* Wizard Card — le titre de section est rendu par la page (landing.tryTitle) */}
       <div className="rounded-3xl shadow-xl p-8 sm:p-12 border transition-all duration-300"
         style={{ backgroundColor: "rgba(247,242,234,0.8)", backdropFilter: "blur(12px)", borderColor: "rgba(28,43,28,0.08)" }}>
         
