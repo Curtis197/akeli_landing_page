@@ -422,7 +422,10 @@ export default function SettingsPage() {
               </div>
               <p className="text-sm text-muted-foreground">
                 {payoutIdentity.payout_method === "mobile_money"
-                  ? `${payoutIdentity.mobile_money_provider ?? "Mobile Money"} •••• ${
+                  ? `${
+                      MOBILE_MONEY_PROVIDERS.find((p) => p.value === payoutIdentity.mobile_money_provider)?.label ??
+                      "Mobile Money"
+                    } •••• ${
                       payoutIdentity.mobile_money_number?.slice(-2) ?? "--"
                     }`
                   : `${payoutIdentity.bank_name} •••• ${
