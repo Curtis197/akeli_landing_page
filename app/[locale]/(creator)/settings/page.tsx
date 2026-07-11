@@ -5,6 +5,36 @@ import { useRouter } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { useQuery } from "@tanstack/react-query";
+import {
+  getPayoutIdentity,
+  upsertPayoutIdentity,
+  type PayoutIdentityInput,
+  type PayoutMethod,
+} from "@/lib/queries/payoutIdentity";
+
+const AFRICAN_COUNTRIES = [
+  "Côte d'Ivoire",
+  "Sénégal",
+  "Mali",
+  "Burkina Faso",
+  "Cameroun",
+  "Bénin",
+  "Togo",
+  "Guinée",
+  "Ghana",
+  "Nigeria",
+  "Kenya",
+];
+
+const MOBILE_MONEY_PROVIDERS = [
+  { value: "orange_money", label: "Orange Money" },
+  { value: "mtn_momo", label: "MTN Mobile Money" },
+  { value: "moov_money", label: "Moov Money" },
+  { value: "wave", label: "Wave" },
+  { value: "mpesa", label: "M-Pesa" },
+  { value: "airtel_money", label: "Airtel Money" },
+  { value: "other", label: "Autre" },
+];
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -112,6 +142,86 @@ export default function SettingsPage() {
     const now = new Date();
     const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     return next.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  }
+
+  // ── Coordonnées de paiement Remitly (créateurs hors Stripe) ────────────────────
+  const [payoutFormOpen, setPayoutFormOpen] = useState(false);
+  const [payoutSubmitting, setPayoutSubmitting] = useState(false);
+  const [payoutError, setPayoutError] = useState<string | null>(null);
+  const [payoutForm, setPayoutForm] = useState<PayoutIdentityInput>({
+    legal_full_name: "",
+    country: "",
+    id_document_number: "",
+    payout_method: "mobile_money",
+    mobile_money_provider: "",
+    mobile_money_number: "",
+    bank_name: "",
+    bank_account_number: "",
+  });
+
+  const { data: payoutIdentity, refetch: refetchPayoutIdentity } = useQuery({
+    queryKey: ["payout-identity", creator?.id],
+    queryFn: async () => {
+      if (!creator?.id) return null;
+      return getPayoutIdentity(supabase, creator.id);
+    },
+    enabled: !!creator?.id,
+  });
+
+  function openPayoutForm() {
+    if (payoutIdentity) {
+      setPayoutForm({
+        legal_full_name: payoutIdentity.legal_full_name,
+        country: payoutIdentity.country,
+        id_document_number: payoutIdentity.id_document_number,
+        payout_method: payoutIdentity.payout_method as PayoutMethod,
+        mobile_money_provider: payoutIdentity.mobile_money_provider ?? "",
+        mobile_money_number: payoutIdentity.mobile_money_number ?? "",
+        bank_name: payoutIdentity.bank_name ?? "",
+        bank_account_number: payoutIdentity.bank_account_number ?? "",
+      });
+    }
+    setPayoutError(null);
+    setPayoutFormOpen(true);
+  }
+
+  async function handleSubmitPayoutIdentity(e: React.FormEvent) {
+    e.preventDefault();
+    if (!creator?.id) return;
+
+    if (
+      !payoutForm.legal_full_name.trim() ||
+      !payoutForm.country.trim() ||
+      !payoutForm.id_document_number.trim()
+    ) {
+      setPayoutError("Merci de remplir tous les champs obligatoires.");
+      return;
+    }
+    if (payoutForm.payout_method === "mobile_money" && !payoutForm.mobile_money_number?.trim()) {
+      setPayoutError("Merci de renseigner ton numéro Mobile Money.");
+      return;
+    }
+    if (
+      payoutForm.payout_method === "bank_transfer" &&
+      (!payoutForm.bank_name?.trim() || !payoutForm.bank_account_number?.trim())
+    ) {
+      setPayoutError("Merci de renseigner ta banque et ton numéro de compte.");
+      return;
+    }
+
+    setPayoutSubmitting(true);
+    setPayoutError(null);
+    try {
+      await upsertPayoutIdentity(supabase, creator.id, payoutForm);
+      await refetchPayoutIdentity();
+      setPayoutFormOpen(false);
+    } catch (err: unknown) {
+      setPayoutError(
+        err instanceof Error ? err.message : "Impossible d'enregistrer tes coordonnées de paiement."
+      );
+    } finally {
+      setPayoutSubmitting(false);
+    }
   }
 
   // ── Déconnexion ──────────────────────────────────────────────────────────────
@@ -285,6 +395,207 @@ export default function SettingsPage() {
         <p className="text-xs text-muted-foreground leading-relaxed">
           Tes revenus sont versés automatiquement chaque mois via Stripe Express.
         </p>
+
+        <div className="pt-5 border-t border-border space-y-4">
+          {!payoutFormOpen && !payoutIdentity && (
+            <button
+              type="button"
+              onClick={openPayoutForm}
+              className="text-sm font-medium text-foreground underline underline-offset-2 hover:no-underline"
+            >
+              Pas éligible à Stripe ? Renseigne tes coordonnées de paiement (Remitly) →
+            </button>
+          )}
+
+          {!payoutFormOpen && payoutIdentity && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span
+                  className={
+                    "w-2 h-2 rounded-full shrink-0 " +
+                    (payoutIdentity.status === "verified" ? "bg-green-500" : "bg-amber-400")
+                  }
+                />
+                <p className="text-sm font-medium text-foreground">
+                  {payoutIdentity.status === "verified" ? "Vérifié ✓" : "En attente de vérification"}
+                </p>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {payoutIdentity.payout_method === "mobile_money"
+                  ? `${payoutIdentity.mobile_money_provider ?? "Mobile Money"} •••• ${
+                      payoutIdentity.mobile_money_number?.slice(-2) ?? "--"
+                    }`
+                  : `${payoutIdentity.bank_name} •••• ${
+                      payoutIdentity.bank_account_number?.slice(-4) ?? "----"
+                    }`}
+              </p>
+              <button
+                type="button"
+                onClick={openPayoutForm}
+                className="text-sm font-medium text-foreground underline underline-offset-2 hover:no-underline"
+              >
+                Modifier mes coordonnées
+              </button>
+            </div>
+          )}
+
+          {payoutFormOpen && (
+            <form onSubmit={handleSubmitPayoutIdentity} className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Coordonnées utilisées pour un versement manuel via Remitly.
+              </p>
+
+              {payoutError && (
+                <p className="text-sm text-destructive font-medium">{payoutError}</p>
+              )}
+
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
+                  Nom complet (légal)
+                </label>
+                <input
+                  type="text"
+                  value={payoutForm.legal_full_name}
+                  onChange={(e) => setPayoutForm({ ...payoutForm, legal_full_name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Pays</label>
+                <select
+                  value={payoutForm.country}
+                  onChange={(e) => setPayoutForm({ ...payoutForm, country: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                >
+                  <option value="">Sélectionner…</option>
+                  {AFRICAN_COUNTRIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
+                  N° pièce d'identité
+                </label>
+                <input
+                  type="text"
+                  value={payoutForm.id_document_number}
+                  onChange={(e) => setPayoutForm({ ...payoutForm, id_document_number: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
+                  Mode de réception
+                </label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      checked={payoutForm.payout_method === "mobile_money"}
+                      onChange={() => setPayoutForm({ ...payoutForm, payout_method: "mobile_money" })}
+                    />
+                    Mobile Money
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      checked={payoutForm.payout_method === "bank_transfer"}
+                      onChange={() => setPayoutForm({ ...payoutForm, payout_method: "bank_transfer" })}
+                    />
+                    Virement bancaire
+                  </label>
+                </div>
+              </div>
+
+              {payoutForm.payout_method === "mobile_money" ? (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">
+                      Opérateur
+                    </label>
+                    <select
+                      value={payoutForm.mobile_money_provider ?? ""}
+                      onChange={(e) =>
+                        setPayoutForm({ ...payoutForm, mobile_money_provider: e.target.value })
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                    >
+                      <option value="">Sélectionner…</option>
+                      {MOBILE_MONEY_PROVIDERS.map((p) => (
+                        <option key={p.value} value={p.value}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">
+                      Numéro
+                    </label>
+                    <input
+                      type="tel"
+                      value={payoutForm.mobile_money_number ?? ""}
+                      onChange={(e) =>
+                        setPayoutForm({ ...payoutForm, mobile_money_number: e.target.value })
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">
+                      Banque
+                    </label>
+                    <input
+                      type="text"
+                      value={payoutForm.bank_name ?? ""}
+                      onChange={(e) => setPayoutForm({ ...payoutForm, bank_name: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">
+                      N° compte
+                    </label>
+                    <input
+                      type="text"
+                      value={payoutForm.bank_account_number ?? ""}
+                      onChange={(e) =>
+                        setPayoutForm({ ...payoutForm, bank_account_number: e.target.value })
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  disabled={payoutSubmitting}
+                  className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                  {payoutSubmitting ? "Enregistrement…" : "Enregistrer"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPayoutFormOpen(false)}
+                  className="px-5 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+                >
+                  Annuler
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </section>
 
       {/* ── Session ── */}
