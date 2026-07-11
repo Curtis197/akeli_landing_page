@@ -419,6 +419,62 @@ export type Database = {
           },
         ]
       }
+      creator_payout_identity: {
+        Row: {
+          bank_account_number: string | null
+          bank_name: string | null
+          country: string
+          created_at: string
+          creator_id: string
+          id_document_number: string
+          legal_full_name: string
+          mobile_money_number: string | null
+          mobile_money_provider: string | null
+          payout_method: string
+          status: string
+          updated_at: string
+          verified_at: string | null
+        }
+        Insert: {
+          bank_account_number?: string | null
+          bank_name?: string | null
+          country: string
+          created_at?: string
+          creator_id: string
+          id_document_number: string
+          legal_full_name: string
+          mobile_money_number?: string | null
+          mobile_money_provider?: string | null
+          payout_method: string
+          status?: string
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Update: {
+          bank_account_number?: string | null
+          bank_name?: string | null
+          country?: string
+          created_at?: string
+          creator_id?: string
+          id_document_number?: string
+          legal_full_name?: string
+          mobile_money_number?: string | null
+          mobile_money_provider?: string | null
+          payout_method?: string
+          status?: string
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_payout_identity_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: true
+            referencedRelation: "creator"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_revenue_log: {
         Row: {
           amount: number
