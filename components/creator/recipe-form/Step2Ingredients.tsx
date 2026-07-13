@@ -22,10 +22,11 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import type { RecipeFormState } from "./RecipeWizard";
 import type { MeasurementUnit } from "@/lib/queries/measurement-units";
-import type { IngredientResult } from "@/lib/queries/ingredients";
+import type { IngredientResult, UnitConversion } from "@/lib/queries/ingredients";
 import IngredientSearch from "./IngredientSearch";
 import IngredientSubmitModal from "./IngredientSubmitModal";
 import SectionHeaderRow from "./SectionHeaderRow";
+import { getValidUnitsForIngredient, replaceIngredientInList } from "@/lib/utils/ingredient-edit";
 
 type IngredientItem = RecipeFormState["ingredients"][number];
 
@@ -33,6 +34,7 @@ interface Step2Props {
   data: RecipeFormState;
   onChange: (patch: Partial<RecipeFormState>) => void;
   units: MeasurementUnit[];
+  unitConversions: UnitConversion[];
 }
 
 const EMPTY_DRAFT = (): Omit<IngredientItem, "sort_order"> => ({
@@ -54,9 +56,11 @@ export default function Step2Ingredients({
   data,
   onChange,
   units,
+  unitConversions,
 }: Step2Props) {
   const locale = useLocale();
   const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState(EMPTY_DRAFT());
   const [submitModalQuery, setSubmitModalQuery] = useState<string | null>(null);
   const [swappingForId, setSwappingForId] = useState<string | null>(null);
@@ -142,20 +146,49 @@ export default function Step2Ingredients({
     }));
   };
 
-  const handleAdd = () => {
+  const handleSave = () => {
     if (!draft.ingredient_id || !draft.quantity || !draft.unit) return;
-    updateIngredients([
-      ...ingredients,
-      { ...draft, sort_order: ingredients.length },
-    ]);
+    if (editingId) {
+      updateIngredients(
+        replaceIngredientInList(ingredients, editingId, { ...draft, sort_order: 0 })
+      );
+    } else {
+      updateIngredients([
+        ...ingredients,
+        { ...draft, sort_order: ingredients.length },
+      ]);
+    }
     setDraft(EMPTY_DRAFT());
     setAdding(false);
+    setEditingId(null);
+  };
+
+  const startEdit = (ingredient: IngredientItem) => {
+    setAdding(false);
+    setEditingId(ingredient.id);
+    setDraft({
+      id: ingredient.id,
+      ingredient_id: ingredient.ingredient_id ?? "",
+      name: ingredient.name ?? "",
+      quantity: ingredient.quantity ?? 1,
+      unit: ingredient.unit ?? "g",
+      is_optional: ingredient.is_optional,
+      is_section_header: false,
+      calories_per_100g: ingredient.calories_per_100g ?? null,
+      protein_per_100g: ingredient.protein_per_100g ?? null,
+      carbs_per_100g: ingredient.carbs_per_100g ?? null,
+      fat_per_100g: ingredient.fat_per_100g ?? null,
+      swappable_ingredients: ingredient.swappable_ingredients ?? [],
+    });
   };
 
   const nonSectionCount = ingredients.filter((i) => !i.is_section_header).length;
   const tooFew = nonSectionCount < 3;
 
   const draggableIds = ingredients.map((i) => i.id);
+
+  const validUnits = getValidUnitsForIngredient(draft.ingredient_id ?? "", units, unitConversions);
+  const unitOptions = validUnits.length > 0 ? validUnits : units.filter((u) => u.code === draft.unit);
 
   return (
     <div className="space-y-6">
@@ -302,6 +335,7 @@ export default function Step2Ingredients({
                           )
                         }
                         onSwapClick={setSwappingForId}
+                        onEditClick={startEdit}
                       />
                     )
                   )}
@@ -375,6 +409,15 @@ export default function Step2Ingredients({
                   </button>
                   <button
                     type="button"
+                    onClick={() => startEdit(ing)}
+                    className="p-1 text-muted-foreground hover:text-primary"
+                    title="Modifier"
+                    aria-label="Modifier l'ingrédient"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => removeItem(ing.id)}
                     className="p-1 text-muted-foreground hover:text-destructive"
                   >
@@ -387,11 +430,11 @@ export default function Step2Ingredients({
         </>
       )}
 
-      {/* Add ingredient form */}
-      {adding ? (
+      {/* Add / edit ingredient form */}
+      {adding || editingId ? (
         <div className="p-4 rounded-xl border border-border bg-secondary/30 space-y-3">
           <h3 className="text-sm font-medium text-foreground">
-            Ajouter un ingrédient
+            {editingId ? "Modifier l'ingrédient" : "Ajouter un ingrédient"}
           </h3>
 
           <IngredientSearch
@@ -426,9 +469,19 @@ export default function Step2Ingredients({
                   />
                 </div>
                 <div>
-                  <div className="w-full px-3 py-2 bg-background/50 text-sm text-muted-foreground font-medium flex items-center h-full">
-                    {units.find((u) => u.code === draft.unit)?.name_fr ?? draft.unit}
-                  </div>
+                  <select
+                    value={draft.unit}
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, unit: e.target.value }))
+                    }
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    {unitOptions.map((u) => (
+                      <option key={u.code} value={u.code}>
+                        {u.name_fr}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <label className="flex items-center gap-2 cursor-pointer">
@@ -450,16 +503,17 @@ export default function Step2Ingredients({
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={handleAdd}
+              onClick={handleSave}
               disabled={!draft.ingredient_id || !draft.quantity || !draft.unit}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-40"
             >
-              Ajouter
+              {editingId ? "Enregistrer" : "Ajouter"}
             </button>
             <button
               type="button"
               onClick={() => {
                 setAdding(false);
+                setEditingId(null);
                 setDraft(EMPTY_DRAFT());
               }}
               className="px-4 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary"
@@ -506,6 +560,7 @@ function SortableIngredientRow({
   onUnitChange,
   onOptionalChange,
   onSwapClick,
+  onEditClick,
 }: {
   ingredient: IngredientItem;
   units: MeasurementUnit[];
@@ -514,6 +569,7 @@ function SortableIngredientRow({
   onUnitChange: (id: string, u: string) => void;
   onOptionalChange: (id: string, v: boolean) => void;
   onSwapClick: (id: string) => void;
+  onEditClick: (ingredient: IngredientItem) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: ingredient.id });
@@ -576,6 +632,15 @@ function SortableIngredientRow({
             {ingredient.swappable_ingredients.length}
           </span>
         ) : null}
+      </button>
+      <button
+        type="button"
+        onClick={() => onEditClick(ingredient)}
+        className="p-1 text-muted-foreground hover:text-primary"
+        title="Modifier"
+        aria-label="Modifier l'ingrédient"
+      >
+        ✎
       </button>
       <button
         type="button"

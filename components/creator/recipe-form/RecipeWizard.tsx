@@ -375,6 +375,7 @@ export default function RecipeWizard({
             data={formState}
             onChange={updateForm}
             units={units}
+            unitConversions={unitConversions}
           />
         )}
         {currentStep === 3 && (
