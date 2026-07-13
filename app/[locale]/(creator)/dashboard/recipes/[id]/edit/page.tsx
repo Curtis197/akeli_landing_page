@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import RecipeWizard from "@/components/creator/recipe-form/RecipeWizard";
 import type { RecipeFormState } from "@/components/creator/recipe-form/RecipeWizard";
 
 export default function EditRecipePage() {
   const { id } = useParams<{ id: string }>();
+  const locale = useLocale();
   const supabase = createClient();
 
   const [initialData, setInitialData] = useState<Partial<RecipeFormState> | null>(null);
@@ -27,7 +29,7 @@ export default function EditRecipePage() {
           recipe_ingredient (
             id, ingredient_id, quantity, unit, is_optional, sort_order,
             is_section_header, title, swappable_ingredient_ids,
-            ingredient:ingredient_id ( name_fr, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g )
+            ingredient:ingredient_id ( name_fr, name_en, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g )
           ),
           recipe_step (
             id, step_number, title, content, image_url, timer_seconds,
@@ -52,16 +54,18 @@ export default function EditRecipePage() {
         }
       });
       
+      const nameKey = `name_${locale}` as "name_fr" | "name_en";
+
       let swappableNamesMap: Record<string, string> = {};
       if (allSwappableIds.size > 0) {
         const { data: swapData } = await supabase
           .from("ingredient")
-          .select("id, name_fr")
+          .select("id, name_fr, name_en")
           .in("id", Array.from(allSwappableIds));
-          
+
         if (swapData) {
           swappableNamesMap = swapData.reduce((acc: any, curr: any) => {
-            acc[curr.id] = curr.name_fr;
+            acc[curr.id] = curr[nameKey] ?? curr.name_fr;
             return acc;
           }, {});
         }
@@ -81,13 +85,17 @@ export default function EditRecipePage() {
           .map((ing: any) => ({
             id: ing.id,
             ingredient_id: ing.ingredient_id,
-            name: ing.name_fr ?? "",
+            name: ing.ingredient?.[nameKey] ?? ing.ingredient?.name_fr ?? "",
             quantity: ing.quantity,
             unit: ing.unit,
             is_optional: ing.is_optional ?? false,
             sort_order: ing.sort_order,
             is_section_header: ing.is_section_header ?? false,
             title: ing.title ?? undefined,
+            calories_per_100g: ing.ingredient?.calories_per_100g ?? null,
+            protein_per_100g: ing.ingredient?.protein_per_100g ?? null,
+            carbs_per_100g: ing.ingredient?.carbs_per_100g ?? null,
+            fat_per_100g: ing.ingredient?.fat_per_100g ?? null,
             swappable_ingredients: (ing.swappable_ingredient_ids ?? []).map((swapId: string) => ({
               id: swapId,
               name: swappableNamesMap[swapId] ?? "Inconnu",
@@ -120,7 +128,7 @@ export default function EditRecipePage() {
     }
 
     loadRecipe();
-  }, [id, supabase]);
+  }, [id, locale, supabase]);
 
   if (loading) {
     return (

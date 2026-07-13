@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useLocale } from "next-intl";
 import { useRouter, Link } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
@@ -28,8 +29,8 @@ interface RawIngredientRow {
   quantity: number | null;
   unit: string | null;
   is_optional: boolean;
-  ingredient: { name_fr: string | null; name: string | null } | null;
-  measurement_unit: { name_fr: string | null } | null;
+  ingredient: { name_fr: string | null; name_en: string | null; name: string | null } | null;
+  measurement_unit: { name_fr: string | null; name_en: string | null } | null;
 }
 
 interface Step {
@@ -80,6 +81,8 @@ export default function RecipeDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = String(params.id);
+  const locale = useLocale();
+  const nameKey = `name_${locale}` as "name_fr" | "name_en";
   const supabase = createClient();
   const { creator } = useAuthStore();
 
@@ -105,11 +108,11 @@ export default function RecipeDetailPage() {
           "id, slug, title, description, cover_image_url, region, difficulty, " +
           "prep_time_min, cook_time_min, servings, is_published, is_pork_free, show_on_website, " +
           "created_at, updated_at, draft_data, " +
-          "food_region:region ( name_fr ), " +
+          "food_region:region ( name_fr, name_en ), " +
           "recipe_macro ( calories, protein_g, carbs_g, fat_g, fiber_g ), " +
           "recipe_tag ( tag ( name ) ), " +
           "recipe_step ( step_number, sort_order, title, content, image_url, timer_seconds, is_section_header ), " +
-          "recipe_ingredient ( id, sort_order, is_section_header, title, quantity, unit, is_optional, ingredient ( name_fr, name ), measurement_unit!unit ( name_fr ) )"
+          "recipe_ingredient ( id, sort_order, is_section_header, title, quantity, unit, is_optional, ingredient ( name_fr, name_en, name ), measurement_unit!unit ( name_fr, name_en ) )"
         )
         .eq("id", id)
         .single();
@@ -131,11 +134,11 @@ export default function RecipeDetailPage() {
         ingredients = [...dbIngredients]
           .sort((a, b) => a.sort_order - b.sort_order)
           .map((row) => ({
-            name: row.ingredient?.name_fr ?? row.ingredient?.name ?? "",
+            name: row.ingredient?.[nameKey] ?? row.ingredient?.name_fr ?? row.ingredient?.name ?? "",
             title: row.title ?? undefined,
             is_section_header: row.is_section_header,
             quantity: row.quantity,
-            unit: row.measurement_unit?.name_fr ?? row.unit,
+            unit: row.measurement_unit?.[nameKey] ?? row.measurement_unit?.name_fr ?? row.unit,
             is_optional: row.is_optional,
             sort_order: row.sort_order,
           }));
@@ -150,7 +153,7 @@ export default function RecipeDetailPage() {
 
       setRecipe({
         ...raw,
-        region: raw.food_region?.name_fr ?? raw.region,
+        region: raw.food_region?.[nameKey] ?? raw.food_region?.name_fr ?? raw.region,
         tags: (raw.recipe_tag ?? []).map((t: { tag: { name: string } | null }) => t.tag?.name).filter(Boolean),
         calories: macro?.calories ?? null,
         protein_g: macro?.protein_g ?? null,
@@ -164,7 +167,7 @@ export default function RecipeDetailPage() {
     }
 
     load();
-  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, locale]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch performance stats separately — runs when creator is ready
   useEffect(() => {
