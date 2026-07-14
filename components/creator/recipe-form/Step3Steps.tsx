@@ -195,6 +195,10 @@ export default function Step3Steps({ data, onChange, draftId }: Step3Props) {
                   onChange={updateStep}
                   onRemove={() => removeItem(step.id)}
                   dragHandleProps={undefined}
+                  onMoveUp={index > 0 ? () => moveStep(index, "up") : undefined}
+                  onMoveDown={
+                    index < steps.length - 1 ? () => moveStep(index, "down") : undefined
+                  }
                 />
               );
             })}

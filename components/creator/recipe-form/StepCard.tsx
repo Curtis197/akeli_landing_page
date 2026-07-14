@@ -16,6 +16,8 @@ interface StepCardProps {
   onChange: (updated: StepItem) => void;
   onRemove: () => void;
   dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
 export default function StepCard({
@@ -26,6 +28,8 @@ export default function StepCard({
   onChange,
   onRemove,
   dragHandleProps,
+  onMoveUp,
+  onMoveDown,
 }: StepCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -67,7 +71,7 @@ export default function StepCard({
     <li className="rounded-lg border border-border bg-background overflow-hidden">
       {/* Header row */}
       <div className="flex items-center gap-3 p-3">
-        {dragHandleProps && (
+        {dragHandleProps ? (
           <button
             type="button"
             {...dragHandleProps}
@@ -76,6 +80,29 @@ export default function StepCard({
           >
             ⠿
           </button>
+        ) : (
+          (onMoveUp || onMoveDown) && (
+            <div className="flex flex-col gap-0.5">
+              <button
+                type="button"
+                onClick={onMoveUp}
+                disabled={!onMoveUp}
+                className="p-0.5 text-muted-foreground disabled:opacity-50"
+                aria-label="Remonter l'étape"
+              >
+                ▲
+              </button>
+              <button
+                type="button"
+                onClick={onMoveDown}
+                disabled={!onMoveDown}
+                className="p-0.5 text-muted-foreground disabled:opacity-50"
+                aria-label="Descendre l'étape"
+              >
+                ▼
+              </button>
+            </div>
+          )
         )}
         <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
           {stepNumber}
