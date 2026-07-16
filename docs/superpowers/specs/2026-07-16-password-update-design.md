@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-16
 **Author:** Curtis — Founder Akeli
-**Status:** Validated — ready for implementation planning
+**Status:** Implemented 2026-07-16 (commits 8ebe699..f0a7b61) — pending live E2E verification (recovery-link walkthrough, Supabase allowlist, Google-only variant)
 
 ---
 
