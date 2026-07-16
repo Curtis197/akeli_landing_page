@@ -39,7 +39,7 @@ const MOBILE_MONEY_PROVIDERS = [
 export default function SettingsPage() {
   const router = useRouter();
   const supabase = createClient();
-  const { reset, creator } = useAuthStore();
+  const { reset, creator, user } = useAuthStore();
 
   // ── Changement de mot de passe ───────────────────────────────────────────────
   const [newPassword, setNewPassword] = useState("");
@@ -47,6 +47,9 @@ export default function SettingsPage() {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const hasEmailIdentity =
+    user?.identities?.some((identity) => identity.provider === "email") ?? true;
 
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
@@ -62,11 +65,36 @@ export default function SettingsPage() {
     setPasswordError(null);
     setPasswordSuccess(null);
 
+    if (hasEmailIdentity) {
+      if (!user?.email) {
+        setPasswordError("Session invalide. Reconnecte-toi puis réessaye.");
+        setPasswordLoading(false);
+        return;
+      }
+      // Supabase has no dedicated verify endpoint: re-authenticating is the
+      // standard way to check the current password. It refreshes the same
+      // user's session, which is harmless.
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+      if (verifyError) {
+        setPasswordError("Mot de passe actuel incorrect.");
+        setPasswordLoading(false);
+        return;
+      }
+    }
+
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) {
       setPasswordError(error.message ?? "Impossible de modifier le mot de passe.");
     } else {
-      setPasswordSuccess("Mot de passe mis à jour avec succès.");
+      setPasswordSuccess(
+        hasEmailIdentity
+          ? "Mot de passe mis à jour avec succès."
+          : "Mot de passe défini avec succès. Tu peux maintenant te connecter avec ton email."
+      );
+      setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     }
@@ -259,8 +287,33 @@ export default function SettingsPage() {
 
       {/* ── Sécurité ── */}
       <section className="rounded-xl border border-border bg-card p-6 space-y-5">
-        <h2 className="text-base font-semibold text-foreground">Changer le mot de passe</h2>
+        <h2 className="text-base font-semibold text-foreground">
+          {hasEmailIdentity ? "Changer le mot de passe" : "Définir un mot de passe"}
+        </h2>
+        {!hasEmailIdentity && (
+          <p className="text-sm text-muted-foreground">
+            Ton compte utilise Google. Définis un mot de passe pour pouvoir aussi te
+            connecter avec ton email.
+          </p>
+        )}
         <form onSubmit={handleChangePassword} className="space-y-4">
+          {hasEmailIdentity && (
+            <div className="space-y-1.5">
+              <label htmlFor="current-password" className="text-sm font-medium text-foreground">
+                Mot de passe actuel
+              </label>
+              <input
+                id="current-password"
+                type="password"
+                required
+                autoComplete="current-password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+          )}
           <div className="space-y-1.5">
             <label htmlFor="new-password" className="text-sm font-medium text-foreground">
               Nouveau mot de passe
