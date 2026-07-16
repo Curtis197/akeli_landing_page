@@ -32,4 +32,11 @@ describe("sanitizeNextPath", () => {
     expect(sanitizeNextPath("fr/dashboard")).toBeNull();
     expect(sanitizeNextPath("javascript:alert(1)")).toBeNull();
   });
+
+  it("rejects paths containing ASCII control characters", () => {
+    expect(sanitizeNextPath("/\t/evil.com")).toBeNull();
+    expect(sanitizeNextPath("/\n/evil.com")).toBeNull();
+    expect(sanitizeNextPath("/\r/evil.com")).toBeNull();
+    expect(sanitizeNextPath("/fr/dash board")).toBeNull();
+  });
 });
