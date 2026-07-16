@@ -65,7 +65,8 @@ After a successful `exchangeCodeForSession`, read `searchParams.get("next")`. If
 ### 4.3 Reset-password page (`app/[locale]/auth/reset-password/page.tsx`)
 
 Client component. On mount, checks `supabase.auth.getUser()`:
-- **Session present** (normal case — the recovery link logged them in): show new password + confirm fields (min 8 chars, same rule and styles as settings). Submit calls `supabase.auth.updateUser({ password })`, then redirects to `/dashboard`.
+- **Recovery session present** (normal case — the recovery link logged them in): the session's authentication methods (Supabase AMR) must include a `recovery`/`otp`/`magiclink` entry less than 15 minutes old. Then show new password + confirm fields (min 8 chars, same rule and styles as settings). Submit calls `supabase.auth.updateUser({ password })`, then redirects to `/dashboard`.
+- **Any other logged-in session** (e.g. someone at an unlocked machine visiting directly): treated the same as no session — the invalid-link state. Changing a password from an ordinary session goes through the settings page, which verifies the current password.
 - **No session** (expired/reused link, direct visit): show « Ce lien est invalide ou a expiré » with a link to `/auth/forgot-password`.
 
 Expired-link error params from Supabase (`otp_expired`, `flow_state_expired`…) never reach this page — `proxy.ts` already reroutes `?error_code=` to the login page with a readable message.
@@ -97,6 +98,7 @@ All existing client-side checks (min 8 chars, confirm match) stay.
 | Email not registered | Same generic success message (no enumeration) |
 | Reset email rate-limited | Generic « réessaye dans quelques minutes » error |
 | Recovery link expired / reused | `proxy.ts` → login page with readable message; direct visit to reset page without session → invalid-link state |
+| Logged-in visit without a recent recovery session | Invalid-link state — use settings instead |
 | Wrong current password in settings | « Mot de passe actuel incorrect. », no change |
 | New password < 8 chars or mismatch | Existing inline validation |
 

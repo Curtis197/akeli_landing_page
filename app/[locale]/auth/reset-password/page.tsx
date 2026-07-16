@@ -16,12 +16,39 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // The recovery link logs the user in via the callback; without a session
-  // the link was expired, reused, or the page was visited directly.
+  // The recovery link logs the user in via the callback. Only a session that
+  // was recently authenticated by an email link (AMR method "recovery" /
+  // "otp" / "magiclink") may set a password here without knowing the current
+  // one — an ordinary logged-in session must use the settings page instead.
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setPageState(user ? "ready" : "invalid");
-    });
+    async function checkRecoverySession() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setPageState("invalid");
+        return;
+      }
+      const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (error || !data) {
+        setPageState("invalid");
+        return;
+      }
+      const RECOVERY_WINDOW_MS = 15 * 60 * 1000;
+      // `currentAuthenticationMethods` is typed AMREntry[] | string[] (the
+      // string[] shape only applies to custom access-token hooks, which this
+      // project doesn't use) — Supabase always returns the detailed
+      // { method, timestamp } shape here, so cast to read it safely.
+      const isRecentRecovery = data.currentAuthenticationMethods.some((entry) => {
+        const { method, timestamp } = entry as { method: string; timestamp: number };
+        return (
+          ["recovery", "otp", "magiclink"].includes(method) &&
+          Date.now() - timestamp * 1000 < RECOVERY_WINDOW_MS
+        );
+      });
+      setPageState(isRecentRecovery ? "ready" : "invalid");
+    }
+    checkRecoverySession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
