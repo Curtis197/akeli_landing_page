@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { sanitizeNextPath } from "@/lib/utils/safe-redirect";
 
 export async function GET(
   request: NextRequest,
@@ -9,6 +10,7 @@ export async function GET(
   const { locale } = await params;
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
+  const next = sanitizeNextPath(searchParams.get("next"));
 
   if (code) {
     const cookieStore = await cookies();
@@ -39,7 +41,7 @@ export async function GET(
       } = await supabase.auth.getUser();
       if (existingUser) {
         return NextResponse.redirect(
-          new URL(`/${locale}/dashboard`, request.url)
+          new URL(next ?? `/${locale}/dashboard`, request.url)
         );
       }
     }
@@ -70,7 +72,7 @@ export async function GET(
       }
 
       return NextResponse.redirect(
-        new URL(`/${locale}/dashboard`, request.url)
+        new URL(next ?? `/${locale}/dashboard`, request.url)
       );
     }
   }
