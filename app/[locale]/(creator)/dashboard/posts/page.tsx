@@ -15,6 +15,7 @@ interface Post {
   category: string | null;
   view_count: number;
   created_at: string;
+  slug: string | null;
   blog_post_translation: { title: string }[];
 }
 
@@ -36,7 +37,7 @@ export default function PostsListPage() {
     try {
       const { data } = await supabase
         .from("blog_post")
-        .select("id, is_published, category, view_count, created_at, blog_post_translation ( title )")
+        .select("id, is_published, category, view_count, created_at, slug, blog_post_translation ( title )")
         .eq("creator_id", creator.id)
         .order("created_at", { ascending: false });
       if (data) setPosts(data as any);
@@ -51,6 +52,14 @@ export default function PostsListPage() {
     return post.blog_post_translation?.[0]?.title || "Sans titre";
   }
 
+  // Only ever flips is_published directly — never call this to publish a post
+  // that hasn't gone through PostWizard's handlePublish at least once (i.e. has
+  // no slug yet). That flow is the only place slug/published_at/recipe_embeds
+  // get materialized; a bare is_published flip on a never-published draft would
+  // mark it live with slug = NULL, which the Phase-1 newsletter trigger reads
+  // as a genuine publish transition (sending a broken link) and which Phase 3's
+  // public post page won't be able to resolve at all. Unpublishing, and
+  // re-publishing a post that already has a slug, are always safe.
   async function togglePublish(id: string, currentlyPublished: boolean) {
     setActionLoading(id);
     try {
@@ -174,8 +183,13 @@ export default function PostsListPage() {
                   Éditer
                 </button>
                 <button
-                  onClick={() => togglePublish(post.id, post.is_published)}
+                  onClick={() =>
+                    post.is_published || post.slug
+                      ? togglePublish(post.id, post.is_published)
+                      : router.push(("/dashboard/posts/" + post.id + "/edit") as any)
+                  }
                   disabled={actionLoading === post.id}
+                  title={!post.is_published && !post.slug ? "Termine la publication depuis l'éditeur" : undefined}
                   className={"px-3 py-1.5 rounded-lg text-xs font-medium disabled:opacity-40 " + (post.is_published ? "border border-destructive text-destructive hover:bg-destructive/10" : "bg-primary text-primary-foreground hover:bg-primary/90")}
                 >
                   {post.is_published ? "Dépublier" : "Publier"}

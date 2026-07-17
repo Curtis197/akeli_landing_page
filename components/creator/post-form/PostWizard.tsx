@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { slugify } from "@/lib/utils/slugify";
 import { computeReadingTimeMin } from "@/lib/utils/reading-time";
-import type { PostBlock } from "@/lib/validations/post.schema";
+import { postContentSchema, postSettingsSchema, type PostBlock } from "@/lib/validations/post.schema";
 import Step1Content from "./Step1Content";
 import Step2CoverSettings from "./Step2CoverSettings";
 import Step3Publish from "./Step3Publish";
@@ -225,6 +225,32 @@ export default function PostWizard({ postId, initialData, initialIsPublished }: 
     setIsPublishing(true);
     setPublishError(null);
     try {
+      // Only enforced when actually publishing — a draft can be saved in any
+      // incomplete state. Step3Publish's own checklist only checks presence
+      // (title/category/cover/blocks.length); this catches everything the
+      // schemas define but the checklist doesn't surface in the UI, e.g. an
+      // image_gallery block with fewer than its required 2 images, or a title
+      // over 120 characters.
+      if (publish) {
+        const contentCheck = postContentSchema.safeParse({
+          title: formState.title,
+          language: formState.language,
+          blocks: formState.blocks,
+        });
+        const settingsCheck = postSettingsSchema.safeParse({
+          category: formState.category,
+          tags: formState.tags,
+          excerpt: formState.excerpt,
+          seo_title: formState.seo_title,
+          seo_description: formState.seo_description,
+          visibility: formState.visibility,
+        });
+        if (!contentCheck.success || !settingsCheck.success) {
+          setPublishError("Certains champs ne sont pas valides (titre, catégorie, ou un bloc de contenu incomplet). Vérifie chaque étape avant de publier.");
+          return;
+        }
+      }
+
       const id = await savePostRow(formState);
       if (!id) return;
 
@@ -280,7 +306,8 @@ export default function PostWizard({ postId, initialData, initialIsPublished }: 
             <button
               key={step}
               onClick={() => handleStepClick(step)}
-              className={`flex-1 py-2 px-2 text-xs font-medium rounded-md transition-colors truncate ${
+              disabled={isSaving || isPublishing}
+              className={`flex-1 py-2 px-2 text-xs font-medium rounded-md transition-colors truncate disabled:opacity-40 disabled:cursor-not-allowed ${
                 isActive ? "bg-primary text-primary-foreground" : isDone ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-secondary"
               }`}
             >
@@ -322,7 +349,7 @@ export default function PostWizard({ postId, initialData, initialIsPublished }: 
         {publishError && <p className="text-sm text-red-600 mr-4">{publishError}</p>}
         <button
           onClick={handlePrev}
-          disabled={currentStep === 1}
+          disabled={currentStep === 1 || isSaving || isPublishing}
           className="px-5 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           ← Précédent
@@ -331,7 +358,8 @@ export default function PostWizard({ postId, initialData, initialIsPublished }: 
         {currentStep < 3 && (
           <button
             onClick={handleNext}
-            className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            disabled={isSaving || isPublishing}
+            className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Suivant →
           </button>

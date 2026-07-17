@@ -3,9 +3,22 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
+import { postBlockSchema, type PostBlock } from "@/lib/validations/post.schema";
 import PostWizard from "@/components/creator/post-form/PostWizard";
 import type { PostFormState } from "@/components/creator/post-form/PostWizard";
+
+const postBlocksArraySchema = z.array(postBlockSchema);
+
+// Every write path currently goes through the Zod-validated wizard, so this
+// should always succeed — but content_json is untyped JSONB, and falls back
+// to an empty body rather than crashing the editor if it's ever malformed
+// (e.g. a future direct DB edit, or a bug elsewhere).
+function safeParseBlocks(value: unknown): PostBlock[] {
+  const result = postBlocksArraySchema.safeParse(value ?? []);
+  return result.success ? result.data : [];
+}
 
 export default function EditPostPage() {
   const { id } = useParams<{ id: string }>();
@@ -40,7 +53,8 @@ export default function EditPostPage() {
       // A saved draft holds the full PostFormState verbatim (PostWizard stores it as-is).
       // Prefer it over live tables so in-progress edits survive a page reload.
       if ((data as any).draft_data && typeof (data as any).draft_data === "object") {
-        setInitialData((data as any).draft_data as Partial<PostFormState>);
+        const draft = (data as any).draft_data as Partial<PostFormState>;
+        setInitialData({ ...draft, blocks: safeParseBlocks(draft.blocks) });
         setLoading(false);
         return;
       }
@@ -50,7 +64,7 @@ export default function EditPostPage() {
       const mapped: Partial<PostFormState> = {
         title: translation?.title ?? "",
         language: (translation?.locale as "fr" | "en") ?? "fr",
-        blocks: translation?.content_json ?? [],
+        blocks: safeParseBlocks(translation?.content_json),
         cover_image_url: (data as any).cover_image_url ?? "",
         category: (data as any).category ?? "",
         tags: (data as any).tags ?? [],
