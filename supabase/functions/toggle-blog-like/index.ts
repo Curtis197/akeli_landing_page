@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkBlogPostAccess } from '../_shared/blog-post-guard.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
@@ -31,6 +32,14 @@ Deno.serve(async (req)=>{
       error: 'Missing post_id'
     }), {
       status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+    const access = await checkBlogPostAccess(supabase, post_id, { user_id: user.id });
+    if (!access.ok) return new Response(JSON.stringify({
+      data: null,
+      error: access.error
+    }), {
+      status: access.status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
     const { data: existing } = await supabase.from('blog_post_like').select('id').eq('user_id', user.id).eq('post_id', post_id).maybeSingle();

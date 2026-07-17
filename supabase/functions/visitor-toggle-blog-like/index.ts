@@ -1,6 +1,7 @@
 // supabase/functions/visitor-toggle-blog-like/index.ts
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { verifyVisitorJWT } from '../_shared/visitor-auth.ts';
+import { checkBlogPostAccess } from '../_shared/blog-post-guard.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -45,6 +46,13 @@ Deno.serve(async (req) => {
     if (!visitorRow.email_verified) {
       return new Response(JSON.stringify({ data: null, error: 'Email verification required before liking' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const access = await checkBlogPostAccess(supabase, post_id, { visitor_id: visitor.visitor_id });
+    if (!access.ok) {
+      return new Response(JSON.stringify({ data: null, error: access.error }), {
+        status: access.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 

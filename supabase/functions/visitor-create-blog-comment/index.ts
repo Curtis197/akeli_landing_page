@@ -1,6 +1,7 @@
 // supabase/functions/visitor-create-blog-comment/index.ts
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { verifyVisitorJWT } from '../_shared/visitor-auth.ts';
+import { checkBlogPostAccess } from '../_shared/blog-post-guard.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,10 +49,17 @@ Deno.serve(async (req) => {
       });
     }
 
+    const access = await checkBlogPostAccess(supabase, post_id, { visitor_id: visitor.visitor_id });
+    if (!access.ok) {
+      return new Response(JSON.stringify({ data: null, error: access.error }), {
+        status: access.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     if (parent_id) {
       const { data: parent, error: parentError } = await supabase
         .from('blog_comment')
-        .select('parent_id')
+        .select('parent_id, post_id')
         .eq('id', parent_id)
         .single();
       if (parentError || !parent) {
@@ -61,6 +69,11 @@ Deno.serve(async (req) => {
       }
       if (parent.parent_id !== null) {
         return new Response(JSON.stringify({ data: null, error: 'Replies can only be one level deep' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (parent.post_id !== post_id) {
+        return new Response(JSON.stringify({ data: null, error: 'Parent comment does not belong to this post' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }

@@ -17,11 +17,11 @@ async function signToken() {
     .sign(secret);
 }
 
-async function toggle(token) {
+async function toggle(token, postId) {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/visitor-toggle-blog-like`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ post_id: POST_ID }),
+    body: JSON.stringify({ post_id: postId }),
   });
   return { status: res.status, body: await res.json() };
 }
@@ -34,16 +34,21 @@ async function run() {
   const token = await signToken();
 
   console.log('=== First call (expect liked: true) ===');
-  const first = await toggle(token);
+  const first = await toggle(token, POST_ID);
   console.log(first);
   if (first.body.data?.liked !== true) throw new Error('Expected liked: true on first call');
 
   console.log('=== Second call (expect liked: false) ===');
-  const second = await toggle(token);
+  const second = await toggle(token, POST_ID);
   console.log(second);
   if (second.body.data?.liked !== false) throw new Error('Expected liked: false on second call');
 
-  console.log('PASS: visitor-toggle-blog-like correctly toggles like state for a verified visitor');
+  console.log('=== Nonexistent post_id (expect 404) ===');
+  const missing = await toggle(token, '00000000-0000-0000-0000-000000000000');
+  console.log(missing);
+  if (missing.status !== 404) throw new Error('Expected 404 for a nonexistent post_id');
+
+  console.log('PASS: visitor-toggle-blog-like correctly toggles like state and enforces post visibility for a verified visitor');
 }
 
 run().catch((err) => {
