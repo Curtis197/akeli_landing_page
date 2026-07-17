@@ -35,6 +35,27 @@ describe("postBlockSchema", () => {
   it("rejects an unknown block type", () => {
     expect(postBlockSchema.safeParse({ id: "a", type: "table", text: "x" }).success).toBe(false);
   });
+
+  it("accepts a quote block with optional author", () => {
+    expect(postBlockSchema.safeParse({ id: "a", type: "quote", text: "A quote" }).success).toBe(true);
+    expect(postBlockSchema.safeParse({ id: "a", type: "quote", text: "A quote", author: "Someone" }).success).toBe(true);
+  });
+
+  it("accepts an image block with optional caption", () => {
+    expect(postBlockSchema.safeParse({ id: "a", type: "image", url: "https://example.test/img.jpg" }).success).toBe(true);
+    expect(postBlockSchema.safeParse({ id: "a", type: "image", url: "https://example.test/img.jpg", caption: "A photo" }).success).toBe(true);
+  });
+
+  it("enforces 2-4 urls for an image_gallery block", () => {
+    expect(postBlockSchema.safeParse({ id: "a", type: "image_gallery", urls: ["u1"] }).success).toBe(false);
+    expect(postBlockSchema.safeParse({ id: "a", type: "image_gallery", urls: ["u1", "u2"] }).success).toBe(true);
+    expect(postBlockSchema.safeParse({ id: "a", type: "image_gallery", urls: ["u1", "u2", "u3", "u4"] }).success).toBe(true);
+    expect(postBlockSchema.safeParse({ id: "a", type: "image_gallery", urls: ["u1", "u2", "u3", "u4", "u5"] }).success).toBe(false);
+  });
+
+  it("accepts a video_embed block", () => {
+    expect(postBlockSchema.safeParse({ id: "a", type: "video_embed", url: "https://youtube.com/watch?v=abc123" }).success).toBe(true);
+  });
 });
 
 describe("postContentSchema", () => {

@@ -9,8 +9,6 @@ export const CATEGORY_OPTIONS = [
   { value: "actualite", label: "Actualité" },
 ] as const;
 
-const categoryValues = CATEGORY_OPTIONS.map((c) => c.value) as [string, ...string[]];
-
 const paragraphBlockSchema = z.object({
   id: z.string(),
   type: z.literal("paragraph"),
@@ -85,7 +83,10 @@ export const postContentSchema = z.object({
 export type PostContentData = z.infer<typeof postContentSchema>;
 
 export const postSettingsSchema = z.object({
-  category: z.enum(categoryValues, { message: "Sélectionne une catégorie" }),
+  category: z.enum(
+    ["recette", "culture", "technique", "ingredients", "parcours", "actualite"],
+    { message: "Sélectionne une catégorie" }
+  ),
   tags: z.array(z.string()).max(8, "Maximum 8 tags"),
   excerpt: z.string().max(200, "Maximum 200 caractères"),
   seo_title: z.string().max(70, "Maximum 70 caractères"),
