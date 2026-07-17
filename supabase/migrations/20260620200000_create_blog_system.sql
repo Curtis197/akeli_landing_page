@@ -181,49 +181,6 @@ BEGIN
   -- Registered Akeli paying fans
   RETURN QUERY
   SELECT au.email::text, up.locale, up.first_name
-  FROM public.visitor_fan_subscription fs -- Wait, the plan references fan_subscription table which exists for Akeli users
-  -- Let's check if the Akeli users fan subscription table is public.fan_subscription or something else.
-  -- Wait! Let's check if fan_subscription table exists in the database.
-  -- Yes, let's look at the RPC from the plan:
-  -- FROM public.fan_subscription fs
-  -- JOIN public.user_profile up ON up.id = fs.user_id
-  -- JOIN auth.users au ON au.id = fs.user_id
-  -- WHERE fs.creator_id = p_creator_id AND fs.status = 'active'
-  -- Wait! Let's make sure we query from public.fan_subscription.
-  -- Let's keep the plan query. We will check if public.fan_subscription exists.
-  -- If it doesn't, we will see it throw. But let's check it first.
-  -- Let's query if public.fan_subscription exists.
-  -- Yes, in information_schema.triggers we saw:
-  -- {"trigger_name":"trg_fan_count","event_manipulation":"INSERT","event_object_table":"fan_subscription","action_statement":"EXECUTE FUNCTION update_creator_fan_count()"}
-  -- This proves public.fan_subscription table exists!
-  -- So public.fan_subscription is correct.
-  -- Let's complete the query:
-  -- FROM public.fan_subscription fs
-  -- JOIN public.user_profile up ON up.id = fs.user_id
-  -- JOIN auth.users au ON au.id = fs.user_id
-  -- WHERE fs.creator_id = p_creator_id AND fs.status = 'active'
-  -- Let's complete this query.
-  -- Let's also add the database webhook trigger here:
-  -- CREATE TRIGGER on_blog_post_published_newsletter
-  -- AFTER UPDATE ON public.blog_post
-  -- FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request(...)
-  -- Wait, the project service key is:
-  -- eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qenFjZnRqenNrd2NwZm9yd3pmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjQ4NDMzNywiZXhwIjoyMDg4MDYwMzM3fQ.zUzuJ9yE0OiICESauNb7p_4nSTGlbFykeROoYpsIdD4
-  -- Let's write the query.
-  -- Wait, let's make sure the get_creator_fan_emails uses the correct tables.
-  -- Let's query:
-  -- Verified visitor paying fans
-  RETURN QUERY
-  SELECT v.email, v.locale, v.first_name
-  FROM public.visitor_fan_subscription vfs
-  JOIN public.visitor v ON v.id = vfs.visitor_id
-  WHERE vfs.creator_id = p_creator_id
-    AND vfs.status = 'active'
-    AND v.email_verified = true;
-
-  -- Registered Akeli paying fans
-  RETURN QUERY
-  SELECT au.email::text, up.locale, up.first_name
   FROM public.fan_subscription fs
   JOIN public.user_profile up ON up.id = fs.user_id
   JOIN auth.users au ON au.id = fs.user_id
