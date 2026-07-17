@@ -1,7 +1,7 @@
 -- supabase/tests/post_images_bucket.test.sql
 BEGIN;
 SET search_path = public, extensions;
-SELECT plan(4);
+SELECT plan(5);
 
 SELECT is(
   (SELECT public FROM storage.buckets WHERE id = 'post-images'),
@@ -23,6 +23,14 @@ SELECT is(
      AND policyname = 'Creators delete their own post images'),
   1,
   'creator delete policy exists on storage.objects'
+);
+
+SELECT is(
+  (SELECT count(*)::int FROM pg_policies
+   WHERE schemaname = 'storage' AND tablename = 'objects'
+     AND policyname = 'Creators update their own post images'),
+  1,
+  'creator update policy exists on storage.objects'
 );
 
 SELECT is(
