@@ -417,6 +417,26 @@ export default function RecipeWizard({
     }
   };
 
+  // ── Unpublish (deferred, effective Monday) ─────────────────────────────────
+  const handleRequestUnpublish = async () => {
+    if (!draftId) return;
+    setIsPublishing(true);
+    setPublishError(null);
+    try {
+      const { error } = await supabase
+        .from("recipe")
+        .update({ unpublish_requested_at: new Date().toISOString() })
+        .eq("id", draftId);
+      if (error) throw error;
+      router.push("/dashboard/recipes");
+    } catch (err) {
+      console.error("Unpublish request failed:", err);
+      setPublishError("La demande de retrait a échoué. Réessayez.");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   // ── Autosave label ─────────────────────────────────────────────────────────
   const savedLabel = (() => {
     if (isSaving) return "Sauvegarde...";
@@ -476,6 +496,9 @@ export default function RecipeWizard({
             onChange={updateForm}
             onSaveDraft={() => handlePublish(false)}
             onPublish={() => handlePublish(true)}
+            onUnpublish={handleRequestUnpublish}
+            isPublished={isLivePublished}
+            pendingUnpublish={!!initialUnpublishRequestedAt}
             isPublishing={isPublishing}
           />
         )}

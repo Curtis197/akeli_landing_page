@@ -9,6 +9,9 @@ interface Step6Props {
   onChange: (patch: Partial<RecipeFormState>) => void;
   onSaveDraft: () => void;
   onPublish: () => void;
+  onUnpublish?: () => void;
+  isPublished: boolean;
+  pendingUnpublish: boolean;
   isPublishing: boolean;
 }
 
@@ -17,6 +20,9 @@ export default function Step6Tags({
   onChange,
   onSaveDraft,
   onPublish,
+  onUnpublish,
+  isPublished,
+  pendingUnpublish,
   isPublishing,
 }: Step6Props) {
   const supabase = createClient();
@@ -259,6 +265,21 @@ export default function Step6Tags({
         >
           {isPublishing ? "Publication..." : "🚀 Publier la recette"}
         </button>
+
+        {isPublished && !pendingUnpublish && (
+          <button
+            onClick={onUnpublish}
+            disabled={isPublishing}
+            className="px-5 py-2 rounded-lg border border-red-300 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+          >
+            Retirer la recette (effectif lundi)
+          </button>
+        )}
+        {pendingUnpublish && (
+          <p className="text-xs text-amber-600">
+            Retrait programmé lundi matin — publiez à nouveau pour annuler.
+          </p>
+        )}
       </div>
     </div>
   );
