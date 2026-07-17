@@ -100,45 +100,62 @@ export default function PostWizard({ postId, initialData, initialIsPublished }: 
   );
 
   // ── Save post row ──────────────────────────────────────────────────────────
+  // savingChainRef serializes every call (autosave, handleNext/handleStepClick,
+  // and handlePublish all funnel through here): saveTranslation below is a
+  // check-then-act (SELECT existing row, then INSERT or UPDATE) with no DB-level
+  // uniqueness on post_id alone to backstop it, so two overlapping calls could
+  // both see "no existing row" and both INSERT, leaving two translation rows
+  // for one post and silently breaking every save after that. Chaining onto a
+  // running promise guarantees calls execute one at a time, in order, with none
+  // dropped — a "skip if busy" guard would instead lose whichever edit lost the
+  // race.
+  const savingChainRef = useRef<Promise<unknown>>(Promise.resolve());
+
   const savePostRow = useCallback(
-    async (data: PostFormState): Promise<string | null> => {
-      if (!creator) return null;
+    (data: PostFormState): Promise<string | null> => {
+      const run = async (): Promise<string | null> => {
+        if (!creator) return null;
 
-      // Published posts: work-in-progress goes to draft_data ONLY — the live row
-      // must not change until Publish materializes it explicitly.
-      if (draftId && isLivePublished) {
-        const { error } = await supabase.from("blog_post").update({ draft_data: data }).eq("id", draftId);
-        if (error) throw error;
-        return draftId;
-      }
+        // Published posts: work-in-progress goes to draft_data ONLY — the live row
+        // must not change until Publish materializes it explicitly.
+        if (draftId && isLivePublished) {
+          const { error } = await supabase.from("blog_post").update({ draft_data: data }).eq("id", draftId);
+          if (error) throw error;
+          return draftId;
+        }
 
-      const payload = {
-        creator_id: creator.id,
-        cover_image_url: data.cover_image_url || null,
-        category: data.category || null,
-        tags: data.tags,
-        visibility: data.visibility,
-        draft_data: data,
+        const payload = {
+          creator_id: creator.id,
+          cover_image_url: data.cover_image_url || null,
+          category: data.category || null,
+          tags: data.tags,
+          visibility: data.visibility,
+          draft_data: data,
+        };
+
+        let id: string;
+        if (draftId) {
+          const { error } = await supabase.from("blog_post").update(payload).eq("id", draftId);
+          if (error) throw error;
+          id = draftId;
+        } else {
+          const { data: newPost, error } = await supabase.from("blog_post").insert(payload).select("id").single();
+          if (error) throw error;
+          if (!newPost) return null;
+          setDraftId(newPost.id);
+          id = newPost.id;
+        }
+
+        // Never-published posts keep live tables continuously in sync (matches
+        // RecipeWizard's behavior — draft_data is belt-and-suspenders, not the
+        // only copy, until the post has actually gone live once).
+        await saveTranslation(id, data);
+        return id;
       };
 
-      let id: string;
-      if (draftId) {
-        const { error } = await supabase.from("blog_post").update(payload).eq("id", draftId);
-        if (error) throw error;
-        id = draftId;
-      } else {
-        const { data: newPost, error } = await supabase.from("blog_post").insert(payload).select("id").single();
-        if (error) throw error;
-        if (!newPost) return null;
-        setDraftId(newPost.id);
-        id = newPost.id;
-      }
-
-      // Never-published posts keep live tables continuously in sync (matches
-      // RecipeWizard's behavior — draft_data is belt-and-suspenders, not the
-      // only copy, until the post has actually gone live once).
-      await saveTranslation(id, data);
-      return id;
+      const result = savingChainRef.current.then(run, run);
+      savingChainRef.current = result.catch(() => {});
+      return result;
     },
     [creator, draftId, isLivePublished, supabase, saveTranslation]
   );
