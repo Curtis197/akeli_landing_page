@@ -1251,6 +1251,7 @@ export type Database = {
           servings: number | null
           slug: string | null
           title: string
+          unpublish_requested_at: string | null
           updated_at: string | null
         }
         Insert: {
@@ -1271,6 +1272,7 @@ export type Database = {
           servings?: number | null
           slug?: string | null
           title: string
+          unpublish_requested_at?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -1291,6 +1293,7 @@ export type Database = {
           servings?: number | null
           slug?: string | null
           title?: string
+          unpublish_requested_at?: string | null
           updated_at?: string | null
         }
         Relationships: [

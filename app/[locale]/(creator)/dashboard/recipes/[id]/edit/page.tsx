@@ -15,6 +15,10 @@ export default function EditRecipePage() {
   const [initialData, setInitialData] = useState<Partial<RecipeFormState> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pubState, setPubState] = useState<{ isPublished: boolean; unpublishRequestedAt: string | null }>({
+    isPublished: false,
+    unpublishRequestedAt: null,
+  });
 
   useEffect(() => {
     if (!id) return;
@@ -26,6 +30,7 @@ export default function EditRecipePage() {
           id, title, description, region, meal_types, preferred_meal_type,
           difficulty, prep_time_min, cook_time_min, servings,
           cover_image_url, is_pork_free, is_private, show_on_website, allergen_tags,
+          is_published, unpublish_requested_at, draft_data,
           recipe_ingredient (
             id, ingredient_id, quantity, unit, is_optional, sort_order,
             is_section_header, title, swappable_ingredient_ids,
@@ -43,6 +48,19 @@ export default function EditRecipePage() {
 
       if (err || !data) {
         setError("Recette introuvable ou accès refusé.");
+        setLoading(false);
+        return;
+      }
+
+      setPubState({
+        isPublished: (data as any).is_published ?? false,
+        unpublishRequestedAt: (data as any).unpublish_requested_at ?? null,
+      });
+
+      // A saved draft holds the full RecipeFormState (RecipeWizard stores it verbatim).
+      // Prefer it over live tables so in-progress edits survive a page reload.
+      if ((data as any).draft_data && typeof (data as any).draft_data === "object") {
+        setInitialData((data as any).draft_data as Partial<RecipeFormState>);
         setLoading(false);
         return;
       }
@@ -106,7 +124,10 @@ export default function EditRecipePage() {
           .map((s: any) => ({
             id: s.id,
             step_number: s.step_number ?? 1,
+            title: s.title ?? undefined,
             content: s.content,
+            image_url: s.image_url ?? undefined,
+            timer_seconds: s.timer_seconds ?? undefined,
             sort_order: s.sort_order,
             is_section_header: s.is_section_header ?? false,
             ingredient_ids: s.ingredient_ids ?? [],
@@ -163,7 +184,12 @@ export default function EditRecipePage() {
           Éditer — {initialData.title || "Sans titre"}
         </h1>
       </div>
-      <RecipeWizard recipeId={id} initialData={initialData} />
+      <RecipeWizard
+        recipeId={id}
+        initialData={initialData}
+        initialIsPublished={pubState.isPublished}
+        initialUnpublishRequestedAt={pubState.unpublishRequestedAt}
+      />
     </main>
   );
 }

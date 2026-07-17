@@ -82,6 +82,8 @@ const STEP_LABELS = [
 interface RecipeWizardProps {
   recipeId?: string;
   initialData?: Partial<RecipeFormState>;
+  initialIsPublished?: boolean;
+  initialUnpublishRequestedAt?: string | null;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -89,6 +91,8 @@ interface RecipeWizardProps {
 export default function RecipeWizard({
   recipeId,
   initialData,
+  initialIsPublished,
+  initialUnpublishRequestedAt,
 }: RecipeWizardProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -107,6 +111,10 @@ export default function RecipeWizard({
   const [units, setUnits] = useState<MeasurementUnit[]>([]);
   const [unitConversions, setUnitConversions] = useState<UnitConversion[]>([]);
   const isDirtyRef = useRef(false);
+  // Fixed at load: reflects the live row's publication state at mount time. The
+  // publish/unpublish actions navigate away afterward, so it never needs updating in place.
+  const [isLivePublished] = useState<boolean>(initialIsPublished ?? false);
+  const [publishError, setPublishError] = useState<string | null>(null);
 
   // ── Fetch supporting data once on mount ───────────────────────────────────
   useEffect(() => {
@@ -118,6 +126,17 @@ export default function RecipeWizard({
   const saveRecipeRow = useCallback(
     async (data: RecipeFormState): Promise<string | null> => {
       if (!creator) return null;
+
+      // Published recipes: work-in-progress goes to draft_data ONLY — the live row
+      // must not change until Publish (handlePublish materializes it explicitly).
+      if (draftId && isLivePublished) {
+        const { error } = await supabase
+          .from("recipe")
+          .update({ draft_data: data })
+          .eq("id", draftId);
+        if (error) throw error;
+        return draftId;
+      }
 
       const payload = {
         creator_id: creator.id,
@@ -134,13 +153,13 @@ export default function RecipeWizard({
         show_on_website: data.show_on_website,
         meal_types: data.meal_types,
         preferred_meal_type: data.preferred_meal_type,
-        is_published: false,
         language: "fr",
         draft_data: data,
       };
 
       if (draftId) {
-        await supabase.from("recipe").update(payload).eq("id", draftId);
+        const { error } = await supabase.from("recipe").update(payload).eq("id", draftId);
+        if (error) throw error;
         return draftId;
       } else {
         const { data: newRecipe, error } = await supabase
@@ -153,15 +172,16 @@ export default function RecipeWizard({
         return newRecipe?.id ?? null;
       }
     },
-    [creator, draftId, supabase]
+    [creator, draftId, isLivePublished, supabase]
   );
 
   // ── Sync recipe_ingredient ─────────────────────────────────────────────────
   const syncIngredients = useCallback(
     async (id: string, data: RecipeFormState) => {
-      await supabase.from("recipe_ingredient").delete().eq("recipe_id", id);
+      const { error: delError } = await supabase.from("recipe_ingredient").delete().eq("recipe_id", id);
+      if (delError) throw delError;
       if (!data.ingredients.length) return;
-      await supabase.from("recipe_ingredient").insert(
+      const { error: insError } = await supabase.from("recipe_ingredient").insert(
         data.ingredients.map((ing) => ({
           recipe_id: id,
           ingredient_id: ing.is_section_header ? null : ing.ingredient_id || null,
@@ -174,6 +194,7 @@ export default function RecipeWizard({
           swappable_ingredient_ids: ing.is_section_header ? [] : (ing.swappable_ingredients?.map(s => s.id) || []),
         }))
       );
+      if (insError) throw insError;
     },
     [supabase]
   );
@@ -181,21 +202,21 @@ export default function RecipeWizard({
   // ── Sync recipe_step ───────────────────────────────────────────────────────
   const syncSteps = useCallback(
     async (id: string, data: RecipeFormState) => {
-      await supabase.from("recipe_step").delete().eq("recipe_id", id);
       if (!data.steps.length) return;
-      await supabase.from("recipe_step").insert(
-        data.steps.map((step) => ({
-          recipe_id: id,
+      const { error } = await supabase.rpc("replace_recipe_steps", {
+        p_recipe_id: id,
+        p_steps: data.steps.map((step) => ({
           step_number: step.step_number,
+          sort_order: step.sort_order,
           title: step.title || null,
           content: step.is_section_header ? null : step.content || null,
           image_url: step.image_url || null,
           timer_seconds: step.timer_seconds ?? null,
-          sort_order: step.sort_order,
           is_section_header: step.is_section_header,
           ingredient_ids: step.ingredient_ids ?? [],
-        }))
-      );
+        })),
+      });
+      if (error) throw error;
     },
     [supabase]
   );
@@ -218,7 +239,7 @@ export default function RecipeWizard({
         }));
       const macros = computeMacros(ingredientsForMacro, unitConversions, data.servings);
       const totalG = macros.total_weight_g * data.servings;
-      await supabase
+      const { error } = await supabase
         .from("recipe_macro")
         .update({
           calories: macros.calories * data.servings,
@@ -233,42 +254,47 @@ export default function RecipeWizard({
           fat_per_100g: totalG > 0 ? (macros.fat_g * data.servings * 100) / totalG : null,
         })
         .eq("recipe_id", id);
+      if (error) throw error;
     },
     [supabase, unitConversions]
   );
 
   // ── Main save/sync ─────────────────────────────────────────────────────────
   const saveDraft = useCallback(
-    async (data: RecipeFormState, syncStep?: number) => {
+    async (data: RecipeFormState, syncStep?: number): Promise<string | null> => {
       setIsSaving(true);
       try {
         const id = await saveRecipeRow(data);
-        if (!id) return;
+        if (!id) return null;
 
-        if (syncStep === 2) await syncIngredients(id, data);
-        if (syncStep === 3) await syncSteps(id, data);
-        if (syncStep === 4) await updateMacros(id, data);
+        if (!isLivePublished) {
+          if (syncStep === 2) await syncIngredients(id, data);
+          if (syncStep === 3) await syncSteps(id, data);
+          if (syncStep === 4) await updateMacros(id, data);
 
-        if (data.gallery_urls.length > 0) {
-          await supabase.from("recipe_image").delete().eq("recipe_id", id);
-          await supabase.from("recipe_image").insert(
-            data.gallery_urls.map((url, i) => ({
-              recipe_id: id,
-              url,
-              sort_order: i,
-            }))
-          );
+          if (data.gallery_urls.length > 0) {
+            await supabase.from("recipe_image").delete().eq("recipe_id", id);
+            await supabase.from("recipe_image").insert(
+              data.gallery_urls.map((url, i) => ({
+                recipe_id: id,
+                url,
+                sort_order: i,
+              }))
+            );
+          }
         }
 
         setLastSaved(new Date());
         isDirtyRef.current = false;
+        return id;
       } catch (err) {
         console.error("Save failed:", err);
+        return null;
       } finally {
         setIsSaving(false);
       }
     },
-    [saveRecipeRow, syncIngredients, syncSteps, updateMacros, supabase]
+    [saveRecipeRow, syncIngredients, syncSteps, updateMacros, isLivePublished, supabase]
   );
 
   // ── Auto-save every 30s ────────────────────────────────────────────────────
@@ -298,48 +324,94 @@ export default function RecipeWizard({
     if (currentStep > 1) setCurrentStep((s) => s - 1);
   };
 
+  const handleStepClick = async (target: number) => {
+    if (target === currentStep) return;
+    if (currentStep === 1 && titleConflict) return;
+    await saveDraft(formState, currentStep);
+    setCurrentStep(target);
+  };
+
   // ── Publish ────────────────────────────────────────────────────────────────
   const handlePublish = async (publish: boolean) => {
     setIsPublishing(true);
+    setPublishError(null);
     try {
-      await saveDraft(formState);
-      const id = draftId;
+      const id = await saveRecipeRow(formState);
       if (!id) return;
 
       if (publish) {
+        // Materialize draft → live tables. Any failure below aborts before
+        // is_published flips, so a partial publish never goes live silently.
+        const { error: rowError } = await supabase
+          .from("recipe")
+          .update({
+            title: formState.title,
+            description: formState.description || null,
+            region: formState.region || null,
+            difficulty: formState.difficulty || null,
+            prep_time_min: formState.prep_time_min,
+            cook_time_min: formState.cook_time_min || null,
+            servings: formState.servings,
+            cover_image_url: formState.cover_image_url || null,
+            is_pork_free: formState.is_pork_free,
+            is_private: formState.is_private,
+            meal_types: formState.meal_types,
+            preferred_meal_type: formState.preferred_meal_type,
+          })
+          .eq("id", id);
+        if (rowError) throw rowError;
+
+        await syncIngredients(id, formState);
+        await syncSteps(id, formState);
+        await updateMacros(id, formState);
+
+        if (formState.gallery_urls.length > 0) {
+          const { error: delError } = await supabase.from("recipe_image").delete().eq("recipe_id", id);
+          if (delError) throw delError;
+          const { error: imgError } = await supabase.from("recipe_image").insert(
+            formState.gallery_urls.map((url, i) => ({ recipe_id: id, url, sort_order: i }))
+          );
+          if (imgError) throw imgError;
+        }
+
         const ingredientIds = formState.ingredients
           .filter((i) => !i.is_section_header && i.ingredient_id)
           .map((i) => i.ingredient_id!);
         const allergenSlugs = await fetchIngredientAllergens(ingredientIds);
 
-        await supabase.from("recipe_tag").delete().eq("recipe_id", id);
+        const { error: tagDelError } = await supabase.from("recipe_tag").delete().eq("recipe_id", id);
+        if (tagDelError) throw tagDelError;
         if (formState.tags.length > 0) {
-          await supabase.from("recipe_tag").insert(
+          const { error: tagError } = await supabase.from("recipe_tag").insert(
             formState.tags.map((tag_id) => ({ recipe_id: id, tag_id }))
           );
+          if (tagError) throw tagError;
         }
 
-        // translate_recipe trigger fires automatically on UPDATE — no manual invoke
-        await supabase
+        // translate_recipe trigger fires automatically on the publish transition
+        const { error: pubError } = await supabase
           .from("recipe")
           .update({
             is_published: true,
+            unpublish_requested_at: null,
             allergen_tags: allergenSlugs,
             show_on_website: formState.show_on_website,
           })
           .eq("id", id);
+        if (pubError) throw pubError;
 
         updateForm({ allergen_tags: allergenSlugs });
-      } else {
-        await supabase
-          .from("recipe")
-          .update({ is_published: false })
-          .eq("id", id);
       }
+      // publish === false: saveRecipeRow above already persisted the draft (draft_data
+      // for a live-published recipe, or the full row for a never-published one).
+      // Publication state is never changed by this branch anymore.
 
       router.push("/dashboard/recipes");
     } catch (err) {
       console.error("Publish failed:", err);
+      setPublishError(
+        "La publication a échoué — aucune donnée n'a été perdue. Réessayez ou contactez le support."
+      );
     } finally {
       setIsPublishing(false);
     }
@@ -358,7 +430,7 @@ export default function RecipeWizard({
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="max-w-3xl mx-auto">
-      <WizardProgress currentStep={currentStep} onStepClick={setCurrentStep} />
+      <WizardProgress currentStep={currentStep} onStepClick={handleStepClick} />
 
       <div className="mt-8">
         {currentStep === 1 && (
@@ -410,6 +482,9 @@ export default function RecipeWizard({
       </div>
 
       <div className="mt-8 flex items-center justify-between border-t border-border pt-6">
+        {publishError && (
+          <p className="text-sm text-red-600 mr-4">{publishError}</p>
+        )}
         <button
           onClick={handlePrev}
           disabled={currentStep === 1}
