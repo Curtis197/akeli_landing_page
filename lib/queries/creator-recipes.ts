@@ -10,7 +10,7 @@ export async function searchCreatorRecipes(
   creatorId: string,
   query: string
 ): Promise<CreatorRecipeResult[]> {
-  if (query.trim().length < 2) return [];
+  if (!creatorId || query.trim().length < 2) return [];
   const supabase = createClient();
   const { data, error } = await supabase
     .from("recipe")

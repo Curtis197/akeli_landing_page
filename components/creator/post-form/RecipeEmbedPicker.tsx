@@ -19,7 +19,7 @@ export default function RecipeEmbedPicker({ creatorId, onSelect }: RecipeEmbedPi
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (query.trim().length < 2) {
+    if (!creatorId || query.trim().length < 2) {
       setResults([]);
       setOpen(false);
       return;
