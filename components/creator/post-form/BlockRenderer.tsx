@@ -119,48 +119,8 @@ export default function BlockRenderer({ block, postId, creatorId, onChange, onRe
         "Image"
       );
 
-    case "image_gallery": {
-      const setUrlAt = (index: number, url: string) => {
-        const urls = [...block.urls];
-        urls[index] = url;
-        onChange({ ...block, urls });
-      };
-      const removeAt = (index: number) => {
-        onChange({ ...block, urls: block.urls.filter((_, i) => i !== index) });
-      };
-      const addSlot = () => {
-        if (block.urls.length >= 4) return;
-        onChange({ ...block, urls: [...block.urls, ""] });
-      };
-      return wrapper(
-        <div className="space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            {block.urls.map((url, i) => (
-              <div key={i} className="relative">
-                <ImageDropzone
-                  value={url || null}
-                  onChange={(u) => setUrlAt(i, u)}
-                  onRemove={() => removeAt(i)}
-                  uploadPath={`${postId ?? crypto.randomUUID()}/gallery_block_${block.id}_${i}.webp`}
-                  bucket="post-images"
-                  aspectClassName="aspect-square"
-                />
-              </div>
-            ))}
-          </div>
-          {block.urls.length < 4 && (
-            <button
-              type="button"
-              onClick={addSlot}
-              className="w-full py-2 rounded-lg border-2 border-dashed border-border text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-            >
-              + Ajouter une image ({block.urls.length}/4)
-            </button>
-          )}
-        </div>,
-        "Galerie"
-      );
-    }
+    case "image_gallery":
+      return wrapper(<ImageGalleryEditor block={block} postId={postId} onChange={onChange} />, "Galerie");
 
     case "video_embed": {
       const embedUrl = youtubeEmbedUrl(block.url);
@@ -209,18 +169,27 @@ export default function BlockRenderer({ block, postId, creatorId, onChange, onRe
             </button>
           </div>
         ) : pickingRecipe ? (
-          <RecipeEmbedPicker
-            creatorId={creatorId}
-            onSelect={(recipe: CreatorRecipeResult) => {
-              onChange({
-                ...block,
-                recipe_id: recipe.id,
-                recipe_title: recipe.title,
-                recipe_image_url: recipe.cover_image_url,
-              });
-              setPickingRecipe(false);
-            }}
-          />
+          <div className="space-y-2">
+            <RecipeEmbedPicker
+              creatorId={creatorId}
+              onSelect={(recipe: CreatorRecipeResult) => {
+                onChange({
+                  ...block,
+                  recipe_id: recipe.id,
+                  recipe_title: recipe.title,
+                  recipe_image_url: recipe.cover_image_url,
+                });
+                setPickingRecipe(false);
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setPickingRecipe(false)}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              Annuler
+            </button>
+          </div>
         ) : (
           <button
             type="button"
@@ -236,4 +205,64 @@ export default function BlockRenderer({ block, postId, creatorId, onChange, onRe
     default:
       return null;
   }
+}
+
+function ImageGalleryEditor({
+  block,
+  postId,
+  onChange,
+}: {
+  block: Extract<PostBlock, { type: "image_gallery" }>;
+  postId: string | null;
+  onChange: (updated: PostBlock) => void;
+}) {
+  const [slotIds, setSlotIds] = useState<string[]>(() => block.urls.map(() => crypto.randomUUID()));
+
+  const setUrlAt = (index: number, url: string) => {
+    const urls = [...block.urls];
+    urls[index] = url;
+    onChange({ ...block, urls });
+  };
+
+  const removeAt = (index: number) => {
+    onChange({ ...block, urls: block.urls.filter((_, i) => i !== index) });
+    setSlotIds((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const addSlot = () => {
+    if (block.urls.length >= 4) return;
+    onChange({ ...block, urls: [...block.urls, ""] });
+    setSlotIds((prev) => [...prev, crypto.randomUUID()]);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        {block.urls.map((url, i) => (
+          <div key={slotIds[i] ?? i} className="relative">
+            <ImageDropzone
+              value={url || null}
+              onChange={(u) => setUrlAt(i, u)}
+              onRemove={() => removeAt(i)}
+              uploadPath={`${postId ?? crypto.randomUUID()}/gallery_block_${block.id}_${i}.webp`}
+              bucket="post-images"
+              aspectClassName="aspect-square"
+            />
+          </div>
+        ))}
+      </div>
+      <p className={`text-xs ${block.urls.length < 2 ? "text-destructive" : "text-muted-foreground"}`}>
+        {block.urls.length}/4 images{block.urls.length < 2 ? " — minimum 2" : ""}
+      </p>
+      {block.urls.length < 4 && (
+        <button
+          type="button"
+          onClick={addSlot}
+          className="w-full py-2 rounded-lg border-2 border-dashed border-border text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+        >
+          + Ajouter une image ({block.urls.length}/4)
+        </button>
+      )}
+    </div>
+  );
 }
