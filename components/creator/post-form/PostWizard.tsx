@@ -68,33 +68,50 @@ export default function PostWizard({ postId, initialData, initialIsPublished }: 
   // changes the language dropdown mid-draft, this must update that same row's
   // locale rather than search for a row under the new locale (which wouldn't
   // exist yet) and insert a duplicate.
-  const saveTranslation = useCallback(
-    async (id: string, data: PostFormState) => {
-      const reading_time_min = computeReadingTimeMin(data.blocks);
-      const { data: existing } = await supabase
-        .from("blog_post_translation")
-        .select("id")
-        .eq("post_id", id)
-        .maybeSingle();
+  //
+  // This is a check-then-act (SELECT existing row, then INSERT or UPDATE) with
+  // no DB-level uniqueness on post_id alone to backstop it. It has two callers —
+  // savePostRow's internal sync call, and handlePublish's direct call to
+  // re-materialize on publish — and nothing stops those from overlapping (e.g.
+  // a step tab clicked while a publish is in flight). translationChainRef
+  // serializes every call to this function specifically, regardless of which
+  // caller triggered it, so two invocations can never both see "no existing
+  // row" and both INSERT.
+  const translationChainRef = useRef<Promise<unknown>>(Promise.resolve());
 
-      const payload = {
-        post_id: id,
-        locale: data.language,
-        title: data.title || "Brouillon",
-        content_json: data.blocks,
-        excerpt: data.excerpt || null,
-        seo_title: data.seo_title || null,
-        seo_description: data.seo_description || null,
-        reading_time_min,
+  const saveTranslation = useCallback(
+    (id: string, data: PostFormState): Promise<void> => {
+      const run = async (): Promise<void> => {
+        const reading_time_min = computeReadingTimeMin(data.blocks);
+        const { data: existing } = await supabase
+          .from("blog_post_translation")
+          .select("id")
+          .eq("post_id", id)
+          .maybeSingle();
+
+        const payload = {
+          post_id: id,
+          locale: data.language,
+          title: data.title || "Brouillon",
+          content_json: data.blocks,
+          excerpt: data.excerpt || null,
+          seo_title: data.seo_title || null,
+          seo_description: data.seo_description || null,
+          reading_time_min,
+        };
+
+        if (existing) {
+          const { error } = await supabase.from("blog_post_translation").update(payload).eq("id", existing.id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from("blog_post_translation").insert(payload);
+          if (error) throw error;
+        }
       };
 
-      if (existing) {
-        const { error } = await supabase.from("blog_post_translation").update(payload).eq("id", existing.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("blog_post_translation").insert(payload);
-        if (error) throw error;
-      }
+      const result = translationChainRef.current.then(run, run);
+      translationChainRef.current = result.catch(() => {});
+      return result;
     },
     [supabase]
   );
