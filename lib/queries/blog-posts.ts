@@ -48,6 +48,7 @@ export type BlogPostDetail = {
   seo_title: string | null;
   seo_description: string | null;
   reading_time_min: number | null;
+  locale: string;
 };
 
 export type EmbeddedRecipe = {
@@ -104,6 +105,7 @@ export async function fetchBlogPostForReaderServer(
     seo_title: row.seo_title,
     seo_description: row.seo_description,
     reading_time_min: row.reading_time_min,
+    locale: row.locale,
   };
 }
 

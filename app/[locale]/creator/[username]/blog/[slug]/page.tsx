@@ -49,7 +49,7 @@ export async function generateMetadata({
 
   const title = post.seo_title || post.title || "Article";
   const description = post.seo_description || post.excerpt || undefined;
-  const ogLocale = locale === "en" ? "en_US" : "fr_FR";
+  const ogLocale = post.locale === "en" ? "en_US" : "fr_FR";
 
   return {
     title,
