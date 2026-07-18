@@ -14,7 +14,8 @@
     "logout": "Log out",
     "fanMode": "Fan Mode",
     "payments": "Payments",
-    "help": "Help"
+    "help": "Help",
+    "blog": "Blog"
   },
   "landing": {
     "hero": {
@@ -316,6 +317,13 @@
     "gatedFollowers": "This post is only available to {name}'s followers.",
     "gatedFans": "This post is only available to {name}'s fans.",
     "gatedCta": "View {name}'s profile",
+    "globalFeedTitle": "The Akeli Blog",
+    "globalFeedSubtitle": "Discover the latest posts from our creators",
+    "searchPlaceholder": "Search for a post...",
+    "allCategories": "All categories",
+    "sortNewest": "Newest",
+    "sortPopular": "Most viewed",
+    "noResults": "No posts match your search.",
     "categories": {
       "recette": "Recipe",
       "culture": "Culture",

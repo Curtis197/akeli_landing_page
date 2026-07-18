@@ -14,7 +14,8 @@
     "logout": "Déconnexion",
     "fanMode": "Mode Fan",
     "payments": "Paiements",
-    "help": "Aide"
+    "help": "Aide",
+    "blog": "Blog"
   },
   "landing": {
     "hero": {
@@ -316,6 +317,13 @@
     "gatedFollowers": "Cet article est réservé aux abonnés de {name}.",
     "gatedFans": "Cet article est réservé aux fans de {name}.",
     "gatedCta": "Voir le profil de {name}",
+    "globalFeedTitle": "Le blog Akeli",
+    "globalFeedSubtitle": "Découvrez les derniers articles de nos créateurs",
+    "searchPlaceholder": "Rechercher un article...",
+    "allCategories": "Toutes les catégories",
+    "sortNewest": "Plus récents",
+    "sortPopular": "Plus vus",
+    "noResults": "Aucun article ne correspond à votre recherche.",
     "categories": {
       "recette": "Recette",
       "culture": "Culture",
