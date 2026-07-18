@@ -27,7 +27,7 @@ export default function BlogFeedClient() {
       setCreatorName(creator?.display_name ?? null);
       setPosts(feedPosts);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, [creatorId]);
 
   return (
@@ -85,7 +85,7 @@ export default function BlogFeedClient() {
                 </>
               );
 
-              return post.can_read ? (
+              return post.can_read && post.slug ? (
                 <Link
                   key={post.id}
                   href={`/creator/${creatorId}/blog/${post.slug}`}
