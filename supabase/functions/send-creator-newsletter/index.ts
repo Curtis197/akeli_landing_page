@@ -241,7 +241,7 @@ Deno.serve(async (req) => {
         subjectEn: '✍️ New post',
         title: postTitle,
         coverUrl: record.cover_image_url ?? null,
-        linkUrl: `${siteUrl}/blog/${record.slug}`,
+        linkUrl: `${siteUrl}/creator/${record.creator_id}/blog/${record.slug}`,
         type: 'blog',
       });
     }

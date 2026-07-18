@@ -22,7 +22,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ username: string; slug: string; locale: string }>;
 }): Promise<Metadata> {
-  const { username, slug, locale } = await params;
+  const { username, slug } = await params;
 
   // Teaser metadata (title/cover/excerpt) is fine to expose in Open Graph
   // regardless of gating — real-world subscription content previews the
