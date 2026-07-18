@@ -37,43 +37,43 @@ export default function BlogCatalogClient() {
   const [sort, setSort] = useState<SortOption>("newest");
 
   useEffect(() => {
-    supabase
-      .from("blog_post")
-      .select(`
-        id, slug, cover_image_url, category, published_at, view_count, creator_id,
-        creator:creator_id ( display_name, profile_image_url ),
-        blog_post_translation ( title, excerpt, reading_time_min )
-      `)
-      .eq("is_published", true)
-      .eq("visibility", "public")
-      .order("published_at", { ascending: false })
-      .then(
-        ({ data }) => {
-          const mapped: BlogPostCard[] = (data ?? []).map((post: any) => {
-            const translation = (post.blog_post_translation ?? [])[0];
-            const creator = post.creator;
-            return {
-              id: post.id,
-              slug: post.slug,
-              cover_image_url: post.cover_image_url,
-              category: post.category,
-              published_at: post.published_at,
-              view_count: post.view_count ?? 0,
-              creator_id: post.creator_id,
-              creator_name: creator?.display_name ?? null,
-              creator_avatar_url: creator?.profile_image_url ?? null,
-              title: translation?.title ?? "",
-              excerpt: translation?.excerpt ?? null,
-              reading_time_min: translation?.reading_time_min ?? null,
-            };
-          });
-          setPosts(mapped);
-          setLoading(false);
-        },
-        () => {
-          setLoading(false);
-        }
-      );
+    Promise.resolve(
+      supabase
+        .from("blog_post")
+        .select(`
+          id, slug, cover_image_url, category, published_at, view_count, creator_id,
+          creator:creator_id ( display_name, profile_image_url ),
+          blog_post_translation ( title, excerpt, reading_time_min )
+        `)
+        .eq("is_published", true)
+        .eq("visibility", "public")
+        .order("published_at", { ascending: false })
+    )
+      .then(({ data }) => {
+        const mapped: BlogPostCard[] = (data ?? []).map((post: any) => {
+          const translation = (post.blog_post_translation ?? [])[0];
+          const creator = post.creator;
+          return {
+            id: post.id,
+            slug: post.slug,
+            cover_image_url: post.cover_image_url,
+            category: post.category,
+            published_at: post.published_at,
+            view_count: post.view_count ?? 0,
+            creator_id: post.creator_id,
+            creator_name: creator?.display_name ?? null,
+            creator_avatar_url: creator?.profile_image_url ?? null,
+            title: translation?.title ?? "",
+            excerpt: translation?.excerpt ?? null,
+            reading_time_min: translation?.reading_time_min ?? null,
+          };
+        });
+        setPosts(mapped);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   }, []);
 
   const filtered = posts
