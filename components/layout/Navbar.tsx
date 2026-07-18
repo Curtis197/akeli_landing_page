@@ -53,6 +53,7 @@ export default function Navbar() {
   const navLinks = [
     { href: "/creators", label: t("creators") },
     { href: "/recipes", label: t("recipes") },
+    { href: "/blog", label: t("blog") },
     { href: "/become-creator", label: t("signup") },
     { href: "/about", label: t("about") },
   ];
