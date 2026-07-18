@@ -29,6 +29,7 @@ AS $$
 $$;
 
 GRANT EXECUTE ON FUNCTION public.can_read_blog_post(uuid, text) TO anon, authenticated;
+ALTER FUNCTION public.can_read_blog_post(uuid, text) OWNER TO postgres;
 
 CREATE OR REPLACE FUNCTION public.get_creator_blog_feed(p_creator_id uuid)
 RETURNS TABLE (
@@ -67,6 +68,7 @@ AS $$
 $$;
 
 GRANT EXECUTE ON FUNCTION public.get_creator_blog_feed(uuid) TO anon, authenticated;
+ALTER FUNCTION public.get_creator_blog_feed(uuid) OWNER TO postgres;
 
 CREATE OR REPLACE FUNCTION public.get_blog_post_for_reader(p_creator_id uuid, p_slug text)
 RETURNS TABLE (
@@ -131,3 +133,4 @@ AS $$
 $$;
 
 GRANT EXECUTE ON FUNCTION public.get_blog_post_for_reader(uuid, text) TO anon, authenticated;
+ALTER FUNCTION public.get_blog_post_for_reader(uuid, text) OWNER TO postgres;
