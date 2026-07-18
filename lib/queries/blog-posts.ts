@@ -1,6 +1,20 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
-import type { PostBlock } from "@/lib/validations/post.schema";
+import { postBlockSchema, type PostBlock } from "@/lib/validations/post.schema";
+
+const postBlocksArraySchema = z.array(postBlockSchema);
+
+// Every write path currently goes through the Zod-validated wizard, so this
+// should always succeed — but content_json is untyped JSONB, and falls back
+// to an empty body rather than crashing the reader page if it's ever
+// malformed (e.g. a future direct DB edit, or a bug elsewhere). This path is
+// public and anonymous-visitor-facing, so degrading gracefully matters more
+// here than in the creator-only editor.
+function safeParseBlocks(value: unknown): PostBlock[] {
+  const result = postBlocksArraySchema.safeParse(value ?? []);
+  return result.success ? result.data : [];
+}
 
 export type BlogFeedPost = {
   id: string;
@@ -85,7 +99,7 @@ export async function fetchBlogPostForReaderServer(
     creator_display_name: row.creator_display_name,
     can_read: row.can_read,
     title: row.title ?? "",
-    blocks: (row.content_json ?? []) as PostBlock[],
+    blocks: safeParseBlocks(row.content_json),
     excerpt: row.excerpt,
     seo_title: row.seo_title,
     seo_description: row.seo_description,
