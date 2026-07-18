@@ -16,6 +16,7 @@ export default function CreatorLayout({
   const navItems = [
     { label: "Dashboard", href: "/dashboard" },
     { label: t("myRecipes"), href: "/dashboard/recipes" },
+    { label: t("myPosts"), href: "/dashboard/posts" },
     { label: t("payments"), href: "/dashboard/payments" },
     { label: t("chat"), href: "/chat" },
     { label: t("profile"), href: "/profile" },
