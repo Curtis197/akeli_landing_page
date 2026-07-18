@@ -59,17 +59,24 @@ export default function PostBlockView({ block, embeddedRecipes, viewRecipeLabel 
 
     case "video_embed": {
       const embedUrl = youtubeEmbedUrl(block.url);
-      if (!embedUrl) {
+      if (embedUrl) {
         return (
-          <a href={block.url} target="_blank" rel="noopener noreferrer" className="block my-6 text-primary underline">
-            {block.url}
-          </a>
+          <div className="aspect-video rounded-xl overflow-hidden my-6">
+            <iframe src={embedUrl} className="w-full h-full" allowFullScreen title="Vidéo intégrée" />
+          </div>
         );
       }
+      let isHttpUrl = false;
+      try {
+        isHttpUrl = ["http:", "https:"].includes(new URL(block.url).protocol);
+      } catch {
+        isHttpUrl = false;
+      }
+      if (!isHttpUrl) return null;
       return (
-        <div className="aspect-video rounded-xl overflow-hidden my-6">
-          <iframe src={embedUrl} className="w-full h-full" allowFullScreen title="Vidéo intégrée" />
-        </div>
+        <a href={block.url} target="_blank" rel="noopener noreferrer" className="block my-6 text-primary underline">
+          {block.url}
+        </a>
       );
     }
 
