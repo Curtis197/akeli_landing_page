@@ -1,7 +1,7 @@
 -- supabase/tests/blog_post_reader_rpcs.test.sql
 BEGIN;
 SET search_path = public, extensions;
-SELECT plan(14);
+SELECT plan(15);
 
 -- ── Fixtures ───────────────────────────────────────────────────────────────────
 
@@ -158,6 +158,12 @@ RESET ROLE;
 
 SET LOCAL ROLE anon;
 SET LOCAL request.jwt.claim.sub = '';
+
+SELECT is(
+  auth.uid(),
+  NULL,
+  'anon role with cleared JWT claim has a NULL auth.uid()'
+);
 
 SELECT is(
   (SELECT can_read FROM get_creator_blog_feed('61000000-0000-0000-0000-000000000010') WHERE slug = 'public-post'),
