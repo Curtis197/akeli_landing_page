@@ -305,6 +305,29 @@
     "cookingMode": "Cooking Mode",
     "timerAlert": "Step completed !"
   },
+  "blog": {
+    "feedTitle": "Posts by {name}",
+    "noPosts": "No posts yet.",
+    "readMore": "Read post",
+    "minRead": "{min} min read",
+    "publishedOn": "Published on {date}",
+    "byAuthor": "By {name}",
+    "viewRecipe": "View full recipe",
+    "backToBlog": "← Back to blog",
+    "postNotFound": "Post not found.",
+    "gatedTitle": "Members-only content",
+    "gatedFollowers": "This post is only available to {name}'s followers.",
+    "gatedFans": "This post is only available to {name}'s fans.",
+    "gatedCta": "View {name}'s profile",
+    "categories": {
+      "recette": "Recipe",
+      "culture": "Culture",
+      "technique": "Technique",
+      "ingredients": "Ingredients",
+      "parcours": "Journey",
+      "actualite": "News"
+    }
+  },
   "auth": {
     "login": {
       "title": "Creator login",

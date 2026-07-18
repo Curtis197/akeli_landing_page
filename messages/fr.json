@@ -305,6 +305,29 @@
     "cookingMode": "Mode Cuisson",
     "timerAlert": "Étape terminée !"
   },
+  "blog": {
+    "feedTitle": "Articles de {name}",
+    "noPosts": "Aucun article pour le moment.",
+    "readMore": "Lire l'article",
+    "minRead": "{min} min de lecture",
+    "publishedOn": "Publié le {date}",
+    "byAuthor": "Par {name}",
+    "viewRecipe": "Voir la recette complète",
+    "backToBlog": "← Retour au blog",
+    "postNotFound": "Article introuvable.",
+    "gatedTitle": "Contenu réservé",
+    "gatedFollowers": "Cet article est réservé aux abonnés de {name}.",
+    "gatedFans": "Cet article est réservé aux fans de {name}.",
+    "gatedCta": "Voir le profil de {name}",
+    "categories": {
+      "recette": "Recette",
+      "culture": "Culture",
+      "technique": "Technique",
+      "ingredients": "Ingrédients",
+      "parcours": "Parcours",
+      "actualite": "Actualité"
+    }
+  },
   "auth": {
     "login": {
       "title": "Connexion créateur",
