@@ -33,20 +33,24 @@ export default function StepCard({
 }: StepCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const update = (patch: Partial<StepItem>) =>
     onChange({ ...step, ...patch });
 
   const handleImageUpload = async (file: File) => {
-    if (!draftId) return;
+    setUploadError(null);
     setUploading(true);
     try {
-      const path = `step-images/${draftId}/${step.id}`;
+      const id = draftId ?? crypto.randomUUID();
+      const path = `step-images/${id}/${step.id}`;
       const url = await uploadImage(file, path);
       update({ image_url: url });
-      if (fileInputRef.current) fileInputRef.current.value = "";
+    } catch {
+      setUploadError("Échec de l'upload. Réessaie.");
     } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
       setUploading(false);
     }
   };
@@ -218,12 +222,15 @@ export default function StepCard({
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading || !draftId}
+                      disabled={uploading}
                       className="w-full py-2 rounded-lg border-2 border-dashed border-border text-xs text-muted-foreground hover:border-primary hover:text-primary disabled:opacity-40 transition-colors"
                     >
                       {uploading ? "Envoi..." : "+ Photo"}
                     </button>
                   </>
+                )}
+                {uploadError && (
+                  <p className="mt-1 text-xs text-destructive">{uploadError}</p>
                 )}
               </div>
             </div>
