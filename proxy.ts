@@ -23,8 +23,20 @@ function hasSupabaseSession(request: NextRequest): boolean {
   );
 }
 
+const CANONICAL_HOST = "www.a-keli.com";
+
 export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
+
+  // a-keli.com and www.a-keli.com currently both serve the app directly (no
+  // host-level redirect in Vercel), which splits SEO signal across two
+  // hostnames. Force the apex onto the canonical www host; leave preview
+  // deployments (*.vercel.app) and localhost untouched.
+  if (request.nextUrl.hostname === "a-keli.com") {
+    const url = request.nextUrl.clone();
+    url.hostname = CANONICAL_HOST;
+    return NextResponse.redirect(url, 308);
+  }
 
   // Supabase redirects auth errors (flow_state_already_used, otp_expired, etc.)
   // to the site URL with ?error=...&error_code=... params. Forward the user to
@@ -70,5 +82,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|api|favicon\\.ico|.*\\.(?:jpg|jpeg|png|gif|svg|ico|webp|avif|html|css|js|txt|woff|woff2)).*)"],
+  matcher: ["/((?!_next|api|favicon\\.ico|.*\\.(?:jpg|jpeg|png|gif|svg|ico|webp|avif|html|css|js|txt|xml|woff|woff2)).*)"],
 };

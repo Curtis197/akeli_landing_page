@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/lib/i18n/routing";
 import { Providers } from "@/components/providers";
@@ -19,12 +19,24 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "Akeli — Mangez comme vous êtes",
-    template: "%s | Akeli",
-  },
-};
+const OG_LOCALE: Record<Locale, string> = { fr: "fr_FR", en: "en_US" };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "landing.hero" });
+
+  return {
+    title: {
+      default: t("title"),
+      template: "%s | Akeli",
+    },
+    openGraph: { locale: OG_LOCALE[locale as Locale] ?? "fr_FR" },
+  };
+}
 
 export default async function LocaleLayout({
   children,
