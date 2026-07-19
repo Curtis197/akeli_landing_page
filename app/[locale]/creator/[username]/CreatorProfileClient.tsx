@@ -6,6 +6,7 @@ import { Link } from "@/lib/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
+import { Instagram, Youtube, Globe } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -17,6 +18,10 @@ interface CreatorProfile {
   heritage_region: string | null;
   specialties: string[];
   recipe_count: number;
+  instagram_handle: string | null;
+  tiktok_handle: string | null;
+  youtube_handle: string | null;
+  website_url: string | null;
 }
 
 interface RecipeTeaser {
@@ -52,7 +57,9 @@ export default function CreatorProfileClient() {
     Promise.all([
       supabase
         .from("creator")
-        .select("id, display_name, bio, profile_image_url, heritage_region, specialties, recipe_count")
+        .select(
+          "id, display_name, bio, profile_image_url, heritage_region, specialties, recipe_count, instagram_handle, tiktok_handle, youtube_handle, website_url"
+        )
         .eq("id", creatorId)
         .single(),
       supabase
@@ -179,6 +186,8 @@ export default function CreatorProfileClient() {
               <strong className="text-foreground">{creator.recipe_count}</strong>{" "}
               {t("stats.recipesPublished", { count: creator.recipe_count })}
             </p>
+
+            <SocialLinks creator={creator} />
           </div>
         </section>
 
@@ -214,6 +223,72 @@ export default function CreatorProfileClient() {
         </section>
       </main>
     </>
+  );
+}
+
+// ─── SocialLinks ──────────────────────────────────────────────────────────────
+
+function SocialLinks({ creator }: { creator: CreatorProfile }) {
+  const links: { key: string; href: string; label: string; icon: React.ReactNode }[] = [];
+
+  if (creator.instagram_handle) {
+    links.push({
+      key: "instagram",
+      href: `https://instagram.com/${creator.instagram_handle}`,
+      label: "Instagram",
+      icon: <Instagram className="w-4 h-4" />,
+    });
+  }
+  if (creator.tiktok_handle) {
+    links.push({
+      key: "tiktok",
+      href: `https://www.tiktok.com/@${creator.tiktok_handle}`,
+      label: "TikTok",
+      icon: <TikTokIcon className="w-4 h-4" />,
+    });
+  }
+  if (creator.youtube_handle) {
+    links.push({
+      key: "youtube",
+      href: `https://youtube.com/@${creator.youtube_handle}`,
+      label: "YouTube",
+      icon: <Youtube className="w-4 h-4" />,
+    });
+  }
+  if (creator.website_url) {
+    links.push({
+      key: "website",
+      href: creator.website_url,
+      label: "Site web",
+      icon: <Globe className="w-4 h-4" />,
+    });
+  }
+
+  if (links.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {links.map((link) => (
+        <a
+          key={link.key}
+          href={link.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={link.label}
+          className="flex items-center justify-center w-9 h-9 rounded-full border border-border text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors"
+        >
+          {link.icon}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+function TikTokIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M12.75 2h2.5a4.75 4.75 0 0 0 4.75 4.75V9.5a7.22 7.22 0 0 1-4.75-1.79v6.94a5.65 5.65 0 1 1-5.65-5.65c.19 0 .38.01.56.04v2.55a3.1 3.1 0 1 0 2.19 2.96V2z" />
+    </svg>
   );
 }
 
