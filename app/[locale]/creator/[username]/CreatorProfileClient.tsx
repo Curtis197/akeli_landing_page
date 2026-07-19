@@ -7,6 +7,8 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 import { Instagram, Youtube, Globe } from "lucide-react";
+import { fetchCreatorBlogFeed } from "@/lib/queries/blog-posts";
+import type { BlogFeedPost } from "@/lib/queries/blog-posts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -50,6 +52,7 @@ export default function CreatorProfileClient() {
 
   const [creator, setCreator] = useState<CreatorProfile | null>(null);
   const [recipes, setRecipes] = useState<RecipeTeaser[]>([]);
+  const [posts, setPosts] = useState<BlogFeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -68,19 +71,23 @@ export default function CreatorProfileClient() {
         .eq("creator_id", creatorId)
         .eq("is_published", true)
         .order("created_at", { ascending: false }),
-    ]).then(([creatorRes, recipesRes]) => {
-      if (!creatorRes.data) {
-        setNotFound(true);
-      } else {
-        setCreator({
-          ...creatorRes.data,
-          recipe_count: creatorRes.data.recipe_count ?? 0,
-          specialties: creatorRes.data.specialties ?? [],
-        });
-      }
-      if (recipesRes.data) setRecipes(recipesRes.data as RecipeTeaser[]);
-      setLoading(false);
-    });
+      fetchCreatorBlogFeed(creatorId),
+    ])
+      .then(([creatorRes, recipesRes, blogPosts]) => {
+        if (!creatorRes.data) {
+          setNotFound(true);
+        } else {
+          setCreator({
+            ...creatorRes.data,
+            recipe_count: creatorRes.data.recipe_count ?? 0,
+            specialties: creatorRes.data.specialties ?? [],
+          });
+        }
+        if (recipesRes.data) setRecipes(recipesRes.data as RecipeTeaser[]);
+        setPosts(blogPosts);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, [creatorId, supabase]);
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -210,6 +217,25 @@ export default function CreatorProfileClient() {
           )}
         </section>
 
+        {/* ── Blog ── */}
+        {posts.length > 0 && (
+          <section className="space-y-5">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-lg font-semibold text-foreground">
+                {t("blogPreviewTitle", { name: creator.display_name?.split(" ")[0] ?? t("defaultName") })}
+              </h2>
+              <Link href={`/creator/${creatorId}/blog`} className="text-sm text-primary hover:underline shrink-0">
+                {t("seeAllArticles")}
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {posts.slice(0, 3).map((post) => (
+                <BlogPostCard key={post.id} post={post} creatorId={creatorId} />
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* ── App CTA ── */}
         <section className="rounded-2xl border border-border bg-card p-8 text-center space-y-4">
           <p className="text-base font-semibold text-foreground">{t("ctaTitle")}</p>
@@ -298,6 +324,58 @@ function TikTokIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
       <path d="M12.75 2h2.5a4.75 4.75 0 0 0 4.75 4.75V9.5a7.22 7.22 0 0 1-4.75-1.79v6.94a5.65 5.65 0 1 1-5.65-5.65c.19 0 .38.01.56.04v2.55a3.1 3.1 0 1 0 2.19 2.96V2z" />
     </svg>
+  );
+}
+
+// ─── BlogPostCard ─────────────────────────────────────────────────────────────
+
+function BlogPostCard({ post, creatorId }: { post: BlogFeedPost; creatorId: string }) {
+  const tBlog = useTranslations("blog");
+
+  const card = (
+    <>
+      {post.cover_image_url ? (
+        <img
+          src={post.cover_image_url}
+          alt={post.title}
+          className={`w-full h-40 object-cover ${post.can_read ? "" : "blur-md"}`}
+        />
+      ) : (
+        <div className="w-full h-40 bg-secondary flex items-center justify-center text-3xl">📝</div>
+      )}
+      <div className="p-4 space-y-2 flex-1">
+        <div className="flex items-center gap-2 flex-wrap">
+          {post.category && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+              {tBlog(`categories.${post.category}` as any)}
+            </span>
+          )}
+          {!post.can_read && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+              🔒 {tBlog("gatedTitle")}
+            </span>
+          )}
+        </div>
+        <p className="text-sm font-semibold text-foreground line-clamp-2">{post.title}</p>
+        {post.can_read && post.excerpt && (
+          <p className="text-xs text-muted-foreground line-clamp-2">{post.excerpt}</p>
+        )}
+        {post.can_read && post.reading_time_min != null && (
+          <p className="text-[10px] text-muted-foreground">{tBlog("minRead", { min: post.reading_time_min })}</p>
+        )}
+      </div>
+    </>
+  );
+
+  return post.can_read && post.slug ? (
+    <Link
+      href={`/creator/${creatorId}/blog/${post.slug}`}
+      className="group flex flex-col rounded-xl border border-border bg-card overflow-hidden hover:shadow-md hover:border-primary/30 transition-all"
+    >
+      {card}
+    </Link>
+  ) : (
+    <div className="flex flex-col rounded-xl border border-border bg-card overflow-hidden opacity-90">{card}</div>
   );
 }
 

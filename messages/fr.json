@@ -243,6 +243,8 @@
     "defaultName": "Créateur Akeli",
     "backToCatalog": "← Retour au catalogue",
     "recipesBy": "Recettes de",
+    "blogPreviewTitle": "Articles de {name}",
+    "seeAllArticles": "Voir tous les articles →",
     "ctaTitle": "Accède aux recettes complètes dans l'app Akeli",
     "ctaSubtitle": "Ingrédients détaillés, étapes pas-à-pas et bien plus dans l'application mobile.",
     "filters": {
