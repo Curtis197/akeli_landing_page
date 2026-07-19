@@ -43,6 +43,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.2",
+    "jose": "^6.2.3",
+    "playwright-core": "^1.61.1",
     "typescript": "^5",
     "vitest": "^4.1.8"
   }

@@ -18,6 +18,11 @@
 
   Options (query params, or use the floating toolbar):
     ?store=apple|google   frame size 1290×2796 (App Store 6.9″) or 1080×1920 (Google Play)
+    ?size=phone|tablet    tablet overrides to 1440×2560 (9:16) — clears both the
+                          Google Play 7″ (320-3840px/side) and 10″ (1080-7680px/side)
+                          minimums at once, so one export covers both slots
+    ?mode=board|feature   feature renders the 1024×500 Google Play feature graphic
+                          instead of the phone/tablet screen grid
     ?lang=fr|en           copy language
     ?labels=1|0           show/hide board chrome (title + frame numbers)
 
@@ -74,9 +79,17 @@
   var store = params.get('store') === 'google' ? 'google' : 'apple';
   var lang = params.get('lang') === 'en' ? 'en' : 'fr';
   var showLabels = params.get('labels') !== '0';
+  var size = params.get('size') === 'tablet' ? 'tablet' : 'phone';
+  var mode = params.get('mode') === 'feature' ? 'feature' : 'board';
 
-  /* ---------- Frame geometry ---------- */
-  var dims = store === 'google' ? { w: 1080, h: 1920 } : { w: 1290, h: 2796 };
+  /* ---------- Frame geometry ----------
+     Tablet canvas (1440×2560, 9:16) deliberately satisfies both Google
+     Play tablet slots at once: 7″ requires each side in 320–3840px, 10″
+     requires each side in 1080–7680px — 1440×2560 clears both floors, so
+     the same export can be uploaded to either slot. */
+  var dims = size === 'tablet'
+    ? { w: 1440, h: 2560 }
+    : (store === 'google' ? { w: 1080, h: 1920 } : { w: 1290, h: 2796 });
   var fit = +(dims.w / 1290).toFixed(4);
   var ih = Math.round(dims.h / fit);
 
@@ -253,6 +266,29 @@
     '</div>';
   }
 
+  /* Google Play feature graphic: 1024×500, no store/size variants — it's
+     one fixed banner shown at the top of the listing, per language. */
+  var FEATURE_COPY = {
+    fr: { tagline: 'Votre cuisine, vos objectifs' },
+    en: { tagline: 'Your cuisine, your goals' }
+  };
+  function featureGraphicFrame() {
+    var fw = 1024, fh = 500;
+    var fc = FEATURE_COPY[lang] || FEATURE_COPY.fr;
+    return '<div style="display:flex; flex-direction:column; gap:34px; align-items:center;">' +
+      frameLabel('FG', 'Feature graphic') +
+      '<div data-frame="feature" style="position:relative; width:' + fw + 'px; height:' + fh + 'px; overflow:hidden; flex-shrink:0; background:' + GRADIENT + '; box-shadow:0 50px 130px rgba(27,28,22,0.16);">' +
+        '<div style="position:relative; z-index:2; height:100%; display:flex; align-items:center; gap:56px; padding:0 72px; box-sizing:border-box;">' +
+          '<img src="assets/logo/Akeli_Logo.png" alt="Akeli" style="width:280px; height:280px; object-fit:contain; border-radius:64px; flex-shrink:0; box-shadow:0 30px 60px rgba(0,0,0,0.25);">' +
+          '<div style="text-align:left;">' +
+            '<div style="font-family:var(--akeli-font-display); font-weight:800; font-size:96px; line-height:1; letter-spacing:-0.02em; color:#ffffff;">Akeli</div>' +
+            '<div style="margin-top:22px; font-family:var(--akeli-font-body); font-size:32px; letter-spacing:0.06em; color:rgba(255,255,255,0.82);">' + esc(fc.tagline) + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
   function boardHeader() {
     if (!showLabels) return '';
     var pill = function (text, style) {
@@ -276,22 +312,23 @@
     '<div style="padding:96px 96px 140px; background:#D4D0C7; min-height:100vh; width:max-content; min-width:100%; box-sizing:border-box; font-family:var(--akeli-font-body);">' +
       boardHeader() +
       '<div style="display:flex; gap:96px; align-items:flex-start;">' +
-        frames.map(screenFrame).join('') +
-        ctaFrame() +
+        (mode === 'feature' ? featureGraphicFrame() : frames.map(screenFrame).join('') + ctaFrame()) +
       '</div>' +
     '</div>';
 
   /* ---------- Mount the app screens (React, from screens/*.js) ---------- */
-  var ds = window.AkeliNutritionApp_cbe5c2 || {};
-  if (ds.__errors && ds.__errors.length) console.warn('DS bundle errors:', ds.__errors);
-  var noop = function () {};
-  document.querySelectorAll('[data-screen]').forEach(function (el) {
-    var name = el.getAttribute('data-screen');
-    var Screen = window[name];
-    if (!Screen) { console.error('Screen not found:', name); return; }
-    var props = (name === 'RecipeDetailScreen' || name === 'CommunityScreen') ? {} : { onOpenRecipe: noop };
-    ReactDOM.createRoot(el).render(React.createElement(Screen, props));
-  });
+  if (mode !== 'feature') {
+    var ds = window.AkeliNutritionApp_cbe5c2 || {};
+    if (ds.__errors && ds.__errors.length) console.warn('DS bundle errors:', ds.__errors);
+    var noop = function () {};
+    document.querySelectorAll('[data-screen]').forEach(function (el) {
+      var name = el.getAttribute('data-screen');
+      var Screen = window[name];
+      if (!Screen) { console.error('Screen not found:', name); return; }
+      var props = (name === 'RecipeDetailScreen' || name === 'CommunityScreen') ? {} : { onOpenRecipe: noop };
+      ReactDOM.createRoot(el).render(React.createElement(Screen, props));
+    });
+  }
 
   /* ---------- Toolbar ---------- */
   function setParam(key, value) {
@@ -300,7 +337,9 @@
     location.search = p.toString();
   }
   var groups = [
+    { label: 'Vue', key: 'mode', value: mode, options: [['board', 'Screens'], ['feature', 'Feature graphic']] },
     { label: 'Store', key: 'store', value: store, options: [['apple', 'App Store'], ['google', 'Google Play']] },
+    { label: 'Taille', key: 'size', value: size, options: [['phone', 'Phone'], ['tablet', 'Tablet']] },
     { label: 'Langue', key: 'lang', value: lang, options: [['fr', 'FR'], ['en', 'EN']] },
     { label: 'Labels', key: 'labels', value: showLabels ? '1' : '0', options: [['1', 'On'], ['0', 'Off']] }
   ];

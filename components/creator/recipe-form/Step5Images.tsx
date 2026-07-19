@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { uploadImage } from "@/lib/utils/upload-image";
+import ImageDropzone from "@/components/shared/ImageDropzone";
 import type { RecipeFormState } from "./RecipeWizard";
 
 interface Step5Props {
@@ -12,41 +13,8 @@ interface Step5Props {
 }
 
 export default function Step5Images({ data, onChange, draftId }: Step5Props) {
-  const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // ── Cover image ──────────────────────────────────────────────────────────────
-
-  const onDropCover = useCallback(
-    async (accepted: File[]) => {
-      const file = accepted[0];
-      if (!file) return;
-      setError(null);
-      setUploadingCover(true);
-      try {
-        const id = draftId ?? crypto.randomUUID();
-        const path = `${id}/cover.webp`;
-        const url = await uploadImage(file, path);
-        onChange({ cover_image_url: url });
-      } catch {
-        setError("Échec de l'upload. Réessaie.");
-      } finally {
-        setUploadingCover(false);
-      }
-    },
-    [draftId, onChange]
-  );
-
-  const { getRootProps: getCoverRootProps, getInputProps: getCoverInputProps, isDragActive: isCoverDragActive } =
-    useDropzone({
-      onDrop: onDropCover,
-      accept: { "image/*": [] },
-      maxFiles: 1,
-      disabled: uploadingCover,
-    });
-
-  const removeCover = () => onChange({ cover_image_url: "" });
 
   // ── Gallery ──────────────────────────────────────────────────────────────────
 
@@ -100,48 +68,13 @@ export default function Step5Images({ data, onChange, draftId }: Step5Props) {
         <label className="text-sm font-medium text-foreground">
           Photo de couverture
         </label>
-
-        {data.cover_image_url ? (
-          <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-border">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={data.cover_image_url}
-              alt="Couverture"
-              className="w-full h-full object-cover"
-            />
-            <button
-              type="button"
-              onClick={removeCover}
-              className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 hover:bg-black/80 transition-colors text-xs"
-            >
-              ✕
-            </button>
-          </div>
-        ) : (
-          <div
-            {...getCoverRootProps()}
-            className={`w-full aspect-video rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors ${
-              isCoverDragActive
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary hover:bg-secondary/50"
-            }`}
-          >
-            <input {...getCoverInputProps()} />
-            {uploadingCover ? (
-              <p className="text-sm text-muted-foreground">Upload en cours...</p>
-            ) : (
-              <>
-                <p className="text-2xl mb-2">📷</p>
-                <p className="text-sm font-medium text-foreground">
-                  {isCoverDragActive ? "Dépose ici" : "Glisse ou clique pour ajouter"}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  JPG, PNG, WebP — max 10 Mo
-                </p>
-              </>
-            )}
-          </div>
-        )}
+        <ImageDropzone
+          value={data.cover_image_url || null}
+          onChange={(url) => onChange({ cover_image_url: url })}
+          onRemove={() => onChange({ cover_image_url: "" })}
+          uploadPath={`${draftId ?? crypto.randomUUID()}/cover.webp`}
+          label="Couverture"
+        />
       </div>
 
       {/* Gallery */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/navigation";
 import type { FAQItem } from "@/types/faq";
 
@@ -15,6 +16,7 @@ export function FAQAccordion({
   showCategories = false,
   expandFirst = false,
 }: FAQAccordionProps) {
+  const t = useTranslations("faq");
   const [openId, setOpenId] = useState<string | null>(
     expandFirst && items.length > 0 ? items[0].id : null
   );
@@ -31,7 +33,7 @@ export function FAQAccordion({
         {categories.map((cat) => (
           <div key={cat} className="space-y-2">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
-              {cat}
+              {t(`categories.${cat}` as any)}
             </h3>
             <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
               {items
@@ -74,6 +76,8 @@ function FAQRow({
   isOpen: boolean;
   onToggle: () => void;
 }) {
+  const t = useTranslations("faq");
+
   return (
     <div className="bg-card">
       <button
@@ -82,7 +86,9 @@ function FAQRow({
         className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-secondary/50 transition-colors"
         aria-expanded={isOpen}
       >
-        <span className="text-sm font-medium text-foreground">{item.question}</span>
+        <span className="text-sm font-medium text-foreground">
+          {t(`items.${item.id}.question` as any)}
+        </span>
         <span
           className={`shrink-0 text-muted-foreground transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -94,13 +100,15 @@ function FAQRow({
 
       {isOpen && (
         <div className="px-5 pb-5 space-y-3">
-          <p className="text-sm text-muted-foreground leading-relaxed">{item.answer}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {t(`items.${item.id}.answer` as any)}
+          </p>
           {item.link && (
             <Link
               href={item.link}
               className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
             >
-              {item.linkLabel ?? "En savoir plus"}
+              {t(`items.${item.id}.linkLabel` as any)}
               <ArrowIcon />
             </Link>
           )}

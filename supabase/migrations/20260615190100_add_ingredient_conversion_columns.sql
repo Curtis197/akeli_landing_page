@@ -26,8 +26,17 @@ UPDATE public.ingredient
 SET default_metric_unit = 'g', default_us_unit = 'cup', us_to_metric_factor = 200 
 WHERE name = 'Sucre';
 
--- 3. Insert duplicate rows for Ounces (Weight) with hide_in_metric = true
-INSERT INTO public.ingredient 
+-- 3. Ensure the category codes used below exist before they're referenced.
+-- 'other' is normally seeded by 20260615203000_seed_ingredient_categories.sql,
+-- which runs after this migration; 'starch' has no other seed source at all.
+INSERT INTO public.ingredient_category (code, name_fr, name_en)
+VALUES
+  ('starch', 'Féculent', 'Starch'),
+  ('other',  'Autre',    'Other')
+ON CONFLICT (code) DO NOTHING;
+
+-- 4. Insert duplicate rows for Ounces (Weight) with hide_in_metric = true
+INSERT INTO public.ingredient
 (id, name, name_en, category, status, default_metric_unit, default_us_unit, us_to_metric_factor, hide_in_metric)
 VALUES 
 (gen_random_uuid(), 'Farine de blé (Ounces)', 'Wheat flour (Ounces)', 'starch', 'validated', 'g', 'oz', 28.35, true),
@@ -36,7 +45,7 @@ VALUES
 (gen_random_uuid(), 'Farine de teff (Ounces)', 'Teff flour (Ounces)', 'starch', 'validated', 'g', 'oz', 28.35, true),
 (gen_random_uuid(), 'Sucre (Ounces)', 'Sugar (Ounces)', 'other', 'validated', 'g', 'oz', 28.35, true);
 
--- 4. Create the global Conversion RPC Function
+-- 5. Create the global Conversion RPC Function
 CREATE OR REPLACE FUNCTION public.convert_ingredient_unit(
     p_ingredient_id UUID,
     p_quantity NUMERIC,

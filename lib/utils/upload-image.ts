@@ -9,7 +9,8 @@ const COMPRESSION_OPTIONS = {
 
 export async function uploadImage(
   file: File,
-  storagePath: string
+  storagePath: string,
+  bucket: string = "recipe-images"
 ): Promise<string> {
   const supabase = createClient();
   const compressed = await imageCompression(file, COMPRESSION_OPTIONS);
@@ -19,13 +20,13 @@ export async function uploadImage(
     : storagePath + "." + ext;
 
   const { error: uploadError } = await supabase.storage
-    .from("recipe-images")
+    .from(bucket)
     .upload(finalPath, compressed, { upsert: true, contentType: file.type });
 
   if (uploadError) throw uploadError;
 
   const { data } = supabase.storage
-    .from("recipe-images")
+    .from(bucket)
     .getPublicUrl(finalPath);
 
   return data.publicUrl;
