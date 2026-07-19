@@ -52,3 +52,6 @@ next-env.d.ts
 /query_db.js
 /generate_descriptions.py
 /batch_translate_steps.js
+
+# generated store-listing screenshot exports (regenerate via scripts/export-store-screenshots.mjs)
+/store-exports
