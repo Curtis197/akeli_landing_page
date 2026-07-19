@@ -228,6 +228,15 @@ export default function CreatorProfileClient() {
 
 // ─── SocialLinks ──────────────────────────────────────────────────────────────
 
+function isHttpUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function SocialLinks({ creator }: { creator: CreatorProfile }) {
   const links: { key: string; href: string; label: string; icon: React.ReactNode }[] = [];
 
@@ -255,7 +264,7 @@ function SocialLinks({ creator }: { creator: CreatorProfile }) {
       icon: <Youtube className="w-4 h-4" />,
     });
   }
-  if (creator.website_url) {
+  if (creator.website_url && isHttpUrl(creator.website_url)) {
     links.push({
       key: "website",
       href: creator.website_url,

@@ -92,4 +92,24 @@ describe("socialLinksSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("rejects a javascript: URI", () => {
+    const result = socialLinksSchema.safeParse({
+      instagram_handle: "",
+      tiktok_handle: "",
+      youtube_handle: "",
+      website_url: "javascript:alert(1)",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a data: URI", () => {
+    const result = socialLinksSchema.safeParse({
+      instagram_handle: "",
+      tiktok_handle: "",
+      youtube_handle: "",
+      website_url: "data:text/html,<script>alert(1)</script>",
+    });
+    expect(result.success).toBe(false);
+  });
 });

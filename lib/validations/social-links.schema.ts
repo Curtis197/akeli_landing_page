@@ -20,7 +20,7 @@ export const socialLinksSchema = z.object({
   instagram_handle: z.string().max(30, "Maximum 30 caractères"),
   tiktok_handle: z.string().max(30, "Maximum 30 caractères"),
   youtube_handle: z.string().max(60, "Maximum 60 caractères"),
-  website_url: z.union([z.literal(""), z.string().url("URL invalide")]),
+  website_url: z.union([z.literal(""), z.url({ protocol: /^https?$/, message: "URL invalide" })]),
 });
 
 export type SocialLinksData = z.infer<typeof socialLinksSchema>;
