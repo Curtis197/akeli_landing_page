@@ -513,5 +513,222 @@
     "sweetener": "Sweetener",
     "alcohol": "Alcohol",
     "other": "Other"
+  },
+  "faq": {
+    "categories": {
+      "application": "App",
+      "subscription": "Subscription",
+      "content": "Content",
+      "howItWorks": "How it works",
+      "privacy": "Privacy",
+      "revenue": "Revenue",
+      "prerequisites": "Requirements",
+      "editorialFreedom": "Editorial freedom",
+      "languages": "Languages",
+      "businessModel": "Model",
+      "fanMode": "Fan Mode",
+      "translation": "Translation",
+      "recipes": "Recipes",
+      "stripe": "Stripe",
+      "support": "Support"
+    },
+    "items": {
+      "user-disponibilite": {
+        "question": "When will the app be available?",
+        "answer": "Very soon. Akeli is coming to the App Store and Google Play. In the meantime, take your free nutrition assessment and leave your email — you'll be among the first to get early access to the app. The download will be free."
+      },
+      "user-prix": {
+        "question": "How much does Akeli cost?",
+        "answer": "Akeli Premium will cost €2.99/month at launch. No commitment — you can cancel anytime from the app in one click."
+      },
+      "user-cuisine": {
+        "question": "Is my country or culinary region represented?",
+        "answer": "Akeli covers African and diaspora cuisine in all its diversity — West Africa, Central Africa, the Maghreb, the Caribbean, and more. Recipes are created by real creators from these cultures."
+      },
+      "user-ia": {
+        "question": "How does the app know what I eat?",
+        "answer": "When you sign up, Akeli asks you a few questions about your eating habits and goals. From there, the system generates a personalized meal plan based only on recipes from your own cuisine — never imposing an unfamiliar diet on you."
+      },
+      "user-donnees": {
+        "question": "Is my personal data secure?",
+        "answer": "Yes. All your data is encrypted and hosted in Europe (Paris). Akeli never sells your information. You can request deletion of your account and data at any time — in compliance with GDPR."
+      },
+      "creator-revenus-calcul": {
+        "question": "How are my earnings calculated?",
+        "answer": "Each month, €1 is distributed among all active creators, in proportion to consumption. Concretely: for every batch of 90 times your recipes are consumed in a month, you receive €1. These consumptions accumulate over time — a January consumption still counts in February if the batch isn't complete yet.",
+        "linkLabel": "Learn more"
+      },
+      "creator-revenus-realiste": {
+        "question": "How much can I realistically earn?",
+        "answer": "It depends on how many active users consume your recipes. A creator with 100 regular active users can expect €50 to €100/month in standard mode. In Fan Mode (available once you've published 30 recipes), your most loyal followers subscribe to unlock all your recipes — a recurring, predictable income independent of consumption.",
+        "linkLabel": "Learn more"
+      },
+      "creator-revenus-delai": {
+        "question": "How long before my first earnings?",
+        "answer": "Your first earnings appear as soon as a batch of 90 consumptions is reached. The timeline depends on your audience and how actively you share — there's no minimum number of recipes to start earning. Payments are made on the 5th of each month for the previous month's earnings."
+      },
+      "creator-prerequis-abonnes": {
+        "question": "Do I need a lot of followers to join?",
+        "answer": "No. Akeli doesn't set a follower threshold. A creator with 2,000 engaged followers can generate more revenue than an account with 100,000 inactive ones. What matters is the relationship you have with your audience — not its size."
+      },
+      "creator-prerequis-technique": {
+        "question": "Do I need technical skills?",
+        "answer": "No. Creating recipes on Akeli is done through a guided 6-step form. A complete recipe takes about 30 minutes to publish. AI helps you correct spelling and automatically translates into the available languages."
+      },
+      "creator-prerequis-cuisine": {
+        "question": "Do I need to be a chef or have culinary training?",
+        "answer": "Not at all. Akeli values culinary knowledge passed down through generations — not diplomas. If you've been cooking recipes from your culture for years, your knowledge has value on Akeli."
+      },
+      "creator-liberte-contenu": {
+        "question": "Does Akeli dictate which recipes I publish?",
+        "answer": "No. You remain entirely free to build your own catalog. Akeli doesn't modify your recipes, doesn't impose any dietary style, and doesn't favor one cuisine over another. The only condition is that your recipes comply with the Terms of Service (appropriate content, accurate information)."
+      },
+      "creator-langues": {
+        "question": "Can I publish in several languages?",
+        "answer": "Yes. You write your recipes in your main language (French or English in V1). Akeli automatically translates your content into 8 languages via AI. You can approve or correct each translation before publishing."
+      },
+      "creator-algorithme": {
+        "question": "Do my earnings depend on social media algorithms?",
+        "answer": "No. Your Akeli earnings depend on actual consumption of your recipes, not on how viral your posts are. Your catalog is a lasting asset — a recipe published 6 months ago can still generate revenue today."
+      },
+      "creator-mode-fan-intro": {
+        "question": "What is Fan Mode?",
+        "answer": "Fan Mode lets your most loyal followers subscribe to unlock your entire recipe catalog. It's a recurring income, independent of consumption. It becomes available once you reach 30 published recipes.",
+        "linkLabel": "Learn more"
+      },
+      "fan-eligibilite": {
+        "question": "How do I become eligible for Fan Mode?",
+        "answer": "Publish 30 recipes in your catalog. Once this threshold is reached, your profile is automatically marked as eligible, and users can choose you as their Fan creator from the mobile app."
+      },
+      "fan-revenu-garanti": {
+        "question": "Is Fan revenue really guaranteed every month?",
+        "answer": "Yes. As long as a Fan subscriber stays active, you receive a recurring income every month — regardless of how many of your recipes they consume.",
+        "linkLabel": "Full Fan Mode guide"
+      },
+      "fan-regles-utilisateur": {
+        "question": "What rules apply to users in Fan Mode?",
+        "answer": "A user in Fan Mode commits to building 90% of their monthly meals from your catalog. The remaining 10% is free. This ratio is technically enforced — the app automatically blocks adding external recipes beyond 9 different recipes from other creators per month.",
+        "linkLabel": "Full Fan Mode guide"
+      },
+      "fan-changement-createur": {
+        "question": "What happens if a fan leaves me for another creator?",
+        "answer": "A user can switch Fan creator at any time, but the change takes effect on the first day of the following month. You keep their subscription for the current month, even if they initiated the switch mid-month."
+      },
+      "fan-statistiques": {
+        "question": "Where can I see the number of my active fans?",
+        "answer": "In your dashboard, the \"Fan Mode\" section shows the number of active Fan subscribers and current-month Fan earnings in real time. This data is clearly separated from standard consumption-based earnings."
+      },
+      "lang-fonctionnement": {
+        "question": "How does automatic translation of my recipes work?",
+        "answer": "When you publish a recipe in French or English, Akeli automatically translates it into 8 languages via AI. Translations appear below your original language in the editing form. You can approve or correct them before the recipe becomes visible to users in those languages.",
+        "linkLabel": "Translation guide"
+      },
+      "lang-correction": {
+        "question": "Can I edit an AI-generated translation?",
+        "answer": "Yes. From each recipe's edit page, you have access to all language versions — title, description, ingredients, steps. Each field is individually editable. Your corrections are saved and won't be overwritten by a new automatic generation."
+      },
+      "lang-langues-disponibles": {
+        "question": "Which languages are available in V1?",
+        "answer": "French and English are handled natively. The 6 other languages (Arabic, Wolof, Swahili, Portuguese, Spanish, Hausa) are generated automatically by AI. Quality may vary by language — that's why manual correction is always possible.",
+        "linkLabel": "Translation guide"
+      },
+      "lang-langue-principale": {
+        "question": "Should I write in French or English?",
+        "answer": "In whichever language you're most comfortable with. Akeli translates from your source language, whether French or English. Writing in your natural language guarantees higher-quality recipes."
+      },
+      "recipe-temps": {
+        "question": "How long does it take to create a recipe?",
+        "answer": "On average 20 to 30 minutes for a complete recipe via the 6-step wizard. Auto-save is always on — you can pause and resume at any time without losing your work."
+      },
+      "recipe-brouillon": {
+        "question": "Can I save a recipe as a draft?",
+        "answer": "Yes. Every recipe is automatically saved at each step of the wizard. It stays in \"draft\" status until you click \"Publish.\" Drafts are not visible to users."
+      },
+      "recipe-suppression": {
+        "question": "What happens if I delete a recipe?",
+        "answer": "The recipe disappears from the catalog and is no longer accessible to users. Past consumptions are kept and still count toward your earnings — they're not cancelled. However, no new consumption will be generated after deletion."
+      },
+      "recipe-edition-publiee": {
+        "question": "Can I edit a recipe that's already published?",
+        "answer": "Yes. You can edit the title, description, ingredients, steps, and images at any time. The recipe stays visible while you edit it. Changes take effect immediately after saving."
+      },
+      "recipe-images": {
+        "question": "What image formats are accepted for recipes?",
+        "answer": "JPG and PNG, up to 10 MB per image. Akeli automatically compresses images to optimize loading. A cover image is required — gallery images are optional (4 maximum)."
+      },
+      "recipe-seuil-fan": {
+        "question": "How many recipes do I need to publish to be eligible for Fan Mode?",
+        "answer": "30 published recipes. This threshold ensures your catalog is varied enough for a user to build 90% of their monthly meals from your recipes without excessive repetition.",
+        "linkLabel": "Fan Mode guide"
+      },
+      "revenue-calcul-detail": {
+        "question": "Exactly how is my monthly revenue calculated?",
+        "answer": "Each month, the system counts consumptions of your recipes over the past 30 days. For every complete batch of 90 consumptions, you receive €1. Incomplete batches carry over and add up the following month — nothing is ever lost.",
+        "linkLabel": "Full earnings guide"
+      },
+      "revenue-consommation-definition": {
+        "question": "What exactly counts as a \"consumption\"?",
+        "answer": "A consumption is recorded when an Akeli Premium user adds one of your recipes to their monthly meal plan and marks it as consumed. The same recipe can be consumed multiple times by the same user in a month — each occurrence counts.",
+        "linkLabel": "Full earnings guide"
+      },
+      "revenue-paiement-date": {
+        "question": "When do I get paid?",
+        "answer": "Payments are made on the 5th of each month, for the previous month's earnings. If the 5th falls on a weekend or public holiday, payment is made on the next business day."
+      },
+      "revenue-paiement-minimum": {
+        "question": "Is there a minimum amount to get paid?",
+        "answer": "Yes. The minimum payout threshold is €10. If your monthly earnings are below €10, they roll over to the following month and accumulate until the threshold is reached.",
+        "linkLabel": "Full earnings guide"
+      },
+      "revenue-frais": {
+        "question": "Does Akeli take a cut of my earnings?",
+        "answer": "No. Akeli doesn't take any fee on consumption-based earnings or Fan Mode earnings. You receive the full calculated amount. Your bank may apply incoming transfer fees (usually free for SEPA transfers within Europe).",
+        "linkLabel": "Full earnings guide"
+      },
+      "revenue-sources": {
+        "question": "Where can I see the breakdown of my revenue sources?",
+        "answer": "In your dashboard, the \"Revenue\" section separates two lines: consumption-based earnings (standard mode) and Fan earnings (direct subscribers). You can filter by month and see a per-recipe breakdown for consumption-based earnings."
+      },
+      "stripe-pourquoi": {
+        "question": "Why do I need to set up a Stripe account?",
+        "answer": "Stripe is the payment provider Akeli uses to pay out your earnings. It's mandatory to receive payments. Setup takes about 5 minutes from your account settings.",
+        "linkLabel": "Stripe setup guide"
+      },
+      "stripe-setup": {
+        "question": "How do I set up my Stripe account?",
+        "answer": "From \"Settings → Payments,\" click \"Set up my payment account.\" You'll be redirected to Stripe to complete your profile (identity, bank details). Once validated by Stripe, your account is active and you'll receive payments automatically.",
+        "linkLabel": "Stripe setup guide"
+      },
+      "stripe-delai-validation": {
+        "question": "How long does Stripe validation take?",
+        "answer": "Generally less than 24 hours for standard identity checks. Stripe may request additional documents in some cases — you'll be notified directly by Stripe by email."
+      },
+      "stripe-pays": {
+        "question": "From which countries can I receive payments?",
+        "answer": "Stripe Connect is available in most European countries. If your country isn't yet supported, contact creator support — we're looking for alternative solutions for uncovered markets.",
+        "linkLabel": "Stripe setup guide"
+      },
+      "stripe-modification": {
+        "question": "Can I change my bank account or IBAN?",
+        "answer": "Yes. From \"Settings → Payments → Manage my Stripe account,\" you can update your bank details at any time. Changes take effect from the next payment cycle."
+      },
+      "support-contact": {
+        "question": "How do I contact the Akeli team?",
+        "answer": "From your dashboard, click \"Support\" in the navigation menu. You can open a direct conversation with the Akeli team. Usual response time: within 48 business hours."
+      },
+      "support-bug": {
+        "question": "How do I report a bug or technical issue?",
+        "answer": "Via the support chat from your dashboard (\"Support → New message\"). Describe the issue, the page affected, and the steps to reproduce it. A screenshot speeds up diagnosis."
+      },
+      "support-compte-suspendu": {
+        "question": "My account was suspended — what do I do?",
+        "answer": "Contact support immediately by email at creators@akeli.app, stating your username. Suspensions are always explained by email — check your spam folder if you haven't received anything."
+      },
+      "support-suppression-compte": {
+        "question": "How do I delete my creator account?",
+        "answer": "From \"Settings → Danger Zone → Delete my account.\" This action is irreversible. Your recipes will be anonymized (not deleted) to preserve the experience for users. Earnings owed up to the deletion date will be paid out in the next payment cycle.",
+        "linkLabel": "Learn more"
+      }
+    }
   }
 }

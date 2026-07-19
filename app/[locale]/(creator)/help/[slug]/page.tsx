@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { faqData } from "@/data/faq";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 
@@ -18,7 +19,7 @@ const HELP_CONTENT: Record<
   remuneration: {
     title: "Comment fonctionnent les revenus créateurs",
     icon: "💰",
-    faqCategory: "Revenus",
+    faqCategory: "revenue",
     sections: [
       {
         title: "Le principe : 1€ pour 90 consommations",
@@ -45,7 +46,7 @@ const HELP_CONTENT: Record<
   "mode-fan": {
     title: "Le Mode Fan — guide complet",
     icon: "⭐",
-    faqCategory: "Mode Fan",
+    faqCategory: "fanMode",
     sections: [
       {
         title: "Qu'est-ce que le Mode Fan ?",
@@ -72,7 +73,7 @@ const HELP_CONTENT: Record<
   traduction: {
     title: "Traduction automatique des recettes",
     icon: "🌍",
-    faqCategory: "Traduction",
+    faqCategory: "translation",
     sections: [
       {
         title: "Comment ça fonctionne",
@@ -95,7 +96,7 @@ const HELP_CONTENT: Record<
   "stripe-setup": {
     title: "Configurer votre compte Stripe",
     icon: "💳",
-    faqCategory: "Stripe",
+    faqCategory: "stripe",
     sections: [
       {
         title: "Pourquoi Stripe est obligatoire",
@@ -122,7 +123,7 @@ const HELP_CONTENT: Record<
   "suppression-compte": {
     title: "Supprimer votre compte créateur",
     icon: "🗑️",
-    faqCategory: "Support",
+    faqCategory: "support",
     sections: [
       {
         title: "Comment supprimer votre compte",
@@ -176,6 +177,8 @@ export default async function HelpDetailPage({
   const relatedFAQ = faqData.filter(
     (q) => q.placement === "dashboard" && q.category === content.faqCategory
   );
+  const t = await getTranslations("faq");
+  const categoryLabel = t(`categories.${content.faqCategory}` as any);
 
   return (
     <div className="max-w-2xl space-y-10">
@@ -211,7 +214,7 @@ export default async function HelpDetailPage({
       {relatedFAQ.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Questions liées — {content.faqCategory}
+            Questions liées — {categoryLabel}
           </h2>
           <FAQAccordion items={relatedFAQ} />
         </section>

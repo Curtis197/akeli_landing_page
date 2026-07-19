@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { faqData } from "@/data/faq";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 
@@ -51,6 +52,7 @@ const dashboardFAQ = faqData.filter((q) => q.placement === "dashboard");
 const categories = Array.from(new Set(dashboardFAQ.map((q) => q.category)));
 
 export default function HelpPage() {
+  const t = useTranslations("faq");
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
@@ -61,15 +63,15 @@ export default function HelpPage() {
     }
     if (search.trim()) {
       const q = search.toLowerCase();
-      result = result.filter(
-        (item) =>
-          item.question.toLowerCase().includes(q) ||
-          item.answer.toLowerCase().includes(q) ||
-          item.category.toLowerCase().includes(q)
-      );
+      result = result.filter((item) => {
+        const question = t(`items.${item.id}.question` as any).toLowerCase();
+        const answer = t(`items.${item.id}.answer` as any).toLowerCase();
+        const categoryLabel = t(`categories.${item.category}` as any).toLowerCase();
+        return question.includes(q) || answer.includes(q) || categoryLabel.includes(q);
+      });
     }
     return result;
-  }, [search, activeCategory]);
+  }, [search, activeCategory, t]);
 
   const noResults = filtered.length === 0;
 
@@ -167,7 +169,7 @@ export default function HelpPage() {
                     : "border-border text-foreground hover:bg-secondary"
                 }`}
               >
-                {cat}
+                {t(`categories.${cat}` as any)}
               </button>
             ))}
           </div>
@@ -198,7 +200,7 @@ export default function HelpPage() {
         {!noResults && (
           <p className="text-xs text-muted-foreground text-right">
             {filtered.length} question{filtered.length > 1 ? "s" : ""}
-            {search ? ` pour "${search}"` : activeCategory ? ` — ${activeCategory}` : ""}
+            {search ? ` pour "${search}"` : activeCategory ? ` — ${t(`categories.${activeCategory}` as any)}` : ""}
           </p>
         )}
       </section>
