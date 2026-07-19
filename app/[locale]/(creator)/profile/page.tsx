@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
 import imageCompression from "browser-image-compression";
+import { normalizeHandle, normalizeWebsiteUrl, socialLinksSchema } from "@/lib/validations/social-links.schema";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -50,6 +51,10 @@ export default function ProfilePage() {
   const [bio, setBio] = useState("");
   const [heritageRegion, setHeritageRegion] = useState("");
   const [specialties, setSpecialties] = useState<string[]>([]);
+  const [instagramHandle, setInstagramHandle] = useState("");
+  const [tiktokHandle, setTiktokHandle] = useState("");
+  const [youtubeHandle, setYoutubeHandle] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -67,6 +72,10 @@ export default function ProfilePage() {
     setHeritageRegion(creator.heritage_region ?? "");
     setSpecialties(creator.specialties ?? []);
     setAvatarUrl(creator.profile_image_url ?? null);
+    setInstagramHandle(creator.instagram_handle ?? "");
+    setTiktokHandle(creator.tiktok_handle ?? "");
+    setYoutubeHandle(creator.youtube_handle ?? "");
+    setWebsiteUrl(creator.website_url ?? "");
   }, [creator]);
 
   // ── Avatar ──────────────────────────────────────────────────────────────────
@@ -125,6 +134,20 @@ export default function ProfilePage() {
     setSaving(true);
     setSuccessMsg(null);
     setErrorMsg(null);
+
+    const normalizedSocial = {
+      instagram_handle: normalizeHandle(instagramHandle),
+      tiktok_handle: normalizeHandle(tiktokHandle),
+      youtube_handle: normalizeHandle(youtubeHandle),
+      website_url: normalizeWebsiteUrl(websiteUrl),
+    };
+    const socialResult = socialLinksSchema.safeParse(normalizedSocial);
+    if (!socialResult.success) {
+      setErrorMsg(socialResult.error.issues[0]?.message ?? "Réseaux sociaux invalides.");
+      setSaving(false);
+      return;
+    }
+
     try {
       let newAvatarUrl = avatarUrl;
       if (avatarFile) {
@@ -138,6 +161,10 @@ export default function ProfilePage() {
           heritage_region: heritageRegion || null,
           specialties,
           profile_image_url: newAvatarUrl,
+          instagram_handle: normalizedSocial.instagram_handle || null,
+          tiktok_handle: normalizedSocial.tiktok_handle || null,
+          youtube_handle: normalizedSocial.youtube_handle || null,
+          website_url: normalizedSocial.website_url || null,
         })
         .eq("id", creator.id)
         .select("*")
@@ -148,6 +175,10 @@ export default function ProfilePage() {
         setAvatarUrl(newAvatarUrl);
         setAvatarFile(null);
         setAvatarPreview(null);
+        setInstagramHandle(normalizedSocial.instagram_handle);
+        setTiktokHandle(normalizedSocial.tiktok_handle);
+        setYoutubeHandle(normalizedSocial.youtube_handle);
+        setWebsiteUrl(normalizedSocial.website_url);
       }
       setSuccessMsg("Profil mis à jour avec succès !");
     } catch (err) {
@@ -331,6 +362,67 @@ export default function ProfilePage() {
                 ))}
             </div>
           )}
+        </section>
+
+        {/* ── Réseaux sociaux ── */}
+        <section className="rounded-xl border border-border bg-card p-6 space-y-5">
+          <h2 className="text-base font-semibold text-foreground">Réseaux sociaux</h2>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground" htmlFor="instagram">
+              Instagram
+            </label>
+            <input
+              id="instagram"
+              type="text"
+              value={instagramHandle}
+              onChange={(e) => setInstagramHandle(e.target.value.slice(0, 30))}
+              placeholder="ton_pseudo"
+              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground" htmlFor="tiktok">
+              TikTok
+            </label>
+            <input
+              id="tiktok"
+              type="text"
+              value={tiktokHandle}
+              onChange={(e) => setTiktokHandle(e.target.value.slice(0, 30))}
+              placeholder="ton_pseudo"
+              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground" htmlFor="youtube">
+              YouTube
+            </label>
+            <input
+              id="youtube"
+              type="text"
+              value={youtubeHandle}
+              onChange={(e) => setYoutubeHandle(e.target.value.slice(0, 60))}
+              placeholder="ta_chaine"
+              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground" htmlFor="website">
+              Site web
+            </label>
+            <input
+              id="website"
+              type="text"
+              value={websiteUrl}
+              onChange={(e) => setWebsiteUrl(e.target.value)}
+              placeholder="https://tonsite.com"
+              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
         </section>
 
         {/* ── Feedback & Submit ── */}
