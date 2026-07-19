@@ -71,7 +71,7 @@ export default function CreatorProfileClient() {
         .eq("creator_id", creatorId)
         .eq("is_published", true)
         .order("created_at", { ascending: false }),
-      fetchCreatorBlogFeed(creatorId),
+      fetchCreatorBlogFeed(creatorId).catch(() => [] as BlogFeedPost[]),
     ])
       .then(([creatorRes, recipesRes, blogPosts]) => {
         if (!creatorRes.data) {
