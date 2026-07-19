@@ -376,7 +376,7 @@ export default function ProfilePage() {
               id="instagram"
               type="text"
               value={instagramHandle}
-              onChange={(e) => setInstagramHandle(e.target.value.slice(0, 30))}
+              onChange={(e) => setInstagramHandle(e.target.value)}
               placeholder="ton_pseudo"
               className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
@@ -390,7 +390,7 @@ export default function ProfilePage() {
               id="tiktok"
               type="text"
               value={tiktokHandle}
-              onChange={(e) => setTiktokHandle(e.target.value.slice(0, 30))}
+              onChange={(e) => setTiktokHandle(e.target.value)}
               placeholder="ton_pseudo"
               className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
@@ -404,7 +404,7 @@ export default function ProfilePage() {
               id="youtube"
               type="text"
               value={youtubeHandle}
-              onChange={(e) => setYoutubeHandle(e.target.value.slice(0, 60))}
+              onChange={(e) => setYoutubeHandle(e.target.value)}
               placeholder="ta_chaine"
               className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
