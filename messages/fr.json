@@ -732,5 +732,38 @@
         "linkLabel": "En savoir plus"
       }
     }
+  },
+  "legalPrivacy": {
+    "title": "Politique de confidentialité",
+    "lastUpdated": "Dernière mise à jour : août 2026",
+    "section1": {
+      "title": "1. Données collectées",
+      "content": "Akeli collecte uniquement les données nécessaires au fonctionnement du service : adresse email, nom d'affichage, photo de profil (optionnelle), préférences culinaires et historique d'utilisation."
+    },
+    "section2": {
+      "title": "2. Utilisation des données",
+      "content": "Vos données sont utilisées pour personnaliser l'expérience, gérer votre compte, traiter les paiements via Stripe et améliorer la plateforme. Elles ne sont jamais vendues à des tiers."
+    },
+    "section3": {
+      "title": "3. Hébergement et sécurité",
+      "content": "Les données sont hébergées sur Supabase (infrastructure sécurisée conforme RGPD). Les communications sont chiffrées via HTTPS. Les mots de passe ne sont jamais stockés en clair."
+    },
+    "section4": {
+      "title": "4. Conservation des données",
+      "content": "Nous conservons vos données personnelles tant que votre compte reste actif, afin de fournir le service Akeli. Si vous supprimez votre compte, vos données sont supprimées immédiatement de nos systèmes actifs. Des copies résiduelles peuvent subsister brièvement dans des sauvegardes chiffrées afin de prévenir toute perte accidentelle, avant d'être définitivement effacées. Certaines données peuvent être conservées plus longtemps lorsque la loi l'exige (ex. : documents de facturation à des fins fiscales)."
+    },
+    "section5": {
+      "title": "5. Vos droits",
+      "content": "Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, de portabilité et de suppression de vos données. Vous pouvez supprimer votre compte à tout moment depuis les paramètres."
+    },
+    "section6": {
+      "title": "6. Cookies",
+      "content": "Akeli utilise uniquement des cookies strictement nécessaires à l'authentification et à la session. Aucun cookie publicitaire ou de tracking tiers n'est utilisé."
+    },
+    "section7": {
+      "title": "7. Contact",
+      "content": "Pour exercer vos droits ou pour toute question :",
+      "email": "hello@akeli.app"
+    }
   }
 }

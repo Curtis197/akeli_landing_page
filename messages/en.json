@@ -732,5 +732,38 @@
         "linkLabel": "Learn more"
       }
     }
+  },
+  "legalPrivacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: August 2026",
+    "section1": {
+      "title": "1. Data collected",
+      "content": "Akeli only collects the data necessary for the operation of the service: email address, display name, profile picture (optional), culinary preferences and usage history."
+    },
+    "section2": {
+      "title": "2. Use of data",
+      "content": "Your data is used to personalize your experience, manage your account, process payments via Stripe, and improve the platform. It is never sold to third parties."
+    },
+    "section3": {
+      "title": "3. Hosting and security",
+      "content": "The data is hosted on Supabase (a secure infrastructure compliant with GDPR). Communications are encrypted via HTTPS. Passwords are never stored in plain text."
+    },
+    "section4": {
+      "title": "4. Data retention",
+      "content": "We retain your personal data for as long as your account remains active, in order to provide the Akeli service. If you delete your account, your data is deleted immediately from our active systems. Residual copies may persist briefly in encrypted backups to prevent accidental data loss, after which they are permanently erased. Some data may be retained longer where required by law (e.g. billing records for tax purposes)."
+    },
+    "section5": {
+      "title": "5. Your rights",
+      "content": "In accordance with the GDPR, you have the right to access, rectify, port, and delete your data. You can delete your account at any time from the settings."
+    },
+    "section6": {
+      "title": "6. Cookies",
+      "content": "Akeli only uses cookies strictly necessary for authentication and session management. No third-party advertising or tracking cookies are used."
+    },
+    "section7": {
+      "title": "7. Contact",
+      "content": "To exercise your rights or for any questions:",
+      "email": "hello@akeli.app"
+    }
   }
 }
