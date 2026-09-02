@@ -45,6 +45,13 @@ export const step2Schema = z.object({
           .filter((i) => !i.is_section_header)
           .every((i) => !!i.ingredient_id),
       { message: "Tous les ingrédients doivent être liés au catalogue" }
+    )
+    .refine(
+      (items) =>
+        items
+          .filter((i) => i.is_section_header)
+          .every((i) => !!i.title?.trim()),
+      { message: "Chaque section doit avoir un titre" }
     ),
 });
 
@@ -78,6 +85,13 @@ export const step3Schema = z.object({
           .filter((i) => !i.is_section_header)
           .every((i) => i.content && i.content.length >= 10),
       { message: "Chaque étape doit contenir au moins 10 caractères" }
+    )
+    .refine(
+      (items) =>
+        items
+          .filter((i) => i.is_section_header)
+          .every((i) => !!i.title?.trim()),
+      { message: "Chaque section doit avoir un titre" }
     ),
 });
 

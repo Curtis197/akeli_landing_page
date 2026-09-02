@@ -10,10 +10,8 @@ import { fetchUnitConversions } from "@/lib/queries/ingredients";
 import { fetchIngredientAllergens } from "@/lib/queries/allergens";
 import type { MeasurementUnit } from "@/lib/queries/measurement-units";
 import type { UnitConversion } from "@/lib/queries/ingredients";
-import type {
-  Step2Data,
-  Step3Data,
-} from "@/lib/validations/recipe.schema";
+import { step2Schema, step3Schema } from "@/lib/validations/recipe.schema";
+import type { Step2Data, Step3Data } from "@/lib/validations/recipe.schema";
 import Step1Basic from "./Step1Basic";
 import Step2Ingredients from "./Step2Ingredients";
 import Step3Steps from "./Step3Steps";
@@ -115,6 +113,7 @@ export default function RecipeWizard({
   // publish/unpublish actions navigate away afterward, so it never needs updating in place.
   const [isLivePublished] = useState<boolean>(initialIsPublished ?? false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // ── Fetch supporting data once on mount ───────────────────────────────────
   useEffect(() => {
@@ -262,6 +261,21 @@ export default function RecipeWizard({
   // ── Main save/sync ─────────────────────────────────────────────────────────
   const saveDraft = useCallback(
     async (data: RecipeFormState, syncStep?: number): Promise<string | null> => {
+      if (syncStep === 2) {
+        const ingredientsCheck = step2Schema.safeParse({ ingredients: data.ingredients });
+        if (!ingredientsCheck.success) {
+          setSaveError(ingredientsCheck.error.issues[0]?.message ?? "Ingrédients invalides");
+          return null;
+        }
+      }
+      if (syncStep === 3) {
+        const stepsCheck = step3Schema.safeParse({ steps: data.steps });
+        if (!stepsCheck.success) {
+          setSaveError(stepsCheck.error.issues[0]?.message ?? "Étapes invalides");
+          return null;
+        }
+      }
+
       setIsSaving(true);
       try {
         const id = await saveRecipeRow(data);
@@ -284,11 +298,13 @@ export default function RecipeWizard({
           }
         }
 
+        setSaveError(null);
         setLastSaved(new Date());
         isDirtyRef.current = false;
         return id;
       } catch (err) {
         console.error("Save failed:", err);
+        setSaveError("La sauvegarde a échoué. Réessayez.");
         return null;
       } finally {
         setIsSaving(false);
@@ -309,15 +325,19 @@ export default function RecipeWizard({
   const updateForm = useCallback((patch: Partial<RecipeFormState>) => {
     setFormState((prev) => ({ ...prev, ...patch }));
     isDirtyRef.current = true;
+    setSaveError(null);
   }, []);
 
   const handleTitleConflict = useCallback((isDup: boolean) => setTitleConflict(isDup), []);
 
   // ── Navigation ─────────────────────────────────────────────────────────────
+  // Navigation only advances once saveDraft confirms the current step actually
+  // persisted — otherwise a failed sync (e.g. an invalid section header) used to
+  // fail silently while the wizard moved on as if it had saved.
   const handleNext = async () => {
     if (currentStep === 1 && titleConflict) return;
-    await saveDraft(formState, currentStep);
-    if (currentStep < 6) setCurrentStep((s) => s + 1);
+    const id = await saveDraft(formState, currentStep);
+    if (id && currentStep < 6) setCurrentStep((s) => s + 1);
   };
 
   const handlePrev = () => {
@@ -327,8 +347,8 @@ export default function RecipeWizard({
   const handleStepClick = async (target: number) => {
     if (target === currentStep) return;
     if (currentStep === 1 && titleConflict) return;
-    await saveDraft(formState, currentStep);
-    setCurrentStep(target);
+    const id = await saveDraft(formState, currentStep);
+    if (id) setCurrentStep(target);
   };
 
   // ── Publish ────────────────────────────────────────────────────────────────
@@ -505,8 +525,8 @@ export default function RecipeWizard({
       </div>
 
       <div className="mt-8 flex items-center justify-between border-t border-border pt-6">
-        {publishError && (
-          <p className="text-sm text-red-600 mr-4">{publishError}</p>
+        {(publishError || saveError) && (
+          <p className="text-sm text-red-600 mr-4">{publishError ?? saveError}</p>
         )}
         <button
           onClick={handlePrev}
