@@ -52,6 +52,7 @@ export default function RecipesCatalogClient() {
           creator:creator_id ( display_name, profile_image_url )
         `)
         .eq("is_published", true)
+        .eq("mode", "nutrition")
         .order("created_at", { ascending: false });
 
       if (!data) {

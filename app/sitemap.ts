@@ -34,7 +34,7 @@ async function fetchDynamicPaths(): Promise<string[]> {
   );
 
   const [recipes, creators] = await Promise.all([
-    supabase.from("recipe").select("slug").eq("is_published", true),
+    supabase.from("recipe").select("slug").eq("is_published", true).eq("mode", "nutrition"),
     supabase.from("creator").select("id, recipe_count").gt("recipe_count", 0),
   ]);
 

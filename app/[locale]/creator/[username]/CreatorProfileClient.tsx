@@ -70,6 +70,7 @@ export default function CreatorProfileClient() {
         .select("id, slug, title, cover_image_url, region, difficulty, prep_time_min, cook_time_min, is_published")
         .eq("creator_id", creatorId)
         .eq("is_published", true)
+        .eq("mode", "nutrition")
         .order("created_at", { ascending: false }),
       fetchCreatorBlogFeed(creatorId).catch(() => [] as BlogFeedPost[]),
     ])
