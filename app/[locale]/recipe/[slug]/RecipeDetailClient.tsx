@@ -251,7 +251,6 @@ export default function RecipeDetailClient() {
       : recipe.ingredients.filter((ing) => {
           if (ing.is_section_header) return false;
           const stepIngIds = currentStep.ingredient_ids || [];
-          if (stepIngIds.length === 0) return true; // Fallback: show all if none mapped
           return ing.ingredient_id && stepIngIds.includes(ing.ingredient_id);
         });
 
