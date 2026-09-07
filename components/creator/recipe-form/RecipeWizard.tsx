@@ -278,6 +278,14 @@ export default function RecipeWizard({
       if (syncStep === 3) {
         const stepsCheck = step3Schema.safeParse({ steps: data.steps });
         if (!stepsCheck.success) {
+          const badPaths = new Set(stepsCheck.error.issues.map((i) => i.path[1]).filter((i) => i !== undefined));
+          const badSteps = data.steps.filter((_, i) => badPaths.has(i));
+          console.error(
+            "Step 3 validation failed:",
+            stepsCheck.error.issues,
+            "Offending steps:",
+            badSteps.length > 0 ? badSteps : data.steps
+          );
           setSaveError(stepsCheck.error.issues[0]?.message ?? "Étapes invalides");
           return null;
         }
