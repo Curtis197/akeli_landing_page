@@ -28,6 +28,22 @@ export async function toggleRecipeLike(recipeId: string) {
 }
 
 // ─── Gemini: Recipe standardization (preview/apply) ──────────────────────────
+
+// functions.invoke() surfaces a non-2xx as a generic "returned a non-2xx status code"
+// error and hides the real body on error.context (a Response). Unwrap it so the caller
+// gets the function's own categorized error code instead of that generic string.
+async function unwrapFunctionError(error: any): Promise<Error> {
+  if (error?.context && typeof error.context.json === 'function') {
+    try {
+      const body = await error.context.json()
+      if (body?.error) return new Error(body.error)
+    } catch {
+      // fall through to the generic error below
+    }
+  }
+  return error instanceof Error ? error : new Error(String(error))
+}
+
 export interface RecipeCleanSuggestion {
   suggested: string
   reason: string
@@ -67,7 +83,7 @@ export async function previewRecipeClean(recipeId: string): Promise<PreviewRecip
   const { data, error } = await supabase.functions.invoke('recipe-cleaner', {
     body: { recipe_id: recipeId, mode: 'preview' },
   })
-  if (error) throw error
+  if (error) throw await unwrapFunctionError(error)
   return data as PreviewRecipeCleanResult
 }
 
@@ -96,7 +112,7 @@ export async function applyRecipeClean(
   const { data, error } = await supabase.functions.invoke('recipe-cleaner', {
     body: { recipe_id: recipeId, mode: 'apply', ...payload },
   })
-  if (error) throw error
+  if (error) throw await unwrapFunctionError(error)
   return data as ApplyRecipeCleanResult
 }
 

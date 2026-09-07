@@ -358,6 +358,17 @@ export default function RecipeWizard({
     return !!id;
   };
 
+  // The apply already wrote the live steps; persist draft_data straight away too, so a
+  // reload before the 30s autosave can't resurrect the pre-apply state and overwrite it.
+  const handleCleanApplied = async (result: {
+    title: string;
+    description: string;
+    steps: RecipeFormState["steps"];
+  }) => {
+    updateForm(result);
+    await saveDraft({ ...formState, ...result }, 3);
+  };
+
   // ── Publish ────────────────────────────────────────────────────────────────
   const handlePublish = async (publish: boolean) => {
     setIsPublishing(true);
@@ -503,6 +514,8 @@ export default function RecipeWizard({
             onChange={updateForm}
             draftId={draftId}
             onPrepareClean={handlePrepareClean}
+            onAppliedSave={handleCleanApplied}
+            isLivePublished={isLivePublished}
           />
         )}
         {currentStep === 4 && (

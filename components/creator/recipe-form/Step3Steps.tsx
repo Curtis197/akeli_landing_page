@@ -31,9 +31,22 @@ interface Step3Props {
   onChange: (patch: Partial<RecipeFormState>) => void;
   draftId: string | null;
   onPrepareClean: () => Promise<boolean>;
+  onAppliedSave: (result: {
+    title: string;
+    description: string;
+    steps: RecipeFormState["steps"];
+  }) => void;
+  isLivePublished: boolean;
 }
 
-export default function Step3Steps({ data, onChange, draftId, onPrepareClean }: Step3Props) {
+export default function Step3Steps({
+  data,
+  onChange,
+  draftId,
+  onPrepareClean,
+  onAppliedSave,
+  isLivePublished,
+}: Step3Props) {
   const dndId = useId();
   const steps = data.steps;
 
@@ -238,7 +251,10 @@ export default function Step3Steps({ data, onChange, draftId, onPrepareClean }: 
         </button>
       </div>
 
-      {draftId && (
+      {/* Hidden for an already-published recipe: the AI apply path writes straight to the
+          live recipe/recipe_step rows, which would bypass the wizard's rule that edits to a
+          published recipe stay in draft_data until an explicit Publish. */}
+      {draftId && !isLivePublished && (
         <div className="space-y-1">
           <button
             type="button"
@@ -254,13 +270,12 @@ export default function Step3Steps({ data, onChange, draftId, onPrepareClean }: 
         </div>
       )}
 
-      {showCleaner && draftId && (
+      {showCleaner && draftId && !isLivePublished && (
         <RecipeCleanerReview
           recipeId={draftId}
           currentTitle={data.title}
           currentDescription={data.description}
-          currentSteps={data.steps}
-          onApplied={(result) => onChange(result)}
+          onApplied={onAppliedSave}
           onClose={() => setShowCleaner(false)}
         />
       )}

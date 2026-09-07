@@ -108,6 +108,7 @@ TITRE ET DESCRIPTION — correction légère UNIQUEMENT :
 3. Ne jamais inclure de quantités précises (ex: "200g", "2 c.à.s") dans le texte d'une étape — les quantités vivent uniquement dans la liste d'ingrédients, jamais dans les instructions
 4. Ne renvoie une entrée dans step_proposals QUE pour les étapes qui ont réellement besoin d'un changement (reformulation ou découpage) — ignore les étapes déjà correctes
 5. Estime un minuteur ("timer_seconds") pour les étapes de cuisson/attente actives si pertinent, sinon null
+6. Contraintes de structure : si "is_section_header" est true, "title" doit être une chaîne non vide et "content" doit être null ; si "is_section_header" est false, "title" doit être null et "content" doit être une chaîne non vide et non nulle.
 
 Titre : "${title}"
 Description : "${description ?? '(aucune)'}"
@@ -163,8 +164,14 @@ function validatePreviewResult(result: unknown): result is {
   const isSuggestionOrNull = (v: unknown): v is { suggested: string; reason: string } | null =>
     v === null || (isObj(v) && isStr(v.suggested) && isStr(v.reason));
 
-  const isSuggestedStep = (v: unknown): v is { title: string | null; content: string | null; timer_seconds: number | null; is_section_header: boolean } =>
-    isObj(v) && isStrOrNull(v.title) && isStrOrNull(v.content) && isNumOrNull(v.timer_seconds) && isBool(v.is_section_header);
+  // Mirrors recipe_step's DB check constraints (chk_recipe_step_section_header /
+  // chk_regular_step_no_title): a violation caught here surfaces as invalid_ai_output at
+  // preview time instead of an opaque db_failed 500 when the creator clicks Apply.
+  const isSuggestedStep = (v: unknown): v is { title: string | null; content: string | null; timer_seconds: number | null; is_section_header: boolean } => {
+    if (!isObj(v) || !isStrOrNull(v.title) || !isStrOrNull(v.content) || !isNumOrNull(v.timer_seconds) || !isBool(v.is_section_header)) return false;
+    if (v.is_section_header) return typeof v.title === 'string' && v.title.length > 0 && v.content === null;
+    return v.title === null && typeof v.content === 'string' && v.content.length > 0;
+  };
 
   const isStepProposal = (v: unknown): v is {
     step_id: string;
@@ -454,6 +461,16 @@ Deno.serve(async (req) => {
     if (ownedRecipe.creator_id !== creatorId) {
       return new Response(JSON.stringify({ error: 'Unauthorized: this recipe does not belong to you' }), {
         status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Reject an unrecognized mode explicitly. This contract replaced an older
+    // `{commit: boolean}` one in place, on a project shared with another app — a stale
+    // caller must get a clear 400, not a silent (Gemini-billing) preview run.
+    if (body.mode !== 'preview' && body.mode !== 'apply') {
+      return new Response(JSON.stringify({ error: 'invalid_mode', message: "mode must be 'preview' or 'apply'" }), {
+        status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }

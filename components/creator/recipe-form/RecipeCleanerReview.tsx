@@ -4,14 +4,32 @@
 import { useEffect, useState } from "react";
 import { previewRecipeClean, applyRecipeClean } from "@/lib/edge-functions";
 import type { PreviewRecipeCleanResult } from "@/lib/edge-functions";
+import { createClient } from "@/lib/supabase/client";
 import { resolveCleanedSteps } from "@/lib/utils/recipe-cleaner-resolve";
 import type { StepItem } from "@/lib/validations/recipe.schema";
+
+// The edge function answers with a categorized error code, not a display string.
+// Map the known codes to French; anything unmapped falls through as-is.
+const ERROR_MESSAGES: Record<string, string> = {
+  rate_limit_exceeded: "Tu as atteint la limite quotidienne d'analyses IA. Réessaie demain.",
+  gemini_failed: "Le service IA est temporairement indisponible. Réessaie dans quelques instants.",
+  invalid_ai_output: "L'IA a renvoyé une réponse invalide. Réessaie.",
+  db_failed: "Échec de l'enregistrement. Réessaie.",
+  invalid_mode: "Erreur interne. Réessaie.",
+  Unauthorized: "Session expirée. Reconnecte-toi.",
+  "Creator account not found": "Compte créateur introuvable.",
+  "Recipe not found": "Recette introuvable.",
+};
+
+function toFrenchError(message: string | undefined): string {
+  if (!message) return "Une erreur est survenue.";
+  return ERROR_MESSAGES[message] ?? message;
+}
 
 interface RecipeCleanerReviewProps {
   recipeId: string;
   currentTitle: string;
   currentDescription: string;
-  currentSteps: StepItem[];
   onApplied: (result: { title: string; description: string; steps: StepItem[] }) => void;
   onClose: () => void;
 }
@@ -20,13 +38,17 @@ export default function RecipeCleanerReview({
   recipeId,
   currentTitle,
   currentDescription,
-  currentSteps,
   onApplied,
   onClose,
 }: RecipeCleanerReviewProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<PreviewRecipeCleanResult | null>(null);
+  // The steps as they exist in the DB right now — the same rows preview read, so its
+  // step_id/after_step_id references actually resolve. The wizard's in-memory steps
+  // can't be used here: replace_recipe_steps regenerates every step id on each save,
+  // so the ids held in React state are already stale by the time preview runs.
+  const [dbSteps, setDbSteps] = useState<StepItem[] | null>(null);
 
   const [acceptTitle, setAcceptTitle] = useState(true);
   const [acceptDescription, setAcceptDescription] = useState(true);
@@ -40,17 +62,41 @@ export default function RecipeCleanerReview({
     let cancelled = false;
     setLoading(true);
     setError(null);
-    previewRecipeClean(recipeId)
-      .then((result) => {
+    const supabase = createClient();
+    Promise.all([
+      previewRecipeClean(recipeId),
+      supabase
+        .from("recipe_step")
+        .select(
+          "id, step_number, sort_order, title, content, image_url, timer_seconds, is_section_header, ingredient_ids"
+        )
+        .eq("recipe_id", recipeId)
+        .order("sort_order", { ascending: true }),
+    ])
+      .then(([previewResult, stepsResult]) => {
         if (cancelled) return;
-        setPreview(result);
+        if (stepsResult.error) throw stepsResult.error;
+        setPreview(previewResult);
+        setDbSteps(
+          (stepsResult.data ?? []).map((s) => ({
+            id: s.id,
+            step_number: s.step_number,
+            sort_order: s.sort_order,
+            title: s.title ?? undefined,
+            content: s.content ?? undefined,
+            image_url: s.image_url ?? undefined,
+            timer_seconds: s.timer_seconds ?? undefined,
+            is_section_header: s.is_section_header,
+            ingredient_ids: s.ingredient_ids ?? [],
+          }))
+        );
         // Corrections default accepted; insertions (new content the creator didn't
         // write) default rejected — the creator opts in explicitly to anything new.
-        setAcceptedStepProposalIds(new Set(result.step_proposals.map((p) => p.step_id)));
+        setAcceptedStepProposalIds(new Set(previewResult.step_proposals.map((p) => p.step_id)));
       })
       .catch((err) => {
         if (cancelled) return;
-        setError(err?.message ?? "Erreur lors de l'analyse IA");
+        setError(toFrenchError(err?.message));
       })
       .finally(() => {
         if (cancelled) return;
@@ -79,15 +125,21 @@ export default function RecipeCleanerReview({
     });
   };
 
+  // An evaluation-only result (e.g. just an ordering note) is still a finding —
+  // it must not be swallowed by the "rien à corriger" branch.
+  const hasEvaluationNotes =
+    !!preview && !!(preview.evaluation.ordering_issues || preview.evaluation.general_observations);
+
   const hasNoSuggestions =
     !!preview &&
     !preview.title_suggestion &&
     !preview.description_suggestion &&
     preview.step_proposals.length === 0 &&
-    preview.new_step_suggestions.length === 0;
+    preview.new_step_suggestions.length === 0 &&
+    !hasEvaluationNotes;
 
   const handleApply = async () => {
-    if (!preview) return;
+    if (!preview || !dbSteps) return;
     setApplying(true);
     setApplyError(null);
     try {
@@ -98,7 +150,7 @@ export default function RecipeCleanerReview({
           ? preview.description_suggestion.suggested
           : currentDescription;
       const finalSteps = resolveCleanedSteps(
-        currentSteps,
+        dbSteps,
         preview.step_proposals,
         preview.new_step_suggestions,
         { acceptedStepProposalIds, acceptedNewStepIndexes }
@@ -136,7 +188,7 @@ export default function RecipeCleanerReview({
       onApplied({ title: finalTitle, description: finalDescription, steps: finalSteps });
       onClose();
     } catch (err: any) {
-      setApplyError(err?.message ?? "Échec de l'application des corrections");
+      setApplyError(toFrenchError(err?.message));
     } finally {
       setApplying(false);
     }
@@ -177,7 +229,7 @@ export default function RecipeCleanerReview({
           </p>
         )}
 
-        {!loading && !error && preview && !hasNoSuggestions && (
+        {!loading && !error && preview && dbSteps && !hasNoSuggestions && (
           <div className="space-y-4">
             {preview.title_suggestion && (
               <SuggestionCard
@@ -202,7 +254,7 @@ export default function RecipeCleanerReview({
             )}
 
             {preview.step_proposals.map((proposal) => {
-              const original = currentSteps.find((s) => s.id === proposal.step_id);
+              const original = dbSteps.find((s) => s.id === proposal.step_id);
               return (
                 <SuggestionCard
                   key={proposal.step_id}
@@ -248,7 +300,7 @@ export default function RecipeCleanerReview({
 
         {applyError && <p className="text-sm text-destructive">{applyError}</p>}
 
-        {!loading && !error && preview && !hasNoSuggestions && (
+        {!loading && !error && preview && dbSteps && !hasNoSuggestions && (
           <div className="flex gap-2 pt-2 border-t border-border">
             <button
               type="button"
