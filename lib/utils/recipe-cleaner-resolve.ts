@@ -27,10 +27,7 @@ export function resolveCleanedSteps(
     id: crypto.randomUUID(),
     step_number: 0,
     sort_order: 0,
-    title: undefined,
     content: s.content,
-    image_url: undefined,
-    timer_seconds: undefined,
     is_section_header: false,
     ingredient_ids: [],
   });
@@ -44,24 +41,35 @@ export function resolveCleanedSteps(
   for (const step of currentSteps) {
     const proposal = proposalByStepId.get(step.id);
     if (proposal && decisions.acceptedStepProposalIds.has(step.id)) {
+      // Only the first resulting step keeps the original's photo/ingredient tags —
+      // a split has no way to know which of the N new steps they belong to.
+      const original = !step.is_section_header ? step : undefined;
       proposal.suggested.forEach((s, i) => {
-        result.push({
-          id: crypto.randomUUID(),
-          step_number: 0,
-          sort_order: 0,
-          // Gemini is prompted to keep title/content mutually exclusive per
-          // is_section_header, but its output isn't guaranteed to honor that — clamp
-          // here so a malformed response can't produce a step that violates
-          // chk_regular_step_no_title / chk_recipe_step_section_header at save time.
-          title: s.is_section_header ? s.title ?? undefined : undefined,
-          content: s.is_section_header ? undefined : s.content ?? undefined,
-          // Only the first resulting step keeps the original's photo/ingredient tags —
-          // a split has no way to know which of the N new steps the photo belongs to.
-          image_url: i === 0 ? step.image_url : undefined,
-          timer_seconds: s.timer_seconds ?? undefined,
-          is_section_header: s.is_section_header,
-          ingredient_ids: i === 0 ? step.ingredient_ids : [],
-        });
+        // Gemini is prompted to keep title/content mutually exclusive per
+        // is_section_header, but its output isn't guaranteed to honor that.
+        // Building a genuinely different object shape per branch (rather than one
+        // object with conditional field values) makes a mixed result impossible
+        // regardless of what Gemini returned.
+        result.push(
+          s.is_section_header
+            ? {
+                id: crypto.randomUUID(),
+                step_number: 0,
+                sort_order: 0,
+                is_section_header: true,
+                title: s.title ?? "",
+              }
+            : {
+                id: crypto.randomUUID(),
+                step_number: 0,
+                sort_order: 0,
+                is_section_header: false,
+                content: s.content ?? "",
+                image_url: i === 0 ? original?.image_url : undefined,
+                timer_seconds: s.timer_seconds ?? undefined,
+                ingredient_ids: i === 0 ? original?.ingredient_ids ?? [] : [],
+              }
+        );
       });
     } else {
       result.push(step);

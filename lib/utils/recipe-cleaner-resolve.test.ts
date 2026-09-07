@@ -3,7 +3,16 @@ import { resolveCleanedSteps } from "./recipe-cleaner-resolve";
 import type { RecipeCleanStepProposal, RecipeCleanNewStepSuggestion } from "@/lib/edge-functions";
 import type { StepItem } from "@/lib/validations/recipe.schema";
 
-const baseSteps: StepItem[] = [
+type StepContentItem = Extract<StepItem, { is_section_header: false }>;
+
+// None of these fixtures/results are section headers — this just narrows the union
+// type so tests can assert on .content/.image_url without a guard on every access.
+function asContent(s: StepItem): StepContentItem {
+  if (s.is_section_header) throw new Error("expected a content step, got a section header");
+  return s;
+}
+
+const baseSteps: StepContentItem[] = [
   { id: "s1", step_number: 1, content: "Laver et couper les légumes.", sort_order: 0, is_section_header: false, ingredient_ids: [] },
   { id: "s2", step_number: 2, content: "Faire chauffer l'huile.", sort_order: 1, is_section_header: false, ingredient_ids: [] },
   { id: "s3", step_number: 3, content: "Ajouter le poulet.", sort_order: 2, is_section_header: false, ingredient_ids: [] },
@@ -37,9 +46,9 @@ describe("resolveCleanedSteps", () => {
     });
 
     expect(result).toHaveLength(3);
-    expect(result[0].content).toBe("Laver les légumes.");
+    expect(asContent(result[0]).content).toBe("Laver les légumes.");
     expect(result[0].id).not.toBe("s1");
-    expect(result[0].image_url).toBe("https://example.com/s1.jpg");
+    expect(asContent(result[0]).image_url).toBe("https://example.com/s1.jpg");
   });
 
   it("splits one step into two when a split proposal is accepted, keeping the photo on the first", () => {
@@ -66,12 +75,12 @@ describe("resolveCleanedSteps", () => {
 
     expect(result).toHaveLength(4);
     expect(result.map((s) => s.step_number)).toEqual([1, 2, 3, 4]);
-    expect(result[0].content).toBe("Laver les légumes.");
-    expect(result[0].image_url).toBe("https://example.com/s1.jpg");
-    expect(result[0].ingredient_ids).toEqual(["ing1", "ing2"]);
-    expect(result[1].content).toBe("Couper les légumes en dés.");
-    expect(result[1].image_url).toBeUndefined();
-    expect(result[1].ingredient_ids).toEqual([]);
+    expect(asContent(result[0]).content).toBe("Laver les légumes.");
+    expect(asContent(result[0]).image_url).toBe("https://example.com/s1.jpg");
+    expect(asContent(result[0]).ingredient_ids).toEqual(["ing1", "ing2"]);
+    expect(asContent(result[1]).content).toBe("Couper les légumes en dés.");
+    expect(asContent(result[1]).image_url).toBeUndefined();
+    expect(asContent(result[1]).ingredient_ids).toEqual([]);
   });
 
   it("inserts an accepted new-step suggestion after the given step", () => {
@@ -84,7 +93,7 @@ describe("resolveCleanedSteps", () => {
     });
 
     expect(result).toHaveLength(4);
-    expect(result[2].content).toBe("Ajouter le piment.");
+    expect(asContent(result[2]).content).toBe("Ajouter le piment.");
     expect(result.map((s) => s.step_number)).toEqual([1, 2, 3, 4]);
   });
 
@@ -97,7 +106,7 @@ describe("resolveCleanedSteps", () => {
       acceptedNewStepIndexes: new Set([0]),
     });
 
-    expect(result[0].content).toBe("Préchauffer le four.");
+    expect(asContent(result[0]).content).toBe("Préchauffer le four.");
     expect(result).toHaveLength(4);
   });
 

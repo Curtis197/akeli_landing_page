@@ -29,13 +29,23 @@ function sanitizeIngredient(ing: any): RecipeFormState["ingredients"][number] {
 }
 
 function sanitizeStep(s: any): RecipeFormState["steps"][number] {
+  if (s.is_section_header) {
+    return {
+      id: s.id,
+      step_number: s.step_number,
+      sort_order: s.sort_order,
+      is_section_header: true,
+      title: s.title ?? "",
+    };
+  }
   return {
-    ...s,
-    title: s.title ?? undefined,
-    content: s.content ?? undefined,
+    id: s.id,
+    step_number: s.step_number,
+    sort_order: s.sort_order,
+    is_section_header: false,
+    content: s.content ?? "",
     image_url: s.image_url ?? undefined,
     timer_seconds: s.timer_seconds ?? undefined,
-    is_section_header: s.is_section_header ?? false,
     ingredient_ids: s.ingredient_ids ?? [],
   };
 }
@@ -159,17 +169,26 @@ export default function EditRecipePage() {
           })),
         steps: ((data as any).recipe_step ?? [])
           .sort((a: any, b: any) => a.sort_order - b.sort_order)
-          .map((s: any) => ({
-            id: s.id,
-            step_number: s.step_number ?? 1,
-            title: s.title ?? undefined,
-            content: s.content ?? undefined,
-            image_url: s.image_url ?? undefined,
-            timer_seconds: s.timer_seconds ?? undefined,
-            sort_order: s.sort_order,
-            is_section_header: s.is_section_header ?? false,
-            ingredient_ids: s.ingredient_ids ?? [],
-          })),
+          .map((s: any) =>
+            s.is_section_header
+              ? {
+                  id: s.id,
+                  step_number: s.step_number ?? 1,
+                  sort_order: s.sort_order,
+                  is_section_header: true as const,
+                  title: s.title ?? "",
+                }
+              : {
+                  id: s.id,
+                  step_number: s.step_number ?? 1,
+                  sort_order: s.sort_order,
+                  is_section_header: false as const,
+                  content: s.content ?? "",
+                  image_url: s.image_url ?? undefined,
+                  timer_seconds: s.timer_seconds ?? undefined,
+                  ingredient_ids: s.ingredient_ids ?? [],
+                }
+          ),
         cover_image_url: data.cover_image_url ?? "",
         gallery_urls: ((data as any).recipe_image ?? [])
           .sort((a: any, b: any) => a.sort_order - b.sort_order)

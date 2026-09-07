@@ -5,15 +5,17 @@ import { useState, useRef } from "react";
 import { uploadImage } from "@/lib/utils/upload-image";
 import type { RecipeFormState } from "./RecipeWizard";
 
-type StepItem = RecipeFormState["steps"][number];
+// StepCard only ever renders a regular step — SectionHeaderRow handles headers —
+// so it's narrowed to that branch of the step union rather than the full type.
+type StepContentItem = Extract<RecipeFormState["steps"][number], { is_section_header: false }>;
 type IngredientItem = RecipeFormState["ingredients"][number];
 
 interface StepCardProps {
-  step: StepItem;
+  step: StepContentItem;
   stepNumber: number;
   availableIngredients: IngredientItem[];
   draftId: string | null;
-  onChange: (updated: StepItem) => void;
+  onChange: (updated: StepContentItem) => void;
   onRemove: () => void;
   dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
   onMoveUp?: () => void;
@@ -36,7 +38,7 @@ export default function StepCard({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const update = (patch: Partial<StepItem>) =>
+  const update = (patch: Partial<StepContentItem>) =>
     onChange({ ...step, ...patch });
 
   const handleImageUpload = async (file: File) => {
@@ -137,20 +139,6 @@ export default function StepCard({
       {/* Expanded editor */}
       {expanded && (
         <div className="border-t border-border p-4 space-y-4 bg-secondary/10">
-          {/* Title */}
-          <div>
-            <label className="text-xs font-medium text-foreground">
-              Titre (optionnel)
-            </label>
-            <input
-              type="text"
-              value={step.title ?? ""}
-              onChange={(e) => update({ title: e.target.value })}
-              placeholder="Ex : Faire revenir les oignons"
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-
           {/* Content */}
           <div>
             <label className="text-xs font-medium text-foreground">

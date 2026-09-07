@@ -55,22 +55,37 @@ export const step2Schema = z.object({
     ),
 });
 
-export const stepItemSchema = z.object({
+// A step is either a section header (title only, no instructions) or a regular
+// step (instructions only, no title) — never both. This mirrors recipe_step's DB
+// check constraint exactly, so the invalid state (a title on a regular step) is
+// unrepresentable here instead of only being caught by a runtime refine.
+const stepSectionHeaderSchema = z.object({
   id: z.string(),
   step_number: z.number().int(),
-  title: z.string().optional(),
+  sort_order: z.number().int(),
+  is_section_header: z.literal(true),
+  title: z.string(),
+});
+
+const stepContentItemSchema = z.object({
+  id: z.string(),
+  step_number: z.number().int(),
+  sort_order: z.number().int(),
+  is_section_header: z.literal(false),
   content: z.string()
-    .optional()
     .refine(
       (val) => !val || !/(?<!\b(cuisson|four|mijoter|température)\s*.{0,20})\b\d+(?:[\.,]\d+)?\s*(g|kg|ml|l|cl|oz|lb|cup|cups|tasse|tasses|c\.à\.s|c\.à\.c|tbsp|tsp|cuillère)\b/i.test(val),
       { message: "Veuillez ne pas inclure de quantités exactes dans les instructions. Utilisez la section Ingrédients." }
     ),
   image_url: z.string().optional(),
   timer_seconds: z.number().int().min(0).optional(),
-  sort_order: z.number().int(),
-  is_section_header: z.boolean().default(false),
   ingredient_ids: z.array(z.string()).default([]),
 });
+
+export const stepItemSchema = z.discriminatedUnion("is_section_header", [
+  stepSectionHeaderSchema,
+  stepContentItemSchema,
+]);
 
 export const step3Schema = z.object({
   steps: z
@@ -92,13 +107,6 @@ export const step3Schema = z.object({
           .filter((i) => i.is_section_header)
           .every((i) => !!i.title?.trim()),
       { message: "Chaque section doit avoir un titre" }
-    )
-    .refine(
-      (items) =>
-        items
-          .filter((i) => !i.is_section_header)
-          .every((i) => !i.title?.trim()),
-      { message: "Une étape normale ne doit pas avoir de titre de section" }
     ),
 });
 

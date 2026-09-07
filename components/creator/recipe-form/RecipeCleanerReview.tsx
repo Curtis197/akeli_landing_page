@@ -159,16 +159,29 @@ export default function RecipeCleanerReview({
       const result = await applyRecipeClean(recipeId, {
         title: finalTitle,
         description: finalDescription || null,
-        steps: finalSteps.map((s) => ({
-          step_number: s.step_number,
-          sort_order: s.sort_order,
-          title: s.title ?? null,
-          content: s.content ?? null,
-          image_url: s.image_url ?? null,
-          timer_seconds: s.timer_seconds ?? null,
-          is_section_header: s.is_section_header,
-          ingredient_ids: s.ingredient_ids ?? [],
-        })),
+        steps: finalSteps.map((s) =>
+          s.is_section_header
+            ? {
+                step_number: s.step_number,
+                sort_order: s.sort_order,
+                title: s.title ?? null,
+                content: null,
+                image_url: null,
+                timer_seconds: null,
+                is_section_header: true,
+                ingredient_ids: [],
+              }
+            : {
+                step_number: s.step_number,
+                sort_order: s.sort_order,
+                title: null,
+                content: s.content ?? null,
+                image_url: s.image_url ?? null,
+                timer_seconds: s.timer_seconds ?? null,
+                is_section_header: false,
+                ingredient_ids: s.ingredient_ids,
+              }
+        ),
       });
 
       if (result.title_description_error) {
@@ -259,7 +272,7 @@ export default function RecipeCleanerReview({
                 <SuggestionCard
                   key={proposal.step_id}
                   label={proposal.change_type === "split" ? "Étape (à diviser)" : "Étape"}
-                  original={original?.content ?? ""}
+                  original={original && !original.is_section_header ? original.content : ""}
                   suggested={proposal.suggested.map((s) => s.content).filter(Boolean).join(" / ")}
                   reason={proposal.reason}
                   accepted={acceptedStepProposalIds.has(proposal.step_id)}

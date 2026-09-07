@@ -204,16 +204,29 @@ export default function RecipeWizard({
       if (!data.steps.length) return;
       const { error } = await supabase.rpc("replace_recipe_steps", {
         p_recipe_id: id,
-        p_steps: data.steps.map((step) => ({
-          step_number: step.step_number,
-          sort_order: step.sort_order,
-          title: step.title || null,
-          content: step.is_section_header ? null : step.content || null,
-          image_url: step.image_url || null,
-          timer_seconds: step.timer_seconds ?? null,
-          is_section_header: step.is_section_header,
-          ingredient_ids: step.ingredient_ids ?? [],
-        })),
+        p_steps: data.steps.map((step) =>
+          step.is_section_header
+            ? {
+                step_number: step.step_number,
+                sort_order: step.sort_order,
+                title: step.title || null,
+                content: null,
+                image_url: null,
+                timer_seconds: null,
+                is_section_header: true,
+                ingredient_ids: [],
+              }
+            : {
+                step_number: step.step_number,
+                sort_order: step.sort_order,
+                title: null,
+                content: step.content || null,
+                image_url: step.image_url || null,
+                timer_seconds: step.timer_seconds ?? null,
+                is_section_header: false,
+                ingredient_ids: step.ingredient_ids,
+              }
+        ),
       });
       if (error) throw error;
     },

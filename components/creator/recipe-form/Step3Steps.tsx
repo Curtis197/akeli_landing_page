@@ -105,10 +105,7 @@ export default function Step3Steps({
     const newStep: StepItem = {
       id: crypto.randomUUID(),
       step_number: steps.filter((s) => !s.is_section_header).length + 1,
-      title: undefined,
       content: "",
-      image_url: undefined,
-      timer_seconds: undefined,
       sort_order: steps.length,
       is_section_header: false,
       ingredient_ids: [],
@@ -121,10 +118,8 @@ export default function Step3Steps({
       id: crypto.randomUUID(),
       step_number: 0,
       title: "Nouvelle section",
-      content: undefined,
       sort_order: steps.length,
       is_section_header: true,
-      ingredient_ids: [],
     };
     updateSteps([...steps, section]);
   };
@@ -286,11 +281,11 @@ export default function Step3Steps({
 // ─── Sortable wrapper ─────────────────────────────────────────────────────────
 
 function SortableStepCard(props: {
-  step: RecipeFormState["steps"][number];
+  step: Extract<RecipeFormState["steps"][number], { is_section_header: false }>;
   stepNumber: number;
   availableIngredients: RecipeFormState["ingredients"];
   draftId: string | null;
-  onChange: (s: RecipeFormState["steps"][number]) => void;
+  onChange: (s: Extract<RecipeFormState["steps"][number], { is_section_header: false }>) => void;
   onRemove: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
