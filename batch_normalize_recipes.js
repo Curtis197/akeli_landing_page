@@ -190,6 +190,20 @@ async function cleanRecipe(recipe, index, total) {
     }
 
     const applyData = await applyResponse.json();
+
+    if (applyData.title_description_error) {
+      console.error(`${prefix} PARTIAL: "${recipe.title}" in ${duration}s. Steps applied (${finalSteps.length}), but title/description update failed: ${applyData.title_description_error}`);
+      return {
+        id: recipe.id,
+        title: recipe.title,
+        success: false,
+        duration_sec: parseFloat(duration),
+        evaluation: preview.evaluation,
+        steps_count: finalSteps.length,
+        error: `partial failure: steps applied but title/description update failed (${applyData.title_description_error})`
+      };
+    }
+
     console.log(`${prefix} SUCCESS: "${recipe.title}" in ${duration}s. Applied ${finalSteps.length} steps.`);
     return {
       id: recipe.id,
