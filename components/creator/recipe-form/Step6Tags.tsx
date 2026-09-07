@@ -29,6 +29,7 @@ export default function Step6Tags({
   const [availableTags, setAvailableTags] = useState<
     { id: string; name_fr: string }[]
   >([]);
+  const [allergenLabels, setAllergenLabels] = useState<Record<string, string>>({});
 
   useEffect(() => {
     supabase
@@ -37,6 +38,19 @@ export default function Step6Tags({
       .order("name_fr")
       .then(({ data }) => {
         if (data) setAvailableTags(data);
+      });
+  }, [supabase]);
+
+  useEffect(() => {
+    supabase
+      .from("allergen")
+      .select("slug, label_fr")
+      .then(({ data }) => {
+        if (data) {
+          setAllergenLabels(
+            Object.fromEntries(data.map((a: any) => [a.slug, a.label_fr]))
+          );
+        }
       });
   }, [supabase]);
 
@@ -164,7 +178,7 @@ export default function Step6Tags({
                 key={slug}
                 className="px-2 py-1 rounded-full text-xs border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
               >
-                {slug}
+                {allergenLabels[slug] ?? slug}
               </span>
             ))}
           </div>
