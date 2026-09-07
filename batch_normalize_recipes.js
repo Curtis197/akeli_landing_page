@@ -4,9 +4,13 @@ const path = require('path');
 const supabaseUrl = "https://njzqcftjzskwcpforwzf.supabase.co";
 const publishableKey = "sb_publishable_2WUTLXygeO3s1FTvBdydwA_24zE-a6R";
 const cleanerUrl = `${supabaseUrl}/functions/v1/recipe-cleaner`;
-const bypassKey = process.env.CLEANER_BYPASS_KEY;
-if (!bypassKey) {
-  console.error("Missing CLEANER_BYPASS_KEY environment variable. Set it before running this script.");
+// recipe-cleaner enforces per-creator ownership with no service-role bypass, so this
+// script can only clean recipes owned by whichever creator this JWT belongs to — it is
+// NOT a way to bulk-clean recipes across all creators. Get a JWT by logging into the
+// app as that creator and reading the Supabase auth session token.
+const creatorJwt = process.env.CREATOR_JWT;
+if (!creatorJwt) {
+  console.error("Missing CREATOR_JWT environment variable. Set it to a logged-in creator's session token before running this script.");
   process.exit(1);
 }
 
@@ -26,7 +30,7 @@ console.log(`Concurrency: ${concurrencyLimit} workers`);
 console.log(`==================================================\n`);
 
 async function fetchAllRecipes() {
-  const url = `${supabaseUrl}/rest/v1/recipe?select=id,title`;
+  const url = `${supabaseUrl}/rest/v1/recipe?select=id,title,description`;
   const response = await fetch(url, {
     method: 'GET',
     headers: {
@@ -42,63 +46,164 @@ async function fetchAllRecipes() {
   return response.json();
 }
 
+async function fetchRecipeSteps(recipeId) {
+  const url = `${supabaseUrl}/rest/v1/recipe_step?recipe_id=eq.${recipeId}&select=id,step_number,sort_order,title,content,image_url,timer_seconds,is_section_header,ingredient_ids&order=sort_order.asc`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'apikey': publishableKey,
+      'Authorization': `Bearer ${publishableKey}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch steps for recipe ${recipeId}: status ${response.status} - ${await response.text()}`);
+  }
+
+  return response.json();
+}
+
+// Mirrors lib/utils/recipe-cleaner-resolve.ts's "accept everything" case: splices every
+// step_proposal's suggested replacement and every new_step_suggestion into the current
+// step list, then renumbers. Kept as a standalone plain-JS copy since this script runs
+// outside the Next.js/TypeScript build.
+function resolveAllAccepted(currentSteps, stepProposals, newStepSuggestions) {
+  const proposalByStepId = new Map(stepProposals.map((p) => [p.step_id, p]));
+  const newStepsAfter = new Map();
+  for (const suggestion of newStepSuggestions) {
+    const key = suggestion.after_step_id;
+    const list = newStepsAfter.get(key) || [];
+    list.push(suggestion);
+    newStepsAfter.set(key, list);
+  }
+
+  // Only the first resulting step of an accepted proposal keeps the original's photo
+  // and ingredient tags (mirrors lib/utils/recipe-cleaner-resolve.ts's behavior) —
+  // untouched steps keep theirs unconditionally via step.image_url/ingredient_ids below.
+  const toStep = (s, i, original) => ({
+    step_number: 0,
+    sort_order: 0,
+    title: s.title ?? null,
+    content: s.content ?? null,
+    image_url: i === 0 ? (original.image_url ?? null) : null,
+    timer_seconds: s.timer_seconds ?? null,
+    is_section_header: s.is_section_header,
+    ingredient_ids: i === 0 ? (original.ingredient_ids ?? []) : []
+  });
+
+  const newStepFromSuggestion = (s) => ({
+    step_number: 0, sort_order: 0, title: null, content: s.content, image_url: null, timer_seconds: null, is_section_header: false, ingredient_ids: []
+  });
+
+  const result = [];
+  for (const suggestion of newStepsAfter.get(null) || []) {
+    result.push(newStepFromSuggestion(suggestion));
+  }
+  for (const step of currentSteps) {
+    const proposal = proposalByStepId.get(step.id);
+    if (proposal) {
+      result.push(...proposal.suggested.map((s, i) => toStep(s, i, step)));
+    } else {
+      result.push({
+        step_number: step.step_number,
+        sort_order: step.sort_order,
+        title: step.title,
+        content: step.content,
+        image_url: step.image_url ?? null,
+        timer_seconds: step.timer_seconds,
+        is_section_header: step.is_section_header,
+        ingredient_ids: step.ingredient_ids ?? []
+      });
+    }
+    for (const suggestion of newStepsAfter.get(step.id) || []) {
+      result.push(newStepFromSuggestion(suggestion));
+    }
+  }
+
+  let stepNum = 0;
+  return result.map((s, i) => {
+    if (!s.is_section_header) stepNum++;
+    return { ...s, sort_order: i, step_number: s.is_section_header ? 0 : stepNum };
+  });
+}
+
 async function cleanRecipe(recipe, index, total) {
   const prefix = `[${index}/${total}]`;
   console.log(`${prefix} Started: "${recipe.title}" (${recipe.id})`);
-  
-  const payload = {
-    recipe_id: recipe.id,
-    commit: commit
-  };
 
   const startTime = Date.now();
   try {
-    const response = await fetch(cleanerUrl, {
+    const previewResponse = await fetch(cleanerUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': publishableKey,
-        'Authorization': `Bearer ${publishableKey}`,
-        'x-bypass-key': bypassKey
+        'Authorization': `Bearer ${creatorJwt}`
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ recipe_id: recipe.id, mode: 'preview' })
+    });
+
+    if (!previewResponse.ok) {
+      const errText = await previewResponse.text();
+      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.error(`${prefix} FAILED (preview): "${recipe.title}" in ${duration}s - Status ${previewResponse.status}: ${errText}`);
+      return { id: recipe.id, title: recipe.title, success: false, duration_sec: parseFloat(duration), error: `preview status ${previewResponse.status}: ${errText}` };
+    }
+
+    const preview = await previewResponse.json();
+
+    if (!commit) {
+      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.log(`${prefix} DRY RUN: "${recipe.title}" in ${duration}s. ${preview.step_proposals.length} step proposal(s), ${preview.new_step_suggestions.length} new step(s).`);
+      return {
+        id: recipe.id,
+        title: recipe.title,
+        success: true,
+        duration_sec: parseFloat(duration),
+        evaluation: preview.evaluation,
+        step_proposals: preview.step_proposals.length,
+        new_step_suggestions: preview.new_step_suggestions.length
+      };
+    }
+
+    const currentSteps = await fetchRecipeSteps(recipe.id);
+    const finalSteps = resolveAllAccepted(currentSteps, preview.step_proposals, preview.new_step_suggestions);
+    const finalTitle = preview.title_suggestion ? preview.title_suggestion.suggested : recipe.title;
+    const finalDescription = preview.description_suggestion ? preview.description_suggestion.suggested : (recipe.description ?? null);
+
+    const applyResponse = await fetch(cleanerUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': publishableKey,
+        'Authorization': `Bearer ${creatorJwt}`
+      },
+      body: JSON.stringify({ recipe_id: recipe.id, mode: 'apply', title: finalTitle, description: finalDescription, steps: finalSteps })
     });
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error(`${prefix} FAILED: "${recipe.title}" in ${duration}s - Status ${response.status}: ${errText}`);
-      return {
-        id: recipe.id,
-        title: recipe.title,
-        success: false,
-        duration_sec: parseFloat(duration),
-        error: `Status ${response.status}: ${errText}`
-      };
+    if (!applyResponse.ok) {
+      const errText = await applyResponse.text();
+      console.error(`${prefix} FAILED (apply): "${recipe.title}" in ${duration}s - Status ${applyResponse.status}: ${errText}`);
+      return { id: recipe.id, title: recipe.title, success: false, duration_sec: parseFloat(duration), error: `apply status ${applyResponse.status}: ${errText}` };
     }
 
-    const data = await response.json();
-    console.log(`${prefix} SUCCESS: "${recipe.title}" in ${duration}s. Generated ${data.steps ? data.steps.length : 0} steps.`);
+    const applyData = await applyResponse.json();
+    console.log(`${prefix} SUCCESS: "${recipe.title}" in ${duration}s. Applied ${finalSteps.length} steps.`);
     return {
       id: recipe.id,
       title: recipe.title,
       success: true,
       duration_sec: parseFloat(duration),
-      evaluation: data.evaluation,
-      steps_count: data.steps ? data.steps.length : 0,
-      commit: data.commit
+      evaluation: preview.evaluation,
+      steps_count: finalSteps.length,
+      applied: applyData.applied
     };
   } catch (err) {
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
     console.error(`${prefix} ERROR: "${recipe.title}" in ${duration}s - Exception: ${err.message}`);
-    return {
-      id: recipe.id,
-      title: recipe.title,
-      success: false,
-      duration_sec: parseFloat(duration),
-      error: err.message
-    };
+    return { id: recipe.id, title: recipe.title, success: false, duration_sec: parseFloat(duration), error: err.message };
   }
 }
 
