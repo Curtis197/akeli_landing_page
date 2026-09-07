@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,12 +8,42 @@ const corsHeaders = {
 
 const GEMINI_MODEL = 'gemini-3.5-flash';
 
-interface CleanRecipeRequest {
-  recipe_id: string;
-  commit?: boolean;
+interface StepRow {
+  id: string;
+  step_number: number;
+  sort_order: number;
+  title: string | null;
+  content: string | null;
+  timer_seconds: number | null;
+  is_section_header: boolean;
 }
 
-// Categorized error so the handler can return a non-sensitive error type to the caller.
+interface ApplyStepInput {
+  step_number: number;
+  sort_order: number;
+  title: string | null;
+  content: string | null;
+  image_url: string | null;
+  timer_seconds: number | null;
+  is_section_header: boolean;
+  ingredient_ids: string[];
+}
+
+interface PreviewRequest {
+  recipe_id: string;
+  mode: 'preview';
+}
+
+interface ApplyRequest {
+  recipe_id: string;
+  mode: 'apply';
+  title: string;
+  description: string | null;
+  steps: ApplyStepInput[];
+}
+
+type CleanerRequest = PreviewRequest | ApplyRequest;
+
 class CleanerError extends Error {
   constructor(public category: string, message: string) {
     super(message);
@@ -39,7 +69,7 @@ async function callGeminiWithRetry(url: string, payload: object, maxRetries = 3)
         await sleep(500 * 2 ** attempt + Math.floor(Math.random() * 250));
         continue;
       }
-      return resp; // non-retryable response — let the caller inspect it
+      return resp;
     } catch (e) {
       lastErr = e instanceof Error ? e.message : String(e);
       if (attempt < maxRetries) {
@@ -51,13 +81,285 @@ async function callGeminiWithRetry(url: string, payload: object, maxRetries = 3)
   throw new CleanerError('gemini_failed', `Gemini unreachable after ${maxRetries + 1} attempts: ${lastErr}`);
 }
 
+function buildPrompt(params: {
+  language: string;
+  title: string;
+  description: string | null;
+  ingredientsFormatted: string;
+  stepsFormatted: string;
+}): string {
+  const { language, title, description, ingredientsFormatted, stepsFormatted } = params;
+  return `Tu es un assistant de correction et de standardisation pour des créateurs de recettes culinaires africaines sur Akeli.
+
+RÈGLES ABSOLUES (s'appliquent à TOUS les champs : titre, description, étapes) :
+- Ne jamais commenter la qualité culinaire ou nutritionnelle
+- Ne jamais suggérer de modifier les ingrédients ou les quantités pour des raisons de santé
+- Ne jamais juger les choix culturels ou traditionnels
+- Répondre dans la langue du texte fourni (code langue : ${language})
+
+TITRE ET DESCRIPTION — correction légère UNIQUEMENT :
+- Corriger uniquement les fautes d'orthographe et de grammaire évidentes
+- Ne jamais reformuler pour le style, ne jamais "améliorer" le ton — seulement corriger les erreurs
+- Si aucune erreur, ne renvoie pas de suggestion pour ce champ (null)
+
+ÉTAPES — restructuration :
+1. Une action par étape : diviser les étapes complexes en étapes séquentielles à action unique
+2. Chaque ingrédient de la liste doit être utilisé dans au moins une étape ; s'il en manque, propose une nouvelle étape via new_step_suggestions plutôt que de l'ignorer
+3. Ne jamais inclure de quantités précises (ex: "200g", "2 c.à.s") dans le texte d'une étape — les quantités vivent uniquement dans la liste d'ingrédients, jamais dans les instructions
+4. Ne renvoie une entrée dans step_proposals QUE pour les étapes qui ont réellement besoin d'un changement (reformulation ou découpage) — ignore les étapes déjà correctes
+5. Estime un minuteur ("timer_seconds") pour les étapes de cuisson/attente actives si pertinent, sinon null
+
+Titre : "${title}"
+Description : "${description ?? '(aucune)'}"
+
+Liste d'ingrédients :
+${ingredientsFormatted}
+
+Étapes actuelles (avec leur identifiant) :
+${stepsFormatted}
+
+Réponds avec un objet JSON strict (et rien d'autre) au format suivant :
+{
+  "title_suggestion": { "suggested": "string", "reason": "string" } | null,
+  "description_suggestion": { "suggested": "string", "reason": "string" } | null,
+  "step_proposals": [
+    {
+      "step_id": "identifiant de l'étape existante",
+      "change_type": "reworded" | "split",
+      "suggested": [
+        { "title": "string ou null", "content": "string ou null", "timer_seconds": number | null, "is_section_header": boolean }
+      ],
+      "reason": "string ou null"
+    }
+  ],
+  "new_step_suggestions": [
+    { "after_step_id": "identifiant ou null pour insérer au début", "content": "string", "reason": "string" }
+  ],
+  "evaluation": {
+    "ordering_issues": "string ou null",
+    "general_observations": "string ou null"
+  }
+}`;
+}
+
+function validatePreviewResult(result: unknown): result is {
+  title_suggestion: { suggested: string; reason: string } | null;
+  description_suggestion: { suggested: string; reason: string } | null;
+  step_proposals: Array<{
+    step_id: string;
+    change_type: 'reworded' | 'split';
+    suggested: Array<{ title: string | null; content: string | null; timer_seconds: number | null; is_section_header: boolean }>;
+    reason: string | null;
+  }>;
+  new_step_suggestions: Array<{ after_step_id: string | null; content: string; reason: string }>;
+  evaluation: { ordering_issues: string | null; general_observations: string | null };
+} {
+  if (!result || typeof result !== 'object') return false;
+  const r = result as Record<string, unknown>;
+  if (!('title_suggestion' in r) || !('description_suggestion' in r)) return false;
+  if (!Array.isArray(r.step_proposals) || !Array.isArray(r.new_step_suggestions)) return false;
+  if (!r.evaluation || typeof r.evaluation !== 'object') return false;
+  return true;
+}
+
+async function handlePreview(
+  adminClient: SupabaseClient,
+  creatorId: string,
+  recipeId: string
+): Promise<Response> {
+  // Rate-limit: 200 calls/creator/24h. Only preview calls Gemini, so only preview
+  // is gated — apply is a pure DB write and costs nothing to allow freely.
+  const { data: allowed, error: rlError } = await adminClient.rpc(
+    'check_and_record_cleaner_call', { p_creator_id: creatorId }
+  );
+  if (rlError) {
+    console.error('recipe-cleaner: rate-limit RPC error:', rlError.message);
+    throw new CleanerError('internal', 'Rate-limit check failed');
+  }
+  if (!allowed) {
+    return new Response(JSON.stringify({ error: 'rate_limit_exceeded' }), {
+      status: 429,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '3600' }
+    });
+  }
+
+  const { data: recipe, error: recipeError } = await adminClient
+    .from('recipe')
+    .select(`
+      id, title, description, language,
+      recipe_ingredient (
+        id, quantity, unit, is_optional, is_section_header, title,
+        ingredient:ingredient_id (name_fr, name_en)
+      ),
+      recipe_step (
+        id, step_number, sort_order, title, content, timer_seconds, is_section_header
+      )
+    `)
+    .eq('id', recipeId)
+    .single();
+
+  if (recipeError || !recipe) {
+    return new Response(JSON.stringify({ error: 'Recipe not found' }), {
+      status: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  const ingredients = recipe.recipe_ingredient || [];
+  const steps = ((recipe.recipe_step ?? []) as StepRow[]).sort((a, b) => a.sort_order - b.sort_order);
+
+  const ingredientsFormatted = ingredients.map((ri: any) => {
+    if (ri.is_section_header) return `[SECTION] ${ri.title}`;
+    const name = ri.ingredient?.name_fr || ri.ingredient?.name_en || 'Unknown';
+    const quantityStr = ri.quantity ? `${ri.quantity} ` : '';
+    const unitStr = ri.unit ? `${ri.unit} ` : '';
+    return `- ${quantityStr}${unitStr}${name}${ri.is_optional ? ' (facultatif)' : ''}`;
+  }).join('\n');
+
+  const stepsFormatted = steps.map((step) => {
+    if (step.is_section_header) return `[${step.id}] (Section) ${step.title}`;
+    const timerStr = step.timer_seconds ? ` [Timer: ${step.timer_seconds}s]` : '';
+    return `[${step.id}] ${step.content}${timerStr}`;
+  }).join('\n');
+
+  const prompt = buildPrompt({
+    language: recipe.language || 'fr',
+    title: recipe.title,
+    description: recipe.description,
+    ingredientsFormatted,
+    stepsFormatted
+  });
+
+  const geminiApiKey = Deno.env.get('GEMINI_API_KEY')!;
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiApiKey}`;
+
+  const geminiResponse = await callGeminiWithRetry(geminiUrl, {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.1,
+      maxOutputTokens: 16384,
+      responseMimeType: 'application/json'
+    }
+  });
+
+  if (!geminiResponse.ok) {
+    const errText = await geminiResponse.text();
+    console.error(`recipe-cleaner: Gemini API ${geminiResponse.status} ${geminiResponse.statusText} - ${errText}`);
+    throw new CleanerError('gemini_failed', `Gemini API returned ${geminiResponse.status}`);
+  }
+
+  const geminiData = await geminiResponse.json();
+  const candidate = geminiData.candidates?.[0];
+  const finishReason = candidate?.finishReason;
+  if (finishReason && finishReason !== 'STOP') {
+    console.error(`recipe-cleaner: Gemini finishReason=${finishReason}`);
+    throw new CleanerError('invalid_ai_output', `Gemini did not complete cleanly (${finishReason})`);
+  }
+
+  const rawText = candidate?.content?.parts?.[0]?.text ?? '';
+  let result: unknown;
+  try {
+    const cleaned = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    result = JSON.parse(cleaned);
+  } catch {
+    console.error('recipe-cleaner: unparseable Gemini output:', rawText.slice(0, 500));
+    throw new CleanerError('invalid_ai_output', 'Gemini returned unparseable output');
+  }
+
+  if (!validatePreviewResult(result)) {
+    throw new CleanerError('invalid_ai_output', 'Gemini output is missing required fields');
+  }
+
+  return new Response(JSON.stringify(result), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+async function handleApply(
+  adminClient: SupabaseClient,
+  authHeader: string,
+  recipeId: string,
+  title: string,
+  description: string | null,
+  steps: ApplyStepInput[]
+): Promise<Response> {
+  if (!Array.isArray(steps) || steps.length === 0) {
+    return new Response(JSON.stringify({ error: 'steps must be a non-empty array' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Capture the recipe's existing step-translation locales BEFORE the replace wipes
+  // them (recipe_step_translation.step_id CASCADEs when the old steps are deleted).
+  const { data: existingSteps } = await adminClient
+    .from('recipe_step')
+    .select('id')
+    .eq('recipe_id', recipeId);
+  const existingStepIds = (existingSteps ?? []).map((s: { id: string }) => s.id);
+  let priorLocales: string[] = [];
+  if (existingStepIds.length > 0) {
+    const { data: priorRows } = await adminClient
+      .from('recipe_step_translation')
+      .select('locale')
+      .in('step_id', existingStepIds);
+    priorLocales = [...new Set((priorRows ?? []).map((r: { locale: string }) => r.locale))];
+  }
+
+  const { data: stepsCount, error: rpcError } = await adminClient.rpc('replace_recipe_steps', {
+    p_recipe_id: recipeId,
+    p_steps: steps
+  });
+
+  if (rpcError) {
+    console.error('recipe-cleaner: replace_recipe_steps failed:', rpcError.message);
+    throw new CleanerError('db_failed', 'Failed to persist cleaned steps');
+  }
+
+  const { data: recipeRow, error: recipeFetchError } = await adminClient
+    .from('recipe')
+    .select('language')
+    .eq('id', recipeId)
+    .single();
+
+  const { error: updateError } = await adminClient
+    .from('recipe')
+    .update({ title, description })
+    .eq('id', recipeId);
+
+  if (priorLocales.length > 0 && recipeRow && !recipeFetchError) {
+    const trigger = fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/translate-recipe-steps`, {
+      method: 'POST',
+      headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipe_id: recipeId, source_locale: recipeRow.language, target_locales: priorLocales })
+    }).catch((e) => console.error('recipe-cleaner: step re-translation trigger failed:', e));
+    const ert = (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } }).EdgeRuntime;
+    if (ert?.waitUntil) ert.waitUntil(trigger); else await trigger;
+  }
+
+  if (updateError) {
+    console.error('recipe-cleaner: title/description update failed:', updateError.message);
+    return new Response(JSON.stringify({
+      applied: true,
+      steps_count: stepsCount,
+      title_description_error: 'steps_saved_title_description_failed'
+    }), {
+      status: 207,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  return new Response(JSON.stringify({ applied: true, steps_count: stepsCount }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Creator-only: require an authenticated creator. No bypass key, no admin backdoor.
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -66,15 +368,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Initialize Supabase Clients
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    // Client using service role for db operations
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Verify the caller's session and resolve their creator account.
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } }
     });
@@ -101,240 +399,40 @@ Deno.serve(async (req) => {
     }
     const creatorId = creator.id;
 
-    // Parse request body
-    const body: CleanRecipeRequest = await req.json();
-    const { recipe_id, commit = false } = body;
-
-
-    if (!recipe_id) {
+    const body: CleanerRequest = await req.json();
+    if (!body.recipe_id) {
       return new Response(JSON.stringify({ error: 'recipe_id is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // Rate-limit: 200 calls/creator/24h. Checked before the Gemini call so we
-    // don't burn tokens on callers over quota.
-    const { data: allowed, error: rlError } = await adminClient.rpc(
-      'check_and_record_cleaner_call', { p_creator_id: creatorId }
-    );
-    if (rlError) {
-      console.error('recipe-cleaner: rate-limit RPC error:', rlError.message);
-      throw new CleanerError('internal', 'Rate-limit check failed');
-    }
-    if (!allowed) {
-      return new Response(JSON.stringify({ error: 'rate_limit_exceeded' }), {
-        status: 429,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '3600' }
-      });
-    }
-
-    // Fetch the recipe with ingredients and current steps
-    const { data: recipe, error: recipeError } = await adminClient
+    const { data: ownedRecipe, error: ownedRecipeError } = await adminClient
       .from('recipe')
-      .select(`
-        id,
-        title,
-        description,
-        creator_id,
-        language,
-        recipe_ingredient (
-          id, quantity, unit, is_optional, is_section_header, title,
-          ingredient:ingredient_id (name_fr, name_en)
-        ),
-        recipe_step (
-          id, step_number, sort_order, title, content, timer_seconds, is_section_header
-        )
-      `)
-      .eq('id', recipe_id)
+      .select('id, creator_id')
+      .eq('id', body.recipe_id)
       .single();
 
-    if (recipeError || !recipe) {
+    if (ownedRecipeError || !ownedRecipe) {
       return new Response(JSON.stringify({ error: 'Recipe not found' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
-
-    // Ownership: a creator may only clean their own recipes.
-    if (recipe.creator_id !== creatorId) {
+    if (ownedRecipe.creator_id !== creatorId) {
       return new Response(JSON.stringify({ error: 'Unauthorized: this recipe does not belong to you' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // Sort existing ingredients and steps
-    const ingredients = recipe.recipe_ingredient || [];
-    const currentSteps = (recipe.recipe_step || []).sort((a, b) => a.sort_order - b.sort_order);
-
-    // Format list of ingredients for the prompt
-    const ingredientsFormatted = ingredients.map(ri => {
-      if (ri.is_section_header) {
-        return `[SECTION HEADER] ${ri.title}`;
-      }
-      const name = ri.ingredient?.name_fr || ri.ingredient?.name_en || 'Unknown';
-      const quantityStr = ri.quantity ? `${ri.quantity} ` : '';
-      const unitStr = ri.unit ? `${ri.unit} ` : '';
-      return `- ${quantityStr}${unitStr}${name}${ri.is_optional ? ' (facultatif)' : ''}`;
-    }).join('\n');
-
-    // Format current steps for the prompt
-    const stepsFormatted = currentSteps.map(step => {
-      if (step.is_section_header) {
-        return `Step ${step.step_number} (Section Header): ${step.title}`;
-      }
-      const timerStr = step.timer_seconds ? ` [Timer: ${step.timer_seconds}s]` : '';
-      return `Step ${step.step_number}: ${step.content}${timerStr}`;
-    }).join('\n');
-
-    // Construct Gemini Prompt
-    const prompt = `You are an expert culinary R&D assistant for Akeli, an African health & nutrition app.
-Your role is to clean, restructure, and improve the instructions (steps) of a given recipe.
-
-You must strictly enforce the following normalization conventions:
-1. One action per step: Split complex, multi-sentence steps into sequential, single-action steps. Each step must represent exactly ONE instruction (e.g., "Laver les légumes." and then "Couper les légumes en dés." rather than "Laver et couper les légumes en dés.").
-2. Use all ingredients: Every single ingredient listed in the recipe's ingredient list MUST be explicitly used or addressed in the steps. Do not omit any spices, oils, main proteins, or vegetables.
-3. Clear and simple language: Rewrite the steps in clear, direct, and simple French. Keep sentences short and punchy.
-4. Database constraints:
-   - For section headers: "is_section_header" must be true, "title" must be a string (e.g., "Pour la sauce"), and "content" must be null.
-   - For normal steps: "is_section_header" must be false, "title" must be null, and "content" must be a non-empty string.
-   - Each step must have a unique, sequential "step_number" starting from 1.
-   - Each step must have a unique, sequential "sort_order" starting from 0.
-   - Estimate and provide a "timer_seconds" (integer) for active cooking or waiting steps if relevant (e.g., "laisser mijoter 20 minutes" -> 1200), otherwise set it to null.
-
-Input data:
-Recipe Title: ${recipe.title}
-Recipe Description: ${recipe.description || 'No description provided'}
-
-Ingredients list:
-${ingredientsFormatted}
-
-Current Steps:
-${stepsFormatted}
-
-Return a strict JSON object (and absolutely nothing else, no markdown formatting outside of a JSON code block if needed, but prefer plain JSON) matching this format:
-{
-  "evaluation": {
-    "missing_ingredients": ["list of ingredients that were in the list but missing from current steps"],
-    "ordering_issues": "description of any sequencing/ordering issues found in the original steps",
-    "general_observations": "observations on spelling, grammar, clarity, or complexity"
-  },
-  "steps": [
-    {
-      "step_number": 1,
-      "sort_order": 0,
-      "title": "Optional Title if section header, otherwise null",
-      "content": "Action detail here, or null if section header",
-      "timer_seconds": null,
-      "is_section_header": false
+    if (body.mode === 'apply') {
+      return await handleApply(adminClient, authHeader, body.recipe_id, body.title, body.description, body.steps);
     }
-  ]
-}
-
-Ensure the output is valid JSON, and matches all the database check constraints perfectly.`;
-
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY')!;
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiApiKey}`;
-
-    const geminiResponse = await callGeminiWithRetry(geminiUrl, {
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.1,
-        maxOutputTokens: 16384,
-        responseMimeType: 'application/json'
-      }
-    });
-
-    if (!geminiResponse.ok) {
-      const errText = await geminiResponse.text();
-      console.error(`recipe-cleaner: Gemini API ${geminiResponse.status} ${geminiResponse.statusText} - ${errText}`);
-      throw new CleanerError('gemini_failed', `Gemini API returned ${geminiResponse.status}`);
-    }
-
-    const geminiData = await geminiResponse.json();
-    const candidate = geminiData.candidates?.[0];
-    const finishReason = candidate?.finishReason;
-    // STOP = normal completion. MAX_TOKENS = truncated (output too long); SAFETY/RECITATION = blocked.
-    if (finishReason && finishReason !== 'STOP') {
-      console.error(`recipe-cleaner: Gemini finishReason=${finishReason}`);
-      throw new CleanerError('invalid_ai_output', `Gemini did not complete cleanly (${finishReason})`);
-    }
-
-    const rawText = candidate?.content?.parts?.[0]?.text ?? '';
-
-    let result;
-    try {
-      const cleaned = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      result = JSON.parse(cleaned);
-    } catch {
-      console.error('recipe-cleaner: unparseable Gemini output:', rawText.slice(0, 500));
-      throw new CleanerError('invalid_ai_output', 'Gemini returned unparseable output');
-    }
-
-    if (!result || typeof result !== 'object' || !Array.isArray(result.steps)) {
-      throw new CleanerError('invalid_ai_output', 'Gemini output is missing a valid steps array');
-    }
-
-    let commitResult = null;
-
-    if (commit && Array.isArray(result.steps) && result.steps.length > 0) {
-      // Capture the recipe's existing step-translation locales BEFORE the commit wipes them
-      // (recipe_step_translation.step_id CASCADEs when the old steps are deleted).
-      const currentStepIds = ((recipe.recipe_step ?? []) as Array<{ id: string }>).map((s) => s.id);
-      let priorLocales: string[] = [];
-      if (currentStepIds.length > 0) {
-        const { data: priorRows } = await adminClient
-          .from('recipe_step_translation')
-          .select('locale')
-          .in('step_id', currentStepIds);
-        priorLocales = [...new Set((priorRows ?? []).map((r: { locale: string }) => r.locale))];
-      }
-
-      // Atomic replace: delete + insert run in one transaction inside the RPC, so a
-      // mid-insert failure (e.g. a check-constraint violation) rolls back and leaves the
-      // recipe's original steps intact. The RPC is service_role-only (see migration).
-      const { data: stepsCount, error: rpcError } = await adminClient.rpc('replace_recipe_steps', {
-        p_recipe_id: recipe_id,
-        p_steps: result.steps
-      });
-
-      if (rpcError) {
-        console.error('recipe-cleaner: replace_recipe_steps failed:', rpcError.message);
-        throw new CleanerError('db_failed', 'Failed to persist cleaned steps');
-      }
-
-      commitResult = {
-        committed: true,
-        steps_count: stepsCount
-      };
-
-      // Regenerate the step translations the commit just wiped — only the locales the recipe
-      // already had — in the background, so the clean response is not delayed. Best-effort:
-      // if it fails, the recipe page falls back to source-locale step text.
-      if (priorLocales.length > 0 && recipe.language) {
-        const trigger = fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/translate-recipe-steps`, {
-          method: 'POST',
-          headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ recipe_id, source_locale: recipe.language, target_locales: priorLocales })
-        }).catch((e) => console.error('recipe-cleaner: step re-translation trigger failed:', e));
-        const ert = (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } }).EdgeRuntime;
-        if (ert?.waitUntil) ert.waitUntil(trigger); else await trigger;
-      }
-    }
-
-    return new Response(JSON.stringify({
-      evaluation: result.evaluation,
-      steps: result.steps,
-      commit: commitResult
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-
+    return await handlePreview(adminClient, creatorId, body.recipe_id);
   } catch (err) {
     console.error('recipe-cleaner error:', err);
     const category = err instanceof CleanerError ? err.category : 'internal_server_error';
-    // 502 for upstream AI issues, 500 for our own failures. No internal details leak to the caller.
     const status = (category === 'gemini_failed' || category === 'invalid_ai_output') ? 502 : 500;
     return new Response(JSON.stringify({ error: category }), {
       status,
