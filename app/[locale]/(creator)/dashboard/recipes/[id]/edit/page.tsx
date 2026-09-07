@@ -7,6 +7,39 @@ import { createClient } from "@/lib/supabase/client";
 import RecipeWizard from "@/components/creator/recipe-form/RecipeWizard";
 import type { RecipeFormState } from "@/components/creator/recipe-form/RecipeWizard";
 
+// draft_data is a JSONB blob saved verbatim from a past session — normalize any legacy
+// nulls (e.g. a never-set `unit`/`ingredient_id`, or `content` on a section-header step)
+// before handing it to the wizard, since the Step 2/3 zod schemas reject null strings.
+function sanitizeIngredient(ing: any): RecipeFormState["ingredients"][number] {
+  return {
+    ...ing,
+    ingredient_id: ing.ingredient_id ?? "",
+    name: ing.name ?? "",
+    quantity: ing.quantity ?? undefined,
+    unit: ing.unit ?? "",
+    is_optional: ing.is_optional ?? false,
+    is_section_header: ing.is_section_header ?? false,
+    title: ing.title ?? undefined,
+    swappable_ingredients: ing.swappable_ingredients ?? [],
+    calories_per_100g: ing.calories_per_100g ?? null,
+    protein_per_100g: ing.protein_per_100g ?? null,
+    carbs_per_100g: ing.carbs_per_100g ?? null,
+    fat_per_100g: ing.fat_per_100g ?? null,
+  };
+}
+
+function sanitizeStep(s: any): RecipeFormState["steps"][number] {
+  return {
+    ...s,
+    title: s.title ?? undefined,
+    content: s.content ?? undefined,
+    image_url: s.image_url ?? undefined,
+    timer_seconds: s.timer_seconds ?? undefined,
+    is_section_header: s.is_section_header ?? false,
+    ingredient_ids: s.ingredient_ids ?? [],
+  };
+}
+
 export default function EditRecipePage() {
   const { id } = useParams<{ id: string }>();
   const locale = useLocale();
@@ -60,7 +93,12 @@ export default function EditRecipePage() {
       // A saved draft holds the full RecipeFormState (RecipeWizard stores it verbatim).
       // Prefer it over live tables so in-progress edits survive a page reload.
       if ((data as any).draft_data && typeof (data as any).draft_data === "object") {
-        setInitialData((data as any).draft_data as Partial<RecipeFormState>);
+        const draft = (data as any).draft_data as Partial<RecipeFormState>;
+        setInitialData({
+          ...draft,
+          ingredients: (draft.ingredients ?? []).map(sanitizeIngredient),
+          steps: (draft.steps ?? []).map(sanitizeStep),
+        });
         setLoading(false);
         return;
       }
@@ -102,10 +140,10 @@ export default function EditRecipePage() {
           .sort((a: any, b: any) => a.sort_order - b.sort_order)
           .map((ing: any) => ({
             id: ing.id,
-            ingredient_id: ing.ingredient_id,
+            ingredient_id: ing.ingredient_id ?? "",
             name: ing.ingredient?.[nameKey] ?? ing.ingredient?.name_fr ?? "",
-            quantity: ing.quantity,
-            unit: ing.unit,
+            quantity: ing.quantity ?? undefined,
+            unit: ing.unit ?? "",
             is_optional: ing.is_optional ?? false,
             sort_order: ing.sort_order,
             is_section_header: ing.is_section_header ?? false,
@@ -125,7 +163,7 @@ export default function EditRecipePage() {
             id: s.id,
             step_number: s.step_number ?? 1,
             title: s.title ?? undefined,
-            content: s.content,
+            content: s.content ?? undefined,
             image_url: s.image_url ?? undefined,
             timer_seconds: s.timer_seconds ?? undefined,
             sort_order: s.sort_order,
