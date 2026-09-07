@@ -44,6 +44,9 @@ yarn-error.log*
 # git worktrees (local scratch, created by superpowers:using-git-worktrees)
 /.worktrees
 
+# subagent-driven-development workspace (local scratch: ledgers, briefs, review packages)
+/.superpowers
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
