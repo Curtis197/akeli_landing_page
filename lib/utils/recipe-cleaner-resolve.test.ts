@@ -44,7 +44,7 @@ describe("resolveCleanedSteps", () => {
 
   it("splits one step into two when a split proposal is accepted, keeping the photo on the first", () => {
     const stepsWithPhoto: StepItem[] = [
-      { ...baseSteps[0], image_url: "https://example.com/s1.jpg" },
+      { ...baseSteps[0], image_url: "https://example.com/s1.jpg", ingredient_ids: ["ing1", "ing2"] },
       baseSteps[1],
       baseSteps[2],
     ];
@@ -68,8 +68,10 @@ describe("resolveCleanedSteps", () => {
     expect(result.map((s) => s.step_number)).toEqual([1, 2, 3, 4]);
     expect(result[0].content).toBe("Laver les légumes.");
     expect(result[0].image_url).toBe("https://example.com/s1.jpg");
+    expect(result[0].ingredient_ids).toEqual(["ing1", "ing2"]);
     expect(result[1].content).toBe("Couper les légumes en dés.");
     expect(result[1].image_url).toBeUndefined();
+    expect(result[1].ingredient_ids).toEqual([]);
   });
 
   it("inserts an accepted new-step suggestion after the given step", () => {
