@@ -27,20 +27,77 @@ export async function toggleRecipeLike(recipeId: string) {
   return data as { liked: boolean; likes_count: number }
 }
 
-// ─── Gemini: Spell correction (call with 2s debounce) ────────────────────────
-export async function correctText(
-  text: string,
-  fieldType: 'title' | 'description' | 'step' | 'bio',
-  sourceLanguage: string
-) {
-  if (text.length < 5) return null
+// ─── Gemini: Recipe standardization (preview/apply) ──────────────────────────
+export interface RecipeCleanSuggestion {
+  suggested: string
+  reason: string
+}
 
+export interface RecipeCleanStepProposal {
+  step_id: string
+  change_type: 'reworded' | 'split'
+  suggested: Array<{
+    title: string | null
+    content: string | null
+    timer_seconds: number | null
+    is_section_header: boolean
+  }>
+  reason: string | null
+}
+
+export interface RecipeCleanNewStepSuggestion {
+  after_step_id: string | null
+  content: string
+  reason: string
+}
+
+export interface PreviewRecipeCleanResult {
+  title_suggestion: RecipeCleanSuggestion | null
+  description_suggestion: RecipeCleanSuggestion | null
+  step_proposals: RecipeCleanStepProposal[]
+  new_step_suggestions: RecipeCleanNewStepSuggestion[]
+  evaluation: {
+    ordering_issues: string | null
+    general_observations: string | null
+  }
+}
+
+export async function previewRecipeClean(recipeId: string): Promise<PreviewRecipeCleanResult> {
   const supabase = createClient()
-  const { data, error } = await supabase.functions.invoke('gemini-correct-text', {
-    body: { text, field_type: fieldType, source_language: sourceLanguage },
+  const { data, error } = await supabase.functions.invoke('recipe-cleaner', {
+    body: { recipe_id: recipeId, mode: 'preview' },
   })
   if (error) throw error
-  return data
+  return data as PreviewRecipeCleanResult
+}
+
+export interface RecipeCleanApplyStep {
+  step_number: number
+  sort_order: number
+  title: string | null
+  content: string | null
+  image_url: string | null
+  timer_seconds: number | null
+  is_section_header: boolean
+  ingredient_ids: string[]
+}
+
+export interface ApplyRecipeCleanResult {
+  applied: boolean
+  steps_count: number
+  title_description_error?: string
+}
+
+export async function applyRecipeClean(
+  recipeId: string,
+  payload: { title: string; description: string | null; steps: RecipeCleanApplyStep[] }
+): Promise<ApplyRecipeCleanResult> {
+  const supabase = createClient()
+  const { data, error } = await supabase.functions.invoke('recipe-cleaner', {
+    body: { recipe_id: recipeId, mode: 'apply', ...payload },
+  })
+  if (error) throw error
+  return data as ApplyRecipeCleanResult
 }
 
 // ─── Translate content (generic) ─────────────────────────────────────────────
