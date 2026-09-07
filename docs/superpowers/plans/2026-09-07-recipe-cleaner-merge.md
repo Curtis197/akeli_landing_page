@@ -18,96 +18,37 @@
 - No live/per-keystroke correction — this is a single review action triggered from Step 3, after a draft with ingredients + steps already exists.
 - UI copy in the new component is **hardcoded French literals**, not `next-intl` keys — despite CLAUDE.md's stated i18n rule, every existing file in `components/creator/recipe-form/` (Step1Basic, Step3Steps, StepCard, IngredientSubmitModal, SectionHeaderRow) hardcodes French with no `useTranslations`/`getTranslations` import; only `IngredientSearch.tsx` is the outlier. Matching the local convention of the directory this component lives in.
 - `supabase/functions/gemini-correct-text/` is deleted from this repo as part of this plan, but the **deployed** function on the shared Supabase project (also used by the Flutter mobile app / nutrition app per prior project notes) must not be deleted via `supabase functions delete` or the dashboard until a human confirms no other app calls it. This plan removes the source and stops redeploying it; it does not delete the live deployment.
-- `replace_recipe_steps` currently drops `image_url` on every call (bug, not scope creep — see Task 1). Task 1 fixes this before anything else touches that RPC path.
+- `replace_recipe_steps` (the RPC) already persists `image_url` and `ingredient_ids` correctly on the live project, already enforces its own ownership check, and grants EXECUTE to `authenticated` — confirmed directly against the live database on 2026-09-07 after Task 1's original migration draft (based on a stale local migration file) was caught as a regression before being applied. **Do not modify `replace_recipe_steps` as part of this plan.** The real, still-live gap is narrower: `recipe-cleaner`'s own Gemini-facing schema never asks for `image_url`/`ingredient_ids` back, so its `commit`/`apply` path drops both even though the RPC could persist them — fixed in Task 2's `ApplyStepInput` (and threaded through Tasks 3, 4, 5, 7) instead of at the RPC layer.
 
 ---
 
-## Task 1: Fix `replace_recipe_steps` to stop silently deleting step photos
+## Task 1: ~~Fix `replace_recipe_steps`~~ — CANCELLED, live RPC already correct
 
-**Files:**
-- Create: `supabase/migrations/20260907100000_replace_recipe_steps_preserve_image.sql`
+**Status: complete, no code changes.** This task originally planned a migration based on
+`supabase/migrations/20260624100000_replace_recipe_steps_rpc.sql`, a local file that turned
+out to be stale relative to the live project. Investigation on 2026-09-07 (implementer
+report + controller verification via the Supabase MCP tools against project
+`njzqcftjzskwcpforwzf`) confirmed the **live** `replace_recipe_steps` already:
+- Persists both `image_url` and `ingredient_ids` in its INSERT.
+- Enforces its own ownership check (`auth.jwt()->>'role'` gate + a `recipe`/`creator` join
+  against `auth.uid()` for any non-service-role, non-direct-DB caller).
+- Grants EXECUTE to `authenticated` (not just `service_role`) — required by
+  `RecipeWizard.tsx`'s normal client-side `syncSteps`, which calls this RPC directly as the
+  browser/authenticated role, independent of any edge function.
 
-**Interfaces:**
-- Produces: `replace_recipe_steps(p_recipe_id uuid, p_steps jsonb)` now also persists `image_url` from each step object in `p_steps` (key `"image_url"`). Signature unchanged; callers that don't send `image_url` behave exactly as before (`NULLIF(..., '')` on a missing key yields `NULL`, same as today).
+Applying the originally-drafted migration would have been a regression: it dropped
+`ingredient_ids` from the INSERT, revoked `authenticated`'s EXECUTE grant (breaking the
+normal wizard save flow), and removed the live ownership check. **No migration is applied.
+Do not modify `replace_recipe_steps` in this plan.**
 
-- [ ] **Step 1: Confirm the column exists**
-
-Before writing the migration, confirm `recipe_step.image_url` is a real column (referenced by `components/creator/recipe-form/StepCard.tsx` and `RecipeWizard.tsx`'s `syncSteps`, which already sends `image_url` in the RPC payload — it's just silently dropped server-side). Use the Supabase MCP tools (`list_tables` or `execute_sql` with `select column_name from information_schema.columns where table_name = 'recipe_step'`) to verify before proceeding.
-
-- [ ] **Step 2: Write the migration**
-
-```sql
--- Fix: replace_recipe_steps has never written image_url, so every step save (normal
--- wizard edits via RecipeWizard.tsx's syncSteps, and recipe-cleaner commits) silently
--- deletes all step photos on every save — the INSERT simply never referenced the
--- column, even though callers have always sent it. Discovered while wiring
--- recipe-cleaner's new apply path into the wizard, which calls this RPC more often
--- than before; fixed here since it already damaged user-uploaded content regardless
--- of the AI-cleaner feature.
-
-CREATE OR REPLACE FUNCTION public.replace_recipe_steps(
-  p_recipe_id uuid,
-  p_steps     jsonb
-) RETURNS integer
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_count integer;
-BEGIN
-  IF p_steps IS NULL OR jsonb_typeof(p_steps) <> 'array' OR jsonb_array_length(p_steps) = 0 THEN
-    RAISE EXCEPTION 'replace_recipe_steps: p_steps must be a non-empty JSON array';
-  END IF;
-
-  DELETE FROM public.recipe_step WHERE recipe_id = p_recipe_id;
-
-  INSERT INTO public.recipe_step
-    (recipe_id, step_number, sort_order, title, content, image_url, timer_seconds, is_section_header)
-  SELECT
-    p_recipe_id,
-    (s->>'step_number')::int,
-    (s->>'sort_order')::int,
-    NULLIF(s->>'title', ''),
-    NULLIF(s->>'content', ''),
-    NULLIF(s->>'image_url', ''),
-    NULLIF(s->>'timer_seconds', '')::int,
-    COALESCE((s->>'is_section_header')::boolean, false)
-  FROM jsonb_array_elements(p_steps) AS s;
-
-  GET DIAGNOSTICS v_count = ROW_COUNT;
-  RETURN v_count;
-END;
-$$;
-
-REVOKE ALL ON FUNCTION public.replace_recipe_steps(uuid, jsonb) FROM public, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.replace_recipe_steps(uuid, jsonb) TO service_role;
-ALTER FUNCTION public.replace_recipe_steps(uuid, jsonb) OWNER TO postgres;
-```
-
-- [ ] **Step 3: Apply the migration**
-
-Use the Supabase MCP `apply_migration` tool (per project convention — never `db push`/`migration up` on this shared project). Name: `replace_recipe_steps_preserve_image`.
-
-- [ ] **Step 4: Manually verify**
-
-Via `execute_sql`, pick any existing recipe with steps, note its current step `image_url` values, call `select replace_recipe_steps(<recipe_id>, <same steps as jsonb, including image_url>)`, then re-select `recipe_step` for that recipe and confirm `image_url` values survived.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add supabase/migrations/20260907100000_replace_recipe_steps_preserve_image.sql
-git commit -m "$(cat <<'EOF'
-fix(recipes): stop replace_recipe_steps from deleting step photos
-
-The RPC's INSERT never referenced image_url even though every caller
-(the wizard's normal step save, and recipe-cleaner) has always sent
-it — every step save was silently wiping step photos.
-
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
-EOF
-)"
-```
+The real, still-current gap this investigation surfaced: `recipe-cleaner`'s own
+Gemini-facing schema has never asked for `image_url`/`ingredient_ids` back, so even though
+the RPC can persist them, today's `commit: true` path drops both on every commit anyway
+(Gemini's requested JSON schema for `steps` simply doesn't include those keys, so they're
+absent from the objects forwarded to the RPC). Task 2's preview/apply redesign already
+closes this for `image_url` (each proposal's first resulting step carries the original's
+photo forward, per Task 4's resolver); `ingredient_ids` needed the identical fix threaded
+through Tasks 2, 3, 5, and 7 — included in each of those tasks below.
 
 ---
 
@@ -121,7 +62,7 @@ EOF
 - Produces (HTTP contract, consumed by Task 3's client wrappers):
   - `POST` body `{ recipe_id: string, mode: "preview" }` → `200` with `PreviewRecipeCleanResult` shape (see below) or a categorized error (`401`/`403`/`404`/`429`/`502` `gemini_failed`/`502` `invalid_ai_output`).
   - `POST` body `{ recipe_id: string, mode: "apply", title: string, description: string | null, steps: ApplyStepInput[] }` → `200` `{ applied: true, steps_count: number }`, or `207` `{ applied: true, steps_count: number, title_description_error: "steps_saved_title_description_failed" }` if the steps write succeeded but the title/description write failed.
-  - `ApplyStepInput`: `{ step_number: number, sort_order: number, title: string | null, content: string | null, image_url: string | null, timer_seconds: number | null, is_section_header: boolean }`.
+  - `ApplyStepInput`: `{ step_number: number, sort_order: number, title: string | null, content: string | null, image_url: string | null, timer_seconds: number | null, is_section_header: boolean, ingredient_ids: string[] }`.
   - `PreviewRecipeCleanResult`: `{ title_suggestion: {suggested, reason} | null, description_suggestion: {suggested, reason} | null, step_proposals: Array<{step_id, change_type: "reworded"|"split", suggested: Array<{title, content, timer_seconds, is_section_header}>, reason}>, new_step_suggestions: Array<{after_step_id, content, reason}>, evaluation: {ordering_issues, general_observations} }`.
 
 - [ ] **Step 1: Replace the file**
@@ -155,6 +96,7 @@ interface ApplyStepInput {
   image_url: string | null;
   timer_seconds: number | null;
   is_section_header: boolean;
+  ingredient_ids: string[];
 }
 
 interface PreviewRequest {
@@ -686,6 +628,7 @@ export interface RecipeCleanApplyStep {
   image_url: string | null
   timer_seconds: number | null
   is_section_header: boolean
+  ingredient_ids: string[]
 }
 
 export interface ApplyRecipeCleanResult {
@@ -1113,6 +1056,7 @@ export default function RecipeCleanerReview({
           image_url: s.image_url ?? null,
           timer_seconds: s.timer_seconds ?? null,
           is_section_header: s.is_section_header,
+          ingredient_ids: s.ingredient_ids ?? [],
         })),
       });
 
@@ -1532,7 +1476,7 @@ async function fetchAllRecipes() {
 }
 
 async function fetchRecipeSteps(recipeId) {
-  const url = `${supabaseUrl}/rest/v1/recipe_step?recipe_id=eq.${recipeId}&select=id,step_number,sort_order,title,content,image_url,timer_seconds,is_section_header&order=sort_order.asc`;
+  const url = `${supabaseUrl}/rest/v1/recipe_step?recipe_id=eq.${recipeId}&select=id,step_number,sort_order,title,content,image_url,timer_seconds,is_section_header,ingredient_ids&order=sort_order.asc`;
   const response = await fetch(url, {
     method: 'GET',
     headers: {
@@ -1563,20 +1507,21 @@ function resolveAllAccepted(currentSteps, stepProposals, newStepSuggestions) {
   }
 
   // Only the first resulting step of an accepted proposal keeps the original's photo
-  // (mirrors lib/utils/recipe-cleaner-resolve.ts's behavior) — untouched steps keep
-  // theirs unconditionally via step.image_url below.
-  const toStep = (s, i, originalImageUrl) => ({
+  // and ingredient tags (mirrors lib/utils/recipe-cleaner-resolve.ts's behavior) —
+  // untouched steps keep theirs unconditionally via step.image_url/ingredient_ids below.
+  const toStep = (s, i, original) => ({
     step_number: 0,
     sort_order: 0,
     title: s.title ?? null,
     content: s.content ?? null,
-    image_url: i === 0 ? (originalImageUrl ?? null) : null,
+    image_url: i === 0 ? (original.image_url ?? null) : null,
     timer_seconds: s.timer_seconds ?? null,
-    is_section_header: s.is_section_header
+    is_section_header: s.is_section_header,
+    ingredient_ids: i === 0 ? (original.ingredient_ids ?? []) : []
   });
 
   const newStepFromSuggestion = (s) => ({
-    step_number: 0, sort_order: 0, title: null, content: s.content, image_url: null, timer_seconds: null, is_section_header: false
+    step_number: 0, sort_order: 0, title: null, content: s.content, image_url: null, timer_seconds: null, is_section_header: false, ingredient_ids: []
   });
 
   const result = [];
@@ -1586,7 +1531,7 @@ function resolveAllAccepted(currentSteps, stepProposals, newStepSuggestions) {
   for (const step of currentSteps) {
     const proposal = proposalByStepId.get(step.id);
     if (proposal) {
-      result.push(...proposal.suggested.map((s, i) => toStep(s, i, step.image_url)));
+      result.push(...proposal.suggested.map((s, i) => toStep(s, i, step)));
     } else {
       result.push({
         step_number: step.step_number,
@@ -1595,7 +1540,8 @@ function resolveAllAccepted(currentSteps, stepProposals, newStepSuggestions) {
         content: step.content,
         image_url: step.image_url ?? null,
         timer_seconds: step.timer_seconds,
-        is_section_header: step.is_section_header
+        is_section_header: step.is_section_header,
+        ingredient_ids: step.ingredient_ids ?? []
       });
     }
     for (const suggestion of newStepsAfter.get(step.id) || []) {
@@ -1611,7 +1557,7 @@ function resolveAllAccepted(currentSteps, stepProposals, newStepSuggestions) {
 }
 ```
 
-(Note: `fetchRecipeSteps` selects `image_url` and both the pass-through and accepted-proposal branches carry it forward — see pre-flight ruling in the ledger. Only genuinely new content, either a fresh `new_step_suggestions` insertion or the 2nd+ step of a split, has no original photo to carry and stays `null`.)
+(Note: `fetchRecipeSteps` selects `image_url` and `ingredient_ids`, and both the pass-through and accepted-proposal branches carry them forward — see the pre-flight ruling and the Task 1 investigation ruling in the ledger. Only genuinely new content, either a fresh `new_step_suggestions` insertion or the 2nd+ step of a split, has no original photo/ingredient tags to carry and gets `image_url: null` / `ingredient_ids: []`.)
 
 - [ ] **Step 3: Replace `cleanRecipe` (lines 45-103)**
 
