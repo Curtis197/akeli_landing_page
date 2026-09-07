@@ -154,11 +154,43 @@ function validatePreviewResult(result: unknown): result is {
   new_step_suggestions: Array<{ after_step_id: string | null; content: string; reason: string }>;
   evaluation: { ordering_issues: string | null; general_observations: string | null };
 } {
-  if (!result || typeof result !== 'object') return false;
-  const r = result as Record<string, unknown>;
-  if (!('title_suggestion' in r) || !('description_suggestion' in r)) return false;
-  if (!Array.isArray(r.step_proposals) || !Array.isArray(r.new_step_suggestions)) return false;
-  if (!r.evaluation || typeof r.evaluation !== 'object') return false;
+  const isStr = (v: unknown): v is string => typeof v === 'string';
+  const isStrOrNull = (v: unknown): v is string | null => v === null || typeof v === 'string';
+  const isNumOrNull = (v: unknown): v is number | null => v === null || typeof v === 'number';
+  const isBool = (v: unknown): v is boolean => typeof v === 'boolean';
+  const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+
+  const isSuggestionOrNull = (v: unknown): v is { suggested: string; reason: string } | null =>
+    v === null || (isObj(v) && isStr(v.suggested) && isStr(v.reason));
+
+  const isSuggestedStep = (v: unknown): v is { title: string | null; content: string | null; timer_seconds: number | null; is_section_header: boolean } =>
+    isObj(v) && isStrOrNull(v.title) && isStrOrNull(v.content) && isNumOrNull(v.timer_seconds) && isBool(v.is_section_header);
+
+  const isStepProposal = (v: unknown): v is {
+    step_id: string;
+    change_type: 'reworded' | 'split';
+    suggested: Array<{ title: string | null; content: string | null; timer_seconds: number | null; is_section_header: boolean }>;
+    reason: string | null;
+  } =>
+    isObj(v) &&
+    isStr(v.step_id) &&
+    (v.change_type === 'reworded' || v.change_type === 'split') &&
+    Array.isArray(v.suggested) && v.suggested.every(isSuggestedStep) &&
+    isStrOrNull(v.reason);
+
+  const isNewStepSuggestion = (v: unknown): v is { after_step_id: string | null; content: string; reason: string } =>
+    isObj(v) && isStrOrNull(v.after_step_id) && isStr(v.content) && isStr(v.reason);
+
+  if (!isObj(result)) return false;
+  const r = result;
+
+  if (!isSuggestionOrNull(r.title_suggestion)) return false;
+  if (!isSuggestionOrNull(r.description_suggestion)) return false;
+  if (!Array.isArray(r.step_proposals) || !r.step_proposals.every(isStepProposal)) return false;
+  if (!Array.isArray(r.new_step_suggestions) || !r.new_step_suggestions.every(isNewStepSuggestion)) return false;
+  if (!isObj(r.evaluation)) return false;
+  if (!isStrOrNull(r.evaluation.ordering_issues) || !isStrOrNull(r.evaluation.general_observations)) return false;
+
   return true;
 }
 
