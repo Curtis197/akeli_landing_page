@@ -83,8 +83,10 @@ function resolveAllAccepted(currentSteps, stepProposals, newStepSuggestions) {
   const toStep = (s, i, original) => ({
     step_number: 0,
     sort_order: 0,
-    title: s.title ?? null,
-    content: s.content ?? null,
+    // Clamp to is_section_header — Gemini is prompted to keep title/content mutually
+    // exclusive but isn't guaranteed to, and a violation trips chk_regular_step_no_title.
+    title: s.is_section_header ? (s.title ?? null) : null,
+    content: s.is_section_header ? null : (s.content ?? null),
     image_url: i === 0 ? (original.image_url ?? null) : null,
     timer_seconds: s.timer_seconds ?? null,
     is_section_header: s.is_section_header,

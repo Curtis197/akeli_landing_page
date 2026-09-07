@@ -49,8 +49,12 @@ export function resolveCleanedSteps(
           id: crypto.randomUUID(),
           step_number: 0,
           sort_order: 0,
-          title: s.title ?? undefined,
-          content: s.content ?? undefined,
+          // Gemini is prompted to keep title/content mutually exclusive per
+          // is_section_header, but its output isn't guaranteed to honor that — clamp
+          // here so a malformed response can't produce a step that violates
+          // chk_regular_step_no_title / chk_recipe_step_section_header at save time.
+          title: s.is_section_header ? s.title ?? undefined : undefined,
+          content: s.is_section_header ? undefined : s.content ?? undefined,
           // Only the first resulting step keeps the original's photo/ingredient tags —
           // a split has no way to know which of the N new steps the photo belongs to.
           image_url: i === 0 ? step.image_url : undefined,

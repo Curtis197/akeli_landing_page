@@ -92,6 +92,13 @@ export const step3Schema = z.object({
           .filter((i) => i.is_section_header)
           .every((i) => !!i.title?.trim()),
       { message: "Chaque section doit avoir un titre" }
+    )
+    .refine(
+      (items) =>
+        items
+          .filter((i) => !i.is_section_header)
+          .every((i) => !i.title?.trim()),
+      { message: "Une étape normale ne doit pas avoir de titre de section" }
     ),
 });
 
