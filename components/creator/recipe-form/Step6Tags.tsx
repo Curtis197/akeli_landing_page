@@ -220,9 +220,9 @@ export default function Step6Tags({
           </div>
           {data.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 pt-1">
-              {data.tags.map((tag) => (
-                <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
-                  #{tag}
+              {data.tags.map((tagId) => (
+                <span key={tagId} className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                  #{availableTags.find((t) => t.id === tagId)?.name_fr ?? tagId}
                 </span>
               ))}
             </div>
