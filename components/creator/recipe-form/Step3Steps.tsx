@@ -1,7 +1,7 @@
 // components/creator/recipe-form/Step3Steps.tsx
 "use client";
 
-import { useId } from "react";
+import { useId, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -22,6 +22,7 @@ import { CSS } from "@dnd-kit/utilities";
 import type { RecipeFormState } from "./RecipeWizard";
 import StepCard from "./StepCard";
 import SectionHeaderRow from "./SectionHeaderRow";
+import RecipeCleanerReview from "./RecipeCleanerReview";
 
 type StepItem = RecipeFormState["steps"][number];
 
@@ -29,11 +30,25 @@ interface Step3Props {
   data: RecipeFormState;
   onChange: (patch: Partial<RecipeFormState>) => void;
   draftId: string | null;
+  onPrepareClean: () => Promise<boolean>;
 }
 
-export default function Step3Steps({ data, onChange, draftId }: Step3Props) {
+export default function Step3Steps({ data, onChange, draftId, onPrepareClean }: Step3Props) {
   const dndId = useId();
   const steps = data.steps;
+
+  const [showCleaner, setShowCleaner] = useState(false);
+  const [preparingClean, setPreparingClean] = useState(false);
+  const [prepareCleanError, setPrepareCleanError] = useState<string | null>(null);
+
+  const handleOpenCleaner = async () => {
+    setPrepareCleanError(null);
+    setPreparingClean(true);
+    const ok = await onPrepareClean();
+    setPreparingClean(false);
+    if (ok) setShowCleaner(true);
+    else setPrepareCleanError("Impossible de sauvegarder le brouillon avant l'analyse IA. Réessaie.");
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -222,6 +237,33 @@ export default function Step3Steps({ data, onChange, draftId }: Step3Props) {
           + Section
         </button>
       </div>
+
+      {draftId && (
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={handleOpenCleaner}
+            disabled={preparingClean}
+            className="w-full py-2.5 rounded-lg border border-primary/30 text-sm font-medium text-primary hover:bg-primary/5 transition-colors disabled:opacity-50"
+          >
+            {preparingClean ? "Préparation..." : "✨ Standardiser avec l'IA"}
+          </button>
+          {prepareCleanError && (
+            <p className="text-xs text-destructive">{prepareCleanError}</p>
+          )}
+        </div>
+      )}
+
+      {showCleaner && draftId && (
+        <RecipeCleanerReview
+          recipeId={draftId}
+          currentTitle={data.title}
+          currentDescription={data.description}
+          currentSteps={data.steps}
+          onApplied={(result) => onChange(result)}
+          onClose={() => setShowCleaner(false)}
+        />
+      )}
     </div>
   );
 }

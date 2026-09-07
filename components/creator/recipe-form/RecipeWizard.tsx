@@ -351,6 +351,13 @@ export default function RecipeWizard({
     if (id) setCurrentStep(target);
   };
 
+  // ── Prepare for AI standardization (Step 3) ────────────────────────────────
+  // recipe-cleaner reads from the DB, so unsaved edits must be flushed first.
+  const handlePrepareClean = async () => {
+    const id = await saveDraft(formState, 3);
+    return !!id;
+  };
+
   // ── Publish ────────────────────────────────────────────────────────────────
   const handlePublish = async (publish: boolean) => {
     setIsPublishing(true);
@@ -495,6 +502,7 @@ export default function RecipeWizard({
             data={formState}
             onChange={updateForm}
             draftId={draftId}
+            onPrepareClean={handlePrepareClean}
           />
         )}
         {currentStep === 4 && (
