@@ -264,6 +264,13 @@ export default function RecipeWizard({
       if (syncStep === 2) {
         const ingredientsCheck = step2Schema.safeParse({ ingredients: data.ingredients });
         if (!ingredientsCheck.success) {
+          const unlinked = data.ingredients.filter((i) => !i.is_section_header && !i.ingredient_id);
+          console.error(
+            "Step 2 validation failed:",
+            ingredientsCheck.error.issues,
+            "Unlinked ingredients (no ingredient_id):",
+            unlinked
+          );
           setSaveError(ingredientsCheck.error.issues[0]?.message ?? "Ingrédients invalides");
           return null;
         }
