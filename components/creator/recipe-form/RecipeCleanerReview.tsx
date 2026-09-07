@@ -123,6 +123,13 @@ export default function RecipeCleanerReview({
         setApplyError(
           "Les étapes ont été mises à jour, mais le titre/description n'a pas pu être sauvegardé. Réessaie."
         );
+        // Steps already persisted server-side (that's what this partial-failure response
+        // means) — sync them into the wizard's local state so a later save from stale
+        // in-memory steps can't silently overwrite/revert what was just saved. Title and
+        // description did NOT persist, so report the original unchanged values for those,
+        // not finalTitle/finalDescription. Keep the modal open (no onClose()) so the
+        // creator can retry — re-applying is idempotent on the steps side.
+        onApplied({ title: currentTitle, description: currentDescription, steps: finalSteps });
         return;
       }
 
