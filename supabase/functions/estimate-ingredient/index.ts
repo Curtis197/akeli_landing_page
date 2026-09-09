@@ -21,38 +21,53 @@ function extractJsonObject(text) {
   return text.slice(start, end + 1);
 }
 
+const CLAUDE_TIMEOUT_MS = 110000;
+
 async function callClaude(prompt) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': Deno.env.get('CLAUDE_API_KEY'),
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: CLAUDE_MODEL,
-      max_tokens: 16000,
-      tools: [
-        {
-          type: 'web_search_20260209',
-          name: 'web_search',
-          max_uses: 2
-        },
-        {
-          type: 'web_fetch_20260209',
-          name: 'web_fetch',
-          max_uses: 2,
-          max_content_tokens: 5000
-        }
-      ],
-      messages: [
-        {
-          role: 'user',
-          content: prompt
-        }
-      ]
-    })
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(()=>controller.abort(), CLAUDE_TIMEOUT_MS);
+  let response;
+  try {
+    response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': Deno.env.get('CLAUDE_API_KEY'),
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: 16000,
+        tools: [
+          {
+            type: 'web_search_20260209',
+            name: 'web_search',
+            max_uses: 1
+          },
+          {
+            type: 'web_fetch_20260209',
+            name: 'web_fetch',
+            max_uses: 1,
+            max_content_tokens: 3000
+          }
+        ],
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      })
+    });
+  } catch (fetchError) {
+    if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+      throw new Error('TIMEOUT: AI research took too long for this ingredient');
+    }
+    throw fetchError;
+  } finally{
+    clearTimeout(timeoutId);
+  }
   if (!response.ok) {
     const errBody = await response.text();
     throw new Error(`Claude API error: ${response.status} ${errBody}`);
@@ -180,11 +195,12 @@ All four macro values are per 100g of the edible ingredient, as non-negative num
     });
   } catch (err) {
     console.error('[estimate-ingredient] Error:', err);
+    const isTimeout = err instanceof Error && err.message.startsWith('TIMEOUT:');
     return new Response(JSON.stringify({
       data: null,
-      error: 'Internal server error'
+      error: isTimeout ? 'AI research took too long for this ingredient. Try again or fill in the fields manually.' : 'Internal server error'
     }), {
-      status: 500,
+      status: isTimeout ? 504 : 500,
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/json'
