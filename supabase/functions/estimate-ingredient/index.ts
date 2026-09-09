@@ -5,12 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
 };
 
-const CLAUDE_MODEL = 'claude-sonnet-5';
-
-function extractFinalText(content) {
-  const textBlocks = (content ?? []).filter((block)=>block.type === 'text');
-  return textBlocks.length > 0 ? textBlocks[textBlocks.length - 1].text : '';
-}
+const GEMINI_MODEL = 'gemini-3.5-flash';
+const GEMINI_TIMEOUT_MS = 110000;
 
 function extractJsonObject(text) {
   const start = text.indexOf('{');
@@ -21,43 +17,39 @@ function extractJsonObject(text) {
   return text.slice(start, end + 1);
 }
 
-const CLAUDE_TIMEOUT_MS = 110000;
-
-async function callClaude(prompt) {
+async function callGemini(prompt, geminiKey) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(()=>controller.abort(), CLAUDE_TIMEOUT_MS);
+  const timeoutId = setTimeout(()=>controller.abort(), GEMINI_TIMEOUT_MS);
   let response;
   try {
-    response = await fetch('https://api.anthropic.com/v1/messages', {
+    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`, {
       method: 'POST',
       signal: controller.signal,
       headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': Deno.env.get('CLAUDE_API_KEY'),
-        'anthropic-version': '2023-06-01'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: CLAUDE_MODEL,
-        max_tokens: 16000,
-        tools: [
+        contents: [
           {
-            type: 'web_search_20260209',
-            name: 'web_search',
-            max_uses: 1
-          },
-          {
-            type: 'web_fetch_20260209',
-            name: 'web_fetch',
-            max_uses: 1,
-            max_content_tokens: 3000
+            parts: [
+              {
+                text: prompt
+              }
+            ]
           }
         ],
-        messages: [
+        tools: [
           {
-            role: 'user',
-            content: prompt
+            google_search: {}
           }
-        ]
+        ],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 8192,
+          thinkingConfig: {
+            thinkingLevel: 'LOW'
+          }
+        }
       })
     });
   } catch (fetchError) {
@@ -70,22 +62,28 @@ async function callClaude(prompt) {
   }
   if (!response.ok) {
     const errBody = await response.text();
-    throw new Error(`Claude API error: ${response.status} ${errBody}`);
+    throw new Error(`Gemini API error: ${response.status} ${errBody}`);
   }
   const data = await response.json();
-  const text = extractFinalText(data.content);
+  const candidate = data.candidates?.[0];
+  const text = (candidate?.content?.parts ?? []).map((p)=>p.text ?? '').join('');
+  if (!text) {
+    throw new Error(`No text returned from Gemini. finishReason: ${candidate?.finishReason}`);
+  }
   return {
     result: JSON.parse(extractJsonObject(text)),
-    usage: data.usage
+    usage: data.usageMetadata
   };
 }
 
 function isValidResult(result, categoryCodes) {
   if (!result || typeof result !== 'object') return false;
-  const { nameFr, nameEn, category, caloriesPer100g, proteinPer100g, carbsPer100g, fatPer100g } = result;
+  const { nameFr, nameEn, category, descriptionFr, descriptionEn, caloriesPer100g, proteinPer100g, carbsPer100g, fatPer100g } = result;
   if (typeof nameFr !== 'string' || !nameFr) return false;
   if (typeof nameEn !== 'string' || !nameEn) return false;
   if (typeof category !== 'string' || !categoryCodes.includes(category)) return false;
+  if (typeof descriptionFr !== 'string' || !descriptionFr) return false;
+  if (typeof descriptionEn !== 'string' || !descriptionEn) return false;
   for (const value of [
     caloriesPer100g,
     proteinPer100g,
@@ -116,8 +114,8 @@ Deno.serve(async (req)=>{
         }
       });
     }
-    const claudeKey = Deno.env.get('CLAUDE_API_KEY');
-    if (!claudeKey) {
+    const geminiKey = Deno.env.get('GEMINI_API_KEY');
+    if (!geminiKey) {
       return new Response(JSON.stringify({
         data: null,
         error: 'AI service not configured'
@@ -155,13 +153,17 @@ Ingredient (as submitted by a user, may be in French, may name a regional/Africa
 ${categoryHint ? `Submitter's category hint: "${categoryHint}"` : ''}
 ${notes ? `Submitter's notes: "${notes}"` : ''}
 
-Use web search and web fetch to find real, reliable nutrition data for this specific ingredient (prefer official nutrition databases like USDA FoodData Central, Open Food Facts, or reputable food-composition sources) before answering. Do not guess if you can find a real source.
+Use Google Search to find real, reliable nutrition data for this specific ingredient (prefer official nutrition databases like USDA FoodData Central, Open Food Facts, or reputable food-composition sources) before answering. Do not guess if you can find a real source.
+
+Also write a short, factual 1-2 sentence description of the ingredient in French and in English (what it is, how it's typically used) — suitable for showing to an end user browsing the ingredient in a nutrition app.
 
 After you finish researching, respond with ONLY the JSON object below as your final message — no preamble sentence, no explanation of your sources, no markdown fences, nothing before or after it. Just the object, matching exactly this shape:
 {
   "nameFr": "French name",
   "nameEn": "English name",
   "category": "one of the valid category codes listed below",
+  "descriptionFr": "1-2 sentence description in French",
+  "descriptionEn": "1-2 sentence description in English",
   "caloriesPer100g": number,
   "proteinPer100g": number,
   "carbsPer100g": number,
@@ -171,7 +173,7 @@ After you finish researching, respond with ONLY the JSON object below as your fi
 Valid categories (code and English name): ${categoryList}
 
 All four macro values are per 100g of the edible ingredient, as non-negative numbers.`;
-    const { result, usage } = await callClaude(prompt);
+    const { result, usage } = await callGemini(prompt, geminiKey);
     if (!isValidResult(result, categoryCodes)) {
       throw new Error('Model returned an invalid or incomplete result');
     }
@@ -179,8 +181,8 @@ All four macro values are per 100g of the edible ingredient, as non-negative num
       name,
       category: result.category,
       caloriesPer100g: result.caloriesPer100g,
-      inputTokens: usage?.input_tokens ?? null,
-      outputTokens: usage?.output_tokens ?? null,
+      promptTokens: usage?.promptTokenCount ?? null,
+      candidateTokens: usage?.candidatesTokenCount ?? null,
       at: new Date().toISOString()
     });
     return new Response(JSON.stringify({
