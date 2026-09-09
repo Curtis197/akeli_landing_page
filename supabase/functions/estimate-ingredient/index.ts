@@ -12,6 +12,15 @@ function extractFinalText(content) {
   return textBlocks.length > 0 ? textBlocks[textBlocks.length - 1].text : '';
 }
 
+function extractJsonObject(text) {
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end === -1 || end < start) {
+    throw new Error(`No JSON object found in model response: ${text.slice(0, 200)}`);
+  }
+  return text.slice(start, end + 1);
+}
+
 async function callClaude(prompt) {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -27,13 +36,13 @@ async function callClaude(prompt) {
         {
           type: 'web_search_20260209',
           name: 'web_search',
-          max_uses: 3
+          max_uses: 2
         },
         {
           type: 'web_fetch_20260209',
           name: 'web_fetch',
-          max_uses: 3,
-          max_content_tokens: 8000
+          max_uses: 2,
+          max_content_tokens: 5000
         }
       ],
       messages: [
@@ -50,9 +59,8 @@ async function callClaude(prompt) {
   }
   const data = await response.json();
   const text = extractFinalText(data.content);
-  const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
   return {
-    result: JSON.parse(cleaned),
+    result: JSON.parse(extractJsonObject(text)),
     usage: data.usage
   };
 }
@@ -134,7 +142,7 @@ ${notes ? `Submitter's notes: "${notes}"` : ''}
 
 Use web search and web fetch to find real, reliable nutrition data for this specific ingredient (prefer official nutrition databases like USDA FoodData Central, Open Food Facts, or reputable food-composition sources) before answering. Do not guess if you can find a real source.
 
-Respond with strict JSON only, no other text, no markdown fences, matching exactly this shape:
+After you finish researching, respond with ONLY the JSON object below as your final message — no preamble sentence, no explanation of your sources, no markdown fences, nothing before or after it. Just the object, matching exactly this shape:
 {
   "nameFr": "French name",
   "nameEn": "English name",
