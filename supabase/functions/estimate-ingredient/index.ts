@@ -51,7 +51,10 @@ async function callClaude(prompt) {
   const data = await response.json();
   const text = extractFinalText(data.content);
   const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-  return JSON.parse(cleaned);
+  return {
+    result: JSON.parse(cleaned),
+    usage: data.usage
+  };
 }
 
 function isValidResult(result, categoryCodes) {
@@ -76,9 +79,9 @@ Deno.serve(async (req)=>{
     headers: corsHeaders
   });
   try {
-    const authHeader = req.headers.get('Authorization');
-    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if (authHeader !== `Bearer ${serviceKey}`) {
+    const providedSecret = req.headers.get('x-internal-secret');
+    const internalSecret = Deno.env.get('INTERNAL_SECRET');
+    if (!internalSecret || providedSecret !== internalSecret) {
       return new Response(JSON.stringify({
         data: null,
         error: 'Unauthorized'
@@ -116,7 +119,7 @@ Deno.serve(async (req)=>{
         }
       });
     }
-    const supabase = createClient(Deno.env.get('SUPABASE_URL'), serviceKey);
+    const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_ANON_KEY'));
     const { data: categories, error: categoriesError } = await supabase.from('ingredient_category').select('code, name_en');
     if (categoriesError || !categories || categories.length === 0) {
       throw new Error('Failed to load ingredient categories');
@@ -145,10 +148,18 @@ Respond with strict JSON only, no other text, no markdown fences, matching exact
 Valid categories (code and English name): ${categoryList}
 
 All four macro values are per 100g of the edible ingredient, as non-negative numbers.`;
-    const result = await callClaude(prompt);
+    const { result, usage } = await callClaude(prompt);
     if (!isValidResult(result, categoryCodes)) {
       throw new Error('Model returned an invalid or incomplete result');
     }
+    console.log('[estimate-ingredient] success', {
+      name,
+      category: result.category,
+      caloriesPer100g: result.caloriesPer100g,
+      inputTokens: usage?.input_tokens ?? null,
+      outputTokens: usage?.output_tokens ?? null,
+      at: new Date().toISOString()
+    });
     return new Response(JSON.stringify({
       data: result,
       error: null
