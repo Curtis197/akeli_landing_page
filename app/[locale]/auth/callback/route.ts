@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { sanitizeNextPath } from "@/lib/utils/safe-redirect";
+import { ensureCreatorRow } from "@/lib/auth/ensure-creator-row";
 
 export async function GET(
   request: NextRequest,
@@ -53,22 +54,7 @@ export async function GET(
       } = await supabase.auth.getUser();
 
       if (user) {
-        const { data: existing } = await supabase
-          .from("creator")
-          .select("id")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        if (!existing) {
-          const displayName =
-            (user.user_metadata?.full_name as string | undefined) ??
-            user.email?.split("@")[0] ??
-            "";
-          await supabase.from("creator").insert({
-            user_id: user.id,
-            display_name: displayName,
-          });
-        }
+        await ensureCreatorRow(supabase, user);
       }
 
       return NextResponse.redirect(

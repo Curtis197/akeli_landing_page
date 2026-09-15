@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Link, useRouter } from "@/lib/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
+import { ensureCreatorRow } from "@/lib/auth/ensure-creator-row";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -71,6 +72,10 @@ export default function SignupPage() {
     }
 
     if (data.user) {
+      // No email confirmation required, so we land here with a session
+      // immediately instead of going through /auth/callback — that route's
+      // creator-row creation has to happen here too, or it never happens.
+      await ensureCreatorRow(supabase, data.user);
       setUser(data.user);
       router.push("/dashboard");
     }
