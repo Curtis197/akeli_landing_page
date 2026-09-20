@@ -131,8 +131,13 @@ export default function PaymentsPage() {
 
       {!loading && (
         <RequestPayoutCard
-          eligibility={getRequestEligibility({ identityStatus, hasOpenPayout: openPayout !== null })}
+          eligibility={getRequestEligibility({
+            identityStatus,
+            hasOpenPayout: openPayout !== null,
+            availableBalance: balance?.available_balance ?? 0,
+          })}
           openPayout={openPayout}
+          availableBalance={balance?.available_balance ?? 0}
           onRequested={loadAll}
         />
       )}

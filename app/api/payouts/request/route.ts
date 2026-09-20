@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseAdmin } from "@/lib/tracking/supabase-admin";
+import { exceedsAvailableBalance } from "@/lib/payments/available-balance";
 import { getRequestEligibility } from "@/lib/payments/request-eligibility";
 import { parsePayoutRequestAmount } from "@/lib/payments/parse-request-amount";
 
@@ -52,27 +53,37 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "not_a_creator" }, { status: 403 });
   }
 
-  const [identityResult, openResult] = await Promise.all([
+  const [identityResult, openResult, balanceResult] = await Promise.all([
     admin.from("creator_payout_identity").select("status").eq("creator_id", creator.id).maybeSingle(),
     admin
       .from("payout")
       .select("id", { count: "exact", head: true })
       .eq("creator_id", creator.id)
       .in("status", ["pending", "processing"]),
+    admin.from("creator_balance").select("available_balance").eq("creator_id", creator.id).maybeSingle(),
   ]);
 
-  if (identityResult.error || openResult.error) {
-    console.error("[api/payouts/request] eligibility lookup failed:", identityResult.error ?? openResult.error);
+  const lookupError = identityResult.error ?? openResult.error ?? balanceResult.error;
+  if (lookupError) {
+    console.error("[api/payouts/request] eligibility lookup failed:", lookupError);
     return NextResponse.json({ error: "server_error" }, { status: 500 });
   }
+
+  // A creator with no creator_balance row has nothing available, so it counts as zero.
+  const availableBalance = Number(balanceResult.data?.available_balance ?? 0);
 
   const eligibility = getRequestEligibility({
     identityStatus: (identityResult.data?.status as "submitted" | "verified" | undefined) ?? null,
     hasOpenPayout: (openResult.count ?? 0) > 0,
+    availableBalance,
   });
 
   if (eligibility !== "eligible") {
     return NextResponse.json({ error: eligibility }, { status: 409 });
+  }
+
+  if (exceedsAvailableBalance(amount, availableBalance)) {
+    return NextResponse.json({ error: "insufficient_balance" }, { status: 409 });
   }
 
   const { data: payout, error: insertError } = await admin
