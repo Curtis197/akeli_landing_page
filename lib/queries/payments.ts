@@ -32,3 +32,29 @@ export async function getPayoutHistory(
   if (error) throw error;
   return { data: data ?? [], total: count ?? 0 };
 }
+
+export async function getPayoutIdentityStatus(
+  supabase: SupabaseClient,
+  creatorId: string
+): Promise<"submitted" | "verified" | null> {
+  const { data, error } = await supabase
+    .from("creator_payout_identity")
+    .select("status")
+    .eq("creator_id", creatorId)
+    .maybeSingle();
+  if (error) throw error;
+  return (data?.status as "submitted" | "verified" | undefined) ?? null;
+}
+
+export async function getOpenPayout(supabase: SupabaseClient, creatorId: string) {
+  const { data, error } = await supabase
+    .from("payout")
+    .select("id, amount, status")
+    .eq("creator_id", creatorId)
+    .in("status", ["pending", "processing"])
+    .order("requested_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as { id: string; amount: number; status: string } | null) ?? null;
+}

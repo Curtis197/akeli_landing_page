@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/authStore";
-import { getCreatorBalance, getPayoutHistory } from "@/lib/queries/payments";
+import {
+  getCreatorBalance,
+  getPayoutHistory,
+  getPayoutIdentityStatus,
+  getOpenPayout,
+} from "@/lib/queries/payments";
+import { getRequestEligibility } from "@/lib/payments/request-eligibility";
+import { RequestPayoutCard } from "@/components/payments/RequestPayoutCard";
 import { formatEuro, formatDate, formatMonthLabel } from "@/lib/utils/format";
 
 interface Balance {
@@ -40,18 +47,32 @@ export default function PaymentsPage() {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [pageLoading, setPageLoading] = useState(false);
+  const [identityStatus, setIdentityStatus] = useState<"submitted" | "verified" | null>(null);
+  const [openPayout, setOpenPayout] = useState<{ id: string; amount: number; status: string } | null>(null);
 
-  useEffect(() => {
+  async function loadAll() {
     if (!creator) return;
     setLoading(true);
-    Promise.all([
-      getCreatorBalance(supabase, creator.id),
-      getPayoutHistory(supabase, creator.id, 0, PAGE_SIZE),
-    ]).then(([bal, hist]) => {
+    try {
+      const [bal, hist, identity, open] = await Promise.all([
+        getCreatorBalance(supabase, creator.id),
+        getPayoutHistory(supabase, creator.id, 0, PAGE_SIZE),
+        getPayoutIdentityStatus(supabase, creator.id),
+        getOpenPayout(supabase, creator.id),
+      ]);
       setBalance(bal);
       setPayouts(hist.data);
       setTotal(hist.total);
-    }).finally(() => setLoading(false));
+      setPage(0);
+      setIdentityStatus(identity);
+      setOpenPayout(open);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadAll();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [creator]);
 
@@ -107,6 +128,14 @@ export default function PaymentsPage() {
           accent="var(--color-brand-forest)"
         />
       </div>
+
+      {!loading && (
+        <RequestPayoutCard
+          eligibility={getRequestEligibility({ identityStatus, hasOpenPayout: openPayout !== null })}
+          openPayout={openPayout}
+          onRequested={loadAll}
+        />
+      )}
 
       {/* Payout history */}
       <div>
