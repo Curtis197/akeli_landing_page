@@ -73,7 +73,9 @@ Deno.serve(async (req) => {
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     if (resendApiKey) {
       const resend = new Resend(resendApiKey);
-      await resend.emails.send({
+      // resend.emails.send() does not throw when Resend refuses a request: it returns { data, error }.
+      // The signup itself already succeeded, so a refused send is logged, never turned into a failure.
+      const { error: sendError } = await resend.emails.send({
         from: 'Akeli <no-reply@a-keli.com>',
         to: email,
         subject: locale === 'fr' ? 'Vérifiez votre adresse email' : 'Verify your email address',
@@ -81,6 +83,9 @@ Deno.serve(async (req) => {
           ? `<p>Cliquez <a href="${verifyUrl}">ici</a> pour vérifier votre email. Lien valable 24h.</p>`
           : `<p>Click <a href="${verifyUrl}">here</a> to verify your email. Link expires in 24h.</p>`,
       });
+      if (sendError) {
+        console.error('[visitor-signup] failed to send verification email:', sendError);
+      }
     } else {
       console.warn('RESEND_API_KEY is not configured. Verification email was not sent. URL:', verifyUrl);
     }

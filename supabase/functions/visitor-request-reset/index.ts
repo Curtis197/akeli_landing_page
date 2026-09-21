@@ -61,7 +61,9 @@ Deno.serve(async (req) => {
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     if (resendApiKey) {
       const resend = new Resend(resendApiKey);
-      await resend.emails.send({
+      // resend.emails.send() does not throw when Resend refuses a request: it returns { data, error }.
+      // The response stays a plain 200 either way (no email enumeration), so a refused send is only logged.
+      const { error: sendError } = await resend.emails.send({
         from: 'Akeli <no-reply@a-keli.com>',
         to: email,
         subject: visitor.locale === 'fr' ? 'Réinitialiser votre mot de passe' : 'Reset your password',
@@ -69,6 +71,9 @@ Deno.serve(async (req) => {
           ? `<p>Cliquez <a href="${resetUrl}">ici</a> pour réinitialiser votre mot de passe. Lien valable 30 minutes.</p>`
           : `<p>Click <a href="${resetUrl}">here</a> to reset your password. Link expires in 30 minutes.</p>`,
       });
+      if (sendError) {
+        console.error('[visitor-request-reset] failed to send reset email:', sendError);
+      }
     } else {
       console.warn('RESEND_API_KEY is not configured. Reset password email was not sent. URL:', resetUrl);
     }
