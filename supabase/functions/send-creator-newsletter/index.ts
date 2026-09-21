@@ -27,6 +27,33 @@ interface NewsletterPayload {
   type: 'recipe' | 'blog';
 }
 
+// ── HTML safety helpers ───────────────────────────────────────────────────────
+// Creator-authored text (name, title) and URLs are emailed to every follower, so nothing
+// from the database may reach the HTML unescaped.
+
+function escapeHtml(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Only http(s) URLs may be used as a link or image source. URL.href percent-encodes quotes, angle
+// brackets and spaces, and escapeHtml covers the rest, so the result is safe inside an attribute.
+function safeUrl(raw: unknown): string {
+  if (typeof raw !== 'string' || !raw) return '';
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return '';
+    return escapeHtml(url.href);
+  } catch {
+    return '';
+  }
+}
+
 // ── Service Role Verification Helper ──────────────────────────────────────────
 
 async function verifyServiceRole(authHeader: string | null): Promise<boolean> {
@@ -99,10 +126,16 @@ async function sendNewsletter(
 
   const siteUrl = Deno.env.get('SITE_URL') || 'https://a-keli.com';
   let sentCount = 0;
+  let failedCount = 0;
+  const safeCreatorName = escapeHtml(creatorName);
+  const safeTitle = escapeHtml(title);
+  const safeCover = safeUrl(coverUrl);
+  const safeLink = safeUrl(linkUrl);
 
   for (const recipient of recipients as Recipient[]) {
     const isFr = recipient.locale !== 'en';
-    const firstName = recipient.first_name ? `, ${recipient.first_name}` : '';
+    const firstName = recipient.first_name ? `, ${escapeHtml(recipient.first_name)}` : '';
+    // The subject is plain text, not HTML, so it keeps the raw creator name.
     const subject = isFr
       ? `${subjectFr} de ${creatorName}`
       : `${subjectEn} from ${creatorName}`;
@@ -111,36 +144,44 @@ async function sendNewsletter(
       : (type === 'recipe' ? 'View recipe' : 'Read post');
 
     try {
-      await resend.emails.send({
+      // resend.emails.send() does not throw when Resend refuses a request: it returns { data, error }.
+      const { error: sendError } = await resend.emails.send({
         from: 'Akeli <no-reply@a-keli.com>',
         to: recipient.email,
         subject,
         html: isFr
           ? `
             <h2>Bonjour${firstName} !</h2>
-            <p><strong>${creatorName}</strong> vient de publier :</p>
-            <h3>${title}</h3>
-            ${coverUrl ? `<img src="${coverUrl}" alt="${title}" style="max-width:600px;width:100%;border-radius:12px" />` : ''}
-            <p><a href="${linkUrl}" style="background:#e85d26;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold">${ctaLabel}</a></p>
-            <p style="color:#888;font-size:12px;margin-top:32px">Vous recevez cet email car vous suivez ${creatorName} sur Akeli. <a href="${siteUrl}/visitor/unsubscribe">Se désabonner</a></p>
+            <p><strong>${safeCreatorName}</strong> vient de publier :</p>
+            <h3>${safeTitle}</h3>
+            ${safeCover ? `<img src="${safeCover}" alt="${safeTitle}" style="max-width:600px;width:100%;border-radius:12px" />` : ''}
+            <p><a href="${safeLink}" style="background:#e85d26;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold">${ctaLabel}</a></p>
+            <p style="color:#888;font-size:12px;margin-top:32px">Vous recevez cet email car vous suivez ${safeCreatorName} sur Akeli. <a href="${siteUrl}/visitor/unsubscribe">Se désabonner</a></p>
           `
           : `
             <h2>Hello${firstName}!</h2>
-            <p><strong>${creatorName}</strong> just published:</p>
-            <h3>${title}</h3>
-            ${coverUrl ? `<img src="${coverUrl}" alt="${title}" style="max-width:600px;width:100%;border-radius:12px" />` : ''}
-            <p><a href="${linkUrl}" style="background:#e85d26;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold">${ctaLabel}</a></p>
-            <p style="color:#888;font-size:12px;margin-top:32px">You receive this because you follow ${creatorName} on Akeli. <a href="${siteUrl}/visitor/unsubscribe">Unsubscribe</a></p>
+            <p><strong>${safeCreatorName}</strong> just published:</p>
+            <h3>${safeTitle}</h3>
+            ${safeCover ? `<img src="${safeCover}" alt="${safeTitle}" style="max-width:600px;width:100%;border-radius:12px" />` : ''}
+            <p><a href="${safeLink}" style="background:#e85d26;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold">${ctaLabel}</a></p>
+            <p style="color:#888;font-size:12px;margin-top:32px">You receive this because you follow ${safeCreatorName} on Akeli. <a href="${siteUrl}/visitor/unsubscribe">Unsubscribe</a></p>
           `,
       });
+
+      if (sendError) {
+        failedCount++;
+        console.error(`[send-creator-newsletter] Resend refused the email to ${recipient.email}:`, sendError);
+        continue;
+      }
       sentCount++;
     } catch (emailErr) {
+      failedCount++;
       console.error(`[send-creator-newsletter] Failed to send email to ${recipient.email}:`, emailErr);
     }
   }
 
-  console.log(`[send-creator-newsletter] type=${type} creator=${creatorId} sent=${sentCount}`);
-  return new Response(JSON.stringify({ data: { sent: sentCount }, error: null }), {
+  console.log(`[send-creator-newsletter] type=${type} creator=${creatorId} sent=${sentCount} failed=${failedCount}`);
+  return new Response(JSON.stringify({ data: { sent: sentCount, failed: failedCount }, error: null }), {
     status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 }
@@ -194,7 +235,7 @@ Deno.serve(async (req) => {
         subjectEn: '🍽️ New recipe',
         title: record.title,
         coverUrl: record.cover_image_url ?? null,
-        linkUrl: `${siteUrl}/recipe/${record.slug}`,
+        linkUrl: `${siteUrl}/recipe/${encodeURIComponent(record.slug)}`,
         type: 'recipe',
       });
     }
@@ -241,7 +282,7 @@ Deno.serve(async (req) => {
         subjectEn: '✍️ New post',
         title: postTitle,
         coverUrl: record.cover_image_url ?? null,
-        linkUrl: `${siteUrl}/creator/${record.creator_id}/blog/${record.slug}`,
+        linkUrl: `${siteUrl}/creator/${encodeURIComponent(record.creator_id)}/blog/${encodeURIComponent(record.slug)}`,
         type: 'blog',
       });
     }
