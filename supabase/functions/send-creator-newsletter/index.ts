@@ -54,6 +54,34 @@ function safeUrl(raw: unknown): string {
   }
 }
 
+// ── Rate-limit retry ──────────────────────────────────────────────────────────
+// Resend answers 429 when too many requests arrive inside its one-second window. The window
+// clears quickly, so wait and try the same recipient again before giving up on them. Any other
+// refusal is final and is not retried.
+
+const MAX_SEND_ATTEMPTS = 3;
+
+function isRateLimited(error: { statusCode?: number | null; name?: string } | null | undefined): boolean {
+  return error?.statusCode === 429 || error?.name === 'rate_limit_exceeded';
+}
+
+function retryDelayMs(): number {
+  const configured = Number(Deno.env.get('NEWSLETTER_RETRY_DELAY_MS') ?? 1000);
+  return Number.isFinite(configured) && configured >= 0 ? configured : 1000;
+}
+
+async function sendWithRetry(resend: Resend, email: string, message: Parameters<Resend['emails']['send']>[0]) {
+  let result = await resend.emails.send(message);
+  for (let attempt = 1; attempt < MAX_SEND_ATTEMPTS && isRateLimited(result.error); attempt++) {
+    console.warn(
+      `[send-creator-newsletter] Resend rate limit hit for ${email}, retrying (attempt ${attempt + 1} of ${MAX_SEND_ATTEMPTS})`,
+    );
+    await new Promise((resolve) => setTimeout(resolve, retryDelayMs() * attempt));
+    result = await resend.emails.send(message);
+  }
+  return result;
+}
+
 // ── Service Role Verification Helper ──────────────────────────────────────────
 
 async function verifyServiceRole(authHeader: string | null): Promise<boolean> {
@@ -145,7 +173,7 @@ async function sendNewsletter(
 
     try {
       // resend.emails.send() does not throw when Resend refuses a request: it returns { data, error }.
-      const { error: sendError } = await resend.emails.send({
+      const { error: sendError } = await sendWithRetry(resend, recipient.email, {
         from: 'Akeli <no-reply@a-keli.com>',
         to: recipient.email,
         subject,
