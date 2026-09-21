@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
+// Deliberately simple: no whitespace, angle brackets or quotes, and an "@" followed by a dotted domain.
+const EMAIL_PATTERN = /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/;
+
+function toNonNegativeNumber(value: unknown): number | null {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -9,6 +17,20 @@ export async function POST(request: NextRequest) {
 
     if (!email || !calorie_goal || !protein_g || !carb_g || !fat_g) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // This endpoint is public and mails whatever address it is given, so the address and every value
+    // that ends up in the email are validated first. The email uses these coerced numbers, never the
+    // raw request values.
+    if (typeof email !== "string" || email.length > 254 || !EMAIL_PATTERN.test(email)) {
+      return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
+    }
+    const calories = toNonNegativeNumber(calorie_goal);
+    const protein = toNonNegativeNumber(protein_g);
+    const carbs = toNonNegativeNumber(carb_g);
+    const fat = toNonNegativeNumber(fat_g);
+    if (calories === null || protein === null || carbs === null || fat === null) {
+      return NextResponse.json({ error: "Invalid nutrition values" }, { status: 400 });
     }
 
     // 1. Create Supabase client using the secret key (sb_secret_*) to bypass RLS.
@@ -29,10 +51,10 @@ export async function POST(request: NextRequest) {
       .insert({
         email,
         region,
-        calorie_goal: Number(calorie_goal),
-        protein_g: Number(protein_g),
-        carb_g: Number(carb_g),
-        fat_g: Number(fat_g),
+        calorie_goal: calories,
+        protein_g: protein,
+        carb_g: carbs,
+        fat_g: fat,
         target_weight_kg: target_weight_kg ? Number(target_weight_kg) : null,
         remaining_weeks: remaining_weeks ? Number(remaining_weeks) : null,
         session_id: typeof session_id === "string" && session_id ? session_id : null,
@@ -61,7 +83,8 @@ export async function POST(request: NextRequest) {
           : `
             <p><strong>Vous êtes sur la liste d'accès anticipé.</strong> L'app Akeli arrive très bientôt sur iOS et Android — vous serez parmi les premiers à la recevoir, avec vos recettes adaptées à ce bilan.</p>`;
 
-        await resend.emails.send({
+        // resend.emails.send() does not throw when Resend refuses a request: it returns { data, error }.
+        const { error: sendError } = await resend.emails.send({
           from: "Akeli Nutrition <onboarding@a-keli.com>",
           to: email,
           subject: "Votre bilan nutritionnel Akeli + votre accès anticipé",
@@ -72,10 +95,10 @@ export async function POST(request: NextRequest) {
               <p>Voici le bilan de votre analyse nutritionnelle gratuite effectuée sur le site d'Akeli :</p>
 
               <div style="background: #f7f2ea; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3bb78f;">
-                <p style="margin: 5px 0;"><strong>Objectif Calorique :</strong> ${calorie_goal} kcal / jour</p>
-                <p style="margin: 5px 0;"><strong>Protéines :</strong> ${protein_g}g</p>
-                <p style="margin: 5px 0;"><strong>Glucides :</strong> ${carb_g}g</p>
-                <p style="margin: 5px 0;"><strong>Lipides :</strong> ${fat_g}g</p>
+                <p style="margin: 5px 0;"><strong>Objectif Calorique :</strong> ${calories} kcal / jour</p>
+                <p style="margin: 5px 0;"><strong>Protéines :</strong> ${protein}g</p>
+                <p style="margin: 5px 0;"><strong>Glucides :</strong> ${carbs}g</p>
+                <p style="margin: 5px 0;"><strong>Lipides :</strong> ${fat}g</p>
               </div>
 
               ${accessBlock}
@@ -86,6 +109,10 @@ export async function POST(request: NextRequest) {
             </div>
           `
         });
+        if (sendError) {
+          // The lead is already saved, so a refused mail is logged rather than failing the request.
+          console.error("[onboarding-lead] Resend refused the email:", sendError);
+        }
       } catch (emailError: any) {
         console.error("[onboarding-lead] Failed to send email via Resend:", emailError);
         // Do not fail the HTTP request if email sending failed but DB insert was successful
