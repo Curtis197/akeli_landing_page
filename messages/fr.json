@@ -23,7 +23,7 @@
       "title": "Mangez comme vous êtes.",
       "subtitle": "Retrouvez votre corps avec les plats de chez vous.",
       "ctaTry": "Faire mon bilan gratuit",
-      "storeBadge": "Bientôt sur iOS & Android"
+      "storeBadge": "Disponible sur tous les app stores"
     },
     "tryTitle": "Votre bilan nutritionnel gratuit",
     "trySubtitle": "Calculez vos besoins nutritionnels et découvrez comment Akeli adapte vos portions de recettes culturelles en temps réel.",
@@ -51,7 +51,7 @@
       },
       "step2": {
         "title": "Mangez à votre faim",
-        "description": "Des recettes généreuses qui rassasient vraiment. Le plaisir reste, la satiété aussi."
+        "description": "Les saveurs de chez vous, au service de votre appétit."
       },
       "step3": {
         "title": "Un plan qui part de vous",
@@ -81,13 +81,12 @@
       }
     },
     "creatorTeaser": {
-      "eyebrow": "Pour celles et ceux qui cuisinent",
-      "headline": "Votre cuisine peut vous nourrir en retour.",
+      "eyebrow": "Pour les amoureux de cuisine",
+      "headline": "Rentabiliser votre talent culinaire et aider des milliers de personnes à atteindre leurs objectifs.",
       "cta": "Devenir créateur"
     },
     "pricing": {
       "eyebrow": "Tarif",
-      "title": "Un abonnement simple",
       "price": "2,99 €/mois",
       "description": "Toutes les recettes, et un accompagnement fait pour vous.",
       "features": [
@@ -97,7 +96,7 @@
         "Sur iOS et Android"
       ],
       "cta": "Commencer mon bilan gratuit",
-      "note": "Disponible au lancement sur iOS et Android — sans engagement."
+      "note": "Disponible sur iOS et Android — sans engagement."
     },
     "faqTitle": "Questions fréquentes",
     "finalCta": {
@@ -220,7 +219,7 @@
       "ctaCreator": "Devenir créateur",
       "ctaUser": "Découvrir l'app"
     },
-    "contact": "Une question, une idée, un partenariat ? hello@akeli.app",
+    "contact": "Une question, une idée, un partenariat ? contact@a-keli.com",
     "footer": {
       "terms": "CGU",
       "privacy": "Confidentialité",
@@ -536,12 +535,12 @@
     },
     "items": {
       "user-disponibilite": {
-        "question": "Quand l'app sera-t-elle disponible ?",
-        "answer": "Très bientôt. Akeli arrive sur l'App Store et Google Play. En attendant, faites votre bilan nutritionnel gratuit et laissez votre e-mail : vous ferez partie des premiers à recevoir l'accès anticipé à l'app. Le téléchargement sera gratuit."
+        "question": "Où puis-je télécharger l'app ?",
+        "answer": "Akeli est disponible dès maintenant sur l'App Store et Google Play. Le téléchargement est gratuit — faites votre bilan nutritionnel pour découvrir vos recettes personnalisées dès l'inscription."
       },
       "user-prix": {
         "question": "Combien coûte Akeli ?",
-        "answer": "Akeli Premium coûtera 2,99€/mois au lancement. C'est sans engagement — vous pourrez annuler à tout moment depuis l'app en un clic."
+        "answer": "Akeli Premium coûte 2,99€/mois. C'est sans engagement — vous pouvez annuler à tout moment depuis l'app en un clic."
       },
       "user-cuisine": {
         "question": "Est-ce que mon pays ou ma région culinaire est représenté ?",
@@ -724,7 +723,7 @@
       },
       "support-compte-suspendu": {
         "question": "Mon compte a été suspendu — que faire ?",
-        "answer": "Contactez immédiatement le support via email à creators@akeli.app en indiquant votre nom d'utilisateur. Les suspensions sont toujours motivées par email — vérifiez vos spams si vous n'avez rien reçu."
+        "answer": "Contactez immédiatement le support via email à contact@a-keli.com en indiquant votre nom d'utilisateur. Les suspensions sont toujours motivées par email — vérifiez vos spams si vous n'avez rien reçu."
       },
       "support-suppression-compte": {
         "question": "Comment supprimer mon compte créateur ?",
@@ -763,7 +762,24 @@
     "section7": {
       "title": "7. Contact",
       "content": "Pour exercer vos droits ou pour toute question :",
-      "email": "hello@akeli.app"
+      "email": "legal@a-keli.com"
     }
+  },
+  "beta": {
+    "meta": {
+      "title": "Rejoindre le bêta-test Akeli",
+      "description": "Inscrivez-vous pour tester l'application Akeli avant son lancement."
+    },
+    "title": "Rejoindre le bêta-test Akeli",
+    "subtitle": "Laissez votre e-mail et le type de votre téléphone — nous vous ajouterons à notre groupe de testeurs.",
+    "emailLabel": "Adresse e-mail",
+    "emailPlaceholder": "vous@exemple.com",
+    "platformLabel": "Votre téléphone",
+    "platformIos": "iPhone",
+    "platformAndroid": "Android",
+    "submit": "M'inscrire",
+    "success": "Vous êtes sur la liste ! Vous recevrez un e-mail dès que vous serez ajouté(e) au test.",
+    "alreadySignedUp": "Vous êtes déjà inscrit(e).",
+    "error": "Une erreur est survenue. Veuillez réessayer."
   }
 }

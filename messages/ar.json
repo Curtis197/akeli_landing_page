@@ -359,5 +359,22 @@
     "sweetener": "محليات",
     "alcohol": "كحول",
     "other": "أخرى"
+  },
+  "beta": {
+    "meta": {
+      "title": "انضم إلى الاختبار التجريبي لتطبيق Akeli",
+      "description": "سجّل لاختبار تطبيق Akeli قبل إطلاقه."
+    },
+    "title": "انضم إلى الاختبار التجريبي لتطبيق Akeli",
+    "subtitle": "اترك بريدك الإلكتروني ونوع هاتفك — سنضيفك إلى مجموعة المختبرين.",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "you@example.com",
+    "platformLabel": "نوع هاتفك",
+    "platformIos": "آيفون",
+    "platformAndroid": "أندرويد",
+    "submit": "التسجيل",
+    "success": "تم تسجيلك! سنرسل لك بريدًا إلكترونيًا عند إضافتك إلى الاختبار.",
+    "alreadySignedUp": "أنت مسجّل بالفعل.",
+    "error": "حدث خطأ ما. حاول مرة أخرى."
   }
 }
