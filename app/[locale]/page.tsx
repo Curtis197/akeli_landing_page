@@ -50,6 +50,9 @@ export default function LandingPage() {
                 {t("hero.storeBadge")}
               </span>
             </div>
+            <Link href="/beta" className="text-sm font-semibold underline" style={{ color: "var(--color-brand-forest)" }}>
+              {t("hero.betaCta")}
+            </Link>
           </div>
           <div className="relative min-h-[65vw] sm:min-h-[55vw] lg:min-h-0 order-1 lg:order-2 overflow-hidden"
             style={{ backgroundColor: "var(--color-brand-dark)" }}>
